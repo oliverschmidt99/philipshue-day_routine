@@ -1,0 +1,123 @@
+2023-07-13 19:41:13,054 
+ Restart
+2023-07-13 19:41:13,058 Night - Mode
+2023-07-13 19:41:21,733 
+ Restart
+2023-07-13 19:41:21,735 Night - Mode
+2023-07-13 19:42:19,616 
+ Restart
+2023-07-13 19:42:19,619 Night - Mode
+2023-07-13 19:44:02,322 
+ Restart
+2023-07-13 19:44:02,324 Night - Mode
+2023-07-13 19:45:58,366 
+Restart
+2023-07-13 19:45:58,368 Day - Mode
+2023-07-14 15:31:47,850 
+ Restart
+2023-07-14 15:31:47,853 Night - Mode
+2023-07-14 15:31:52,817 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Zwischenraum/Schrank/lightstrip
+2023-07-14 15:31:57,854 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/L
+2023-07-14 15:31:57,983 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Zwischenraum/Schrank/lightstrip
+2023-07-14 15:31:58,194 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Flur/Haustür/Tisch/Hue white
+2023-07-14 15:32:26,844 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/R
+2023-07-14 15:32:26,955 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/L
+2023-07-14 15:32:27,087 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Zwischenraum/Schrank/lightstrip
+2023-07-14 15:32:28,266 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Flur/Haustür/Tisch/Hue white
+2023-07-14 15:32:29,445 Morning - Mode
+2023-07-14 15:32:32,243 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/Tür/Ost
+2023-07-14 15:32:32,323 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/L/Ost
+2023-07-14 15:32:33,390 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/R/Ost
+2023-07-14 15:32:33,488 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/L/Nord
+2023-07-14 15:32:33,599 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/R/Nord
+2023-07-14 15:32:33,698 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Haustür/West
+2023-07-14 15:32:33,846 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Carport/Vorne 1/
+2023-07-14 15:32:33,984 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Carport/Vorne 2/
+2023-07-14 15:32:34,118 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/R
+2023-07-14 15:32:34,224 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/L
+2023-07-14 15:32:34,352 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Zwischenraum/Schrank/lightstrip
+2023-07-14 15:32:34,597 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Flur/Haustür/Tisch/Hue white
+2023-07-14 15:32:34,705 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Außen/1
+2023-07-14 15:32:34,838 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Außen/2
+2023-07-14 15:32:34,981 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/1
+2023-07-14 15:32:35,115 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/2
+2023-07-14 15:32:35,227 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/3
+2023-07-14 15:32:41,752 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/Tür/Ost
+2023-07-14 15:32:41,844 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/L/Ost
+2023-07-14 15:32:41,891 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/R/Ost
+2023-07-14 15:32:42,004 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/L/Nord
+2023-07-14 15:32:42,052 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/R/Nord
+2023-07-14 15:32:42,096 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Haustür/West
+2023-07-14 15:32:42,142 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Carport/Vorne 1/
+2023-07-14 15:32:42,267 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Carport/Vorne 2/
+2023-07-14 15:32:42,322 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/R
+2023-07-14 15:32:42,447 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/L
+2023-07-14 15:32:42,504 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Zwischenraum/Schrank/lightstrip
+2023-07-14 15:32:43,670 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Flur/Haustür/Tisch/Hue white
+2023-07-14 15:32:43,769 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Außen/1
+2023-07-14 15:32:43,846 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Außen/2
+2023-07-14 15:32:43,968 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/1
+2023-07-14 15:32:44,066 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/2
+2023-07-14 15:32:44,201 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/3
+2023-07-14 15:32:44,326 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/4
+2023-07-14 15:32:50,638 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/Tür/Ost
+2023-07-14 15:32:50,761 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/L/Ost
+2023-07-14 15:32:50,912 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/R/Ost
+2023-07-14 15:32:51,086 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/L/Nord
+2023-07-14 15:32:51,221 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/R/Nord
+2023-07-14 15:32:51,368 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Haustür/West
+2023-07-14 15:32:51,498 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Carport/Vorne 1/
+2023-07-14 15:32:51,655 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Carport/Vorne 2/
+2023-07-14 15:32:51,807 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/R
+2023-07-14 15:32:51,896 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/L
+2023-07-14 15:32:52,038 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Zwischenraum/Schrank/lightstrip
+2023-07-14 15:32:52,363 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Flur/Haustür/Tisch/Hue white
+2023-07-14 15:32:52,658 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Außen/1
+2023-07-14 15:32:52,800 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Außen/2
+2023-07-14 15:32:52,955 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/1
+2023-07-14 15:32:53,056 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/2
+2023-07-14 15:32:53,155 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/3
+2023-07-14 15:32:53,277 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Auffahrt/Innen/4
+2023-07-14 15:32:53,557 Day - Mode
+2023-07-14 15:33:28,618 Afternoon - Mode
+2023-07-14 15:33:34,915 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/Tür/Ost
+2023-07-14 15:33:34,961 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/L/Ost
+2023-07-14 15:33:35,007 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/R/Ost
+2023-07-14 15:33:35,064 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/L/Nord
+2023-07-14 15:33:35,112 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/R/Nord
+2023-07-14 15:33:35,305 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/R
+2023-07-14 15:33:35,356 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Bibliothek/Hue white spot/L
+2023-07-14 15:33:35,412 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Zwischenraum/Schrank/lightstrip
+2023-07-14 15:33:35,513 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Flur/Haustür/Tisch/Hue white
+2023-07-14 15:33:48,440 Night - Mode
+2023-07-14 15:34:07,384 Morning - Mode
+2023-07-14 15:34:16,896 Day - Mode
+2023-07-14 15:34:27,167 Afternoon - Mode
+2023-07-14 15:34:42,821 Night - Mode
+2023-07-14 15:35:01,655 Morning - Mode
+2023-07-14 15:35:05,041 Comminghome - Mode
+2023-07-14 15:36:05,922 Comminghome - Mode
+2023-07-14 15:37:02,364 Day - Mode
+2023-07-27 15:59:29,078 Comminghome - Mode
+2023-07-27 16:00:06,209 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/Tür/Ost
+2023-07-27 16:00:06,365 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/L/Ost
+2023-07-27 16:00:06,553 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Terrasse/R/Ost
+2023-07-27 16:00:06,688 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/L/Nord
+2023-07-27 16:00:06,820 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Küche/R/Nord
+2023-07-27 16:00:06,982 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Haustür/West
+2023-07-27 16:00:07,158 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Carport/Vorne 1/
+2023-07-27 16:00:07,366 ERROR: parameter, bri, is not modifiable. Device is set to off. for light Draußen/Carport/Vorne 2/
+2023-07-27 16:02:14,261 Comminghome - Mode
+2023-07-27 16:03:55,057 Comminghome - Mode
+2023-07-27 16:05:35,109 Comminghome - Mode
+2023-07-27 16:06:16,309 Comminghome - Mode
+2023-07-27 16:06:57,623 Comminghome - Mode
+2023-07-27 16:07:38,837 Comminghome - Mode
+2023-07-27 16:08:20,044 Comminghome - Mode
+2023-07-27 16:09:01,160 Comminghome - Mode
+2023-09-13 22:20:27,128 
+Restart
+2023-09-13 22:20:27,130 Night - Mode
+2023-09-13 22:21:35,191 Comminghome - Mode
+2023-09-13 22:33:56,661 Comminghome - Mode
+123!"§
