@@ -252,7 +252,7 @@ def main_function():
             b.set_light(Dummy[0], 'on', False)
 
             if on == True:
-
+                
                 logging.info("Comminghome - Mode")
                 time.sleep(18)
                 for light in zone_runway:
