@@ -110,7 +110,7 @@ zone_waylight = [
 
 
 
-Pfad = '/home/olli/Schreibtisch/SAP/hue/daly/outside/outside.log'
+Pfad = '/home/server_1/Desktop/autostart/outside.log'
 #'/home/oliver/Desktop/autostart/outside.log'
 #/home/olli/Schreibtisch/SAP/hue/daly/outside/outside.log
 logging.basicConfig(filename=Pfad, level=logging.INFO, format='%(asctime)s %(message)s')
