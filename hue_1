@@ -62,13 +62,7 @@ zone_daymode = [
         "Draußen/Auffahrt/Innen/3",
         "Draußen/Auffahrt/Innen/4"
         ]
-zone_nightmode = [
-        "Bibliothek/Hue white spot/R",
-        "Bibliothek/Hue white spot/L",
-        "Zwischenraum/Schrank/lightstrip",
-        "Flur/Haustür/Tisch/Hue white",
-        "Flur/Olli/Decke/"
-        ]
+
 zone_outside = [
         "Draußen/Terrasse/Tür/Ost",
         "Draußen/Terrasse/L/Ost",
@@ -170,35 +164,61 @@ def sunset():
 
 
 
-def check_lamp_state(delta_time, lamp_array, time_check):
+zone_nightmode = [
+    {"lamp": "Bibliothek/Hue white spot/R", "t_x": 12},
+    {"lamp": "Bibliothek/Hue white spot/L", "t_x": 12},
+    {"lamp": "Zwischenraum/Schrank/lightstrip", "t_x": 12},
+    {"lamp": "Flur/Haustür/Tisch/Hue white", "t_x": 12},
+    {"lamp": "Flur/Olli/Decke/", "t_x": 12}
+]
+
+# Data structure to track lamp state and time last turned on
+lamp_states = {item["lamp"]: {"on": False, "last_turned_on_time": None} for item in zone_nightmode}
+
+def check_lamp_state(lamp_array):
     current_datetime = datetime.datetime.now()
     
-    time_check = current_datetime + delta_time
     true_lamps = []
-    print("AH")
-    for online in lamp_array:
-        on_state = b.get_light(online, 'on')
+    for item in lamp_array:
+        lamp = item["lamp"]
+        on_state = b.get_light(lamp, 'on')
+
         if on_state:
-            true_lamps.append(online)
+            true_lamps.append(lamp)
+            lamp_states[lamp]["on"] = True
 
-    return true_lamps, time_check
+            # Check if the lamp was turned on for the first time or turned back on
+            if lamp_states[lamp]["last_turned_on_time"] is None:
+                lamp_states[lamp]["last_turned_on_time"] = current_datetime
 
-TIME_INTERVAL_SECONDS = 10
+    for lamp in true_lamps:
+            last_turned_on_time = lamp_states[lamp]["last_turned_on_time"]
+            t_x = [item["t_x"] for item in zone_nightmode if item["lamp"] == lamp][0]
+
+            if (current_datetime - last_turned_on_time).total_seconds() > t_x:
+                b.set_light(lamp, 'on', False)
+                lamp_states[lamp]["on"] = False
+                lamp_states[lamp]["last_turned_on_time"] = None
+    return true_lamps
+
+
+
 
 def main_function():
-    delta_time = datetime.timedelta(seconds=TIME_INTERVAL_SECONDS)
-    time_check = datetime.datetime.now() + delta_time
-    true_lamps = []
-
     while True:
         current_time = datetime.datetime.now()
 
-        if current_time.time() > time_check.time():
-            true_lamps, time_check = check_lamp_state(delta_time, zone_nightmode, time_check)
+        # Check the state of lamps and update true_lamps
+        true_lamps = check_lamp_state(zone_nightmode)
+
+
         time.sleep(2)
         print("True Lamps:", true_lamps)
-        print("Time Check:", time_check, "Time now", datetime.datetime.now())
 
 if __name__ == "__main__":
     main_function()
+
+
+
+
 
