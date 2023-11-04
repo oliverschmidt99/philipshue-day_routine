@@ -168,101 +168,18 @@ def sunset():
 
 def main_function():
     
-    logging.info("\nRestart")
+    
 
-    Morning = 0
-    Day = 0
-    Afternoon = 0
-    Night = 0
-
-    while True:
-
-        formatted_sunrise_time = sunrise()
-        formatted_sunset_time = sunset()
-        deltatime = datetime.timedelta(hours=1)
-
-        sunrise_time = datetime.datetime.strptime(formatted_sunrise_time, "%H:%M:%S").time()
-        sunrise_time_deltatime = datetime.datetime.combine(datetime.datetime.today(), sunrise_time) - deltatime
-        sunrise_time_deltatime = sunrise_time_deltatime.time()
-        
-        sunset_time = datetime.datetime.strptime(formatted_sunset_time, "%H:%M:%S").time()
-        sunset_time_deltatime = datetime.datetime.combine(datetime.datetime.today(), sunset_time) + deltatime
-        sunset_time_deltatime = sunset_time_deltatime.time()
-
-
-        if sunrise_time < datetime.datetime.now().time() < sunset_time:
-
-            if Day != 1:
-                Day +=1
-                Night = 0
-                logging.info("Day - Mode") 
-
-            for light in zone_daymode:
-                b.set_light(light, 'on', False)
-
+    
+    for online in zone_nightmode:
+        on_state = b.get_light(online, 'on')
+        if on_state:
+            print(f"An: {online}")
         else:
+            print(f"Aus: {online}")
+        
 
-
-            if sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
-
-                if Afternoon != 1:
-                    Afternoon +=1
-                    Day = 0
-                    logging.info("Evening - Mode")
-                
-                b.set_light(zone_waylight,'on', True)
-                b.set_light(zone_outside,'on', True)
-                b.set_light(zone_runway, 'on', True)
-
-                b.set_light(zone_outside,'bri', 60)
-                b.set_light(zone_waylight, 'bri', 50)
-                b.set_light(zone_runway, 'bri', 20)
-
-            elif sunrise_time_deltatime < datetime.datetime.now().time() <= sunrise_time:
-                
-                if Morning != 1:
-                    Morning +=1
-                    Afternoon = 0
-                    logging.info("Morning - Mode")
-
-                b.set_light(zone_waylight,'on', True)
-                b.set_light(zone_outside,'on', True)
-                b.set_light(zone_runway, 'on', True)
-
-                b.set_light(zone_outside,'bri', 60)
-                b.set_light(zone_waylight, 'bri', 50)
-                b.set_light(zone_runway, 'bri', 20)
-
-            else:
-                
-                if Night != 1:
-                    Night +=1
-                    Morning = 0
-                    logging.info("Night - Mode")
-
-                b.set_light(zone_outside,'on', False)
-                b.set_light(zone_runway,'on', False)
-                b.set_light(zone_waylight,'on', True)
-
-                b.set_light(zone_waylight, 'bri', 20)
-                
-
-            on = b.get_light(Dummy[0], 'on')
-            b.set_light(Dummy[0], 'on', False)
-
-            if on == True:
-                
-                logging.info("Comminghome - Mode")
-                time.sleep(18)
-                for light in zone_runway:
-                    light_names[light].on = True
-                    light_names[light].brightness = 250
-                    time.sleep(1)
-                time.sleep(10)
-                b.set_light(zone_cominghome,'on', True)
-                b.set_light(zone_cominghome,'bri', 180)
-                
-                time.sleep(600)
-
+        
 
 main_function()
+
