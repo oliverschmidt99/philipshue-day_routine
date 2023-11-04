@@ -1,4 +1,5 @@
 from phue import Bridge
+from datetime import datetime, timedelta
 import time
 import datetime
 import ephem
@@ -166,20 +167,38 @@ def sunset():
         return formatted_sunset_time
 
 
-def main_function():
-    
-    
 
+
+
+def check_lamp_state(delta_time, lamp_array, time_check):
+    current_datetime = datetime.datetime.now()
     
-    for online in zone_nightmode:
+    time_check = current_datetime + delta_time
+    true_lamps = []
+    print("AH")
+    for online in lamp_array:
         on_state = b.get_light(online, 'on')
         if on_state:
-            print(f"An: {online}")
-        else:
-            print(f"Aus: {online}")
-        
+            true_lamps.append(online)
 
-        
+    return true_lamps, time_check
 
-main_function()
+TIME_INTERVAL_SECONDS = 10
+
+def main_function():
+    delta_time = datetime.timedelta(seconds=TIME_INTERVAL_SECONDS)
+    time_check = datetime.datetime.now() + delta_time
+    true_lamps = []
+
+    while True:
+        current_time = datetime.datetime.now()
+
+        if current_time.time() > time_check.time():
+            true_lamps, time_check = check_lamp_state(delta_time, zone_nightmode, time_check)
+        time.sleep(2)
+        print("True Lamps:", true_lamps)
+        print("Time Check:", time_check, "Time now", datetime.datetime.now())
+
+if __name__ == "__main__":
+    main_function()
 
