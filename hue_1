@@ -17,90 +17,96 @@ light_names = b.get_light_objects("name")
 lights = b.lights
 
 
-Dummy = ["Elena/Deckelampe"
-		]
+Dummy = [{"lamp": "Elena/Deckelampe", "t_x": 12}]
+
 Olli = [
-        "Olli/Sony TV/Links/Hue Play",
-        "Olli/Sony TV/Rechts/Hue Play",
-        "Olli/Regal/Hue Go",
-        "Olli/Schreibtisch/Hue Go",
-        "Olli/Decke 1/Hue color"
-        ]
+    {"lamp": "Olli/Sony TV/Links/Hue Play", "t_x": 12},
+    {"lamp": "Olli/Sony TV/Rechts/Hue Play", "t_x": 12},
+    {"lamp": "Olli/Regal/Hue Go", "t_x": 12},
+    {"lamp": "Olli/Schreibtisch/Hue Go", "t_x": 12},
+    {"lamp": "Olli/Decke 1/Hue color", "t_x": 12}
+]
+
 outside = [
-        "Draußen/Terrasse/Tür/Ost",
-        "Draußen/Terrasse/L/Ost",
-        "Draußen/Terrasse/R/Ost",
-        "Draußen/Küche/L/Nord",
-        "Draußen/Küche/R/Nord",
-        "Draußen/Haustür/West",
-        "Draußen/Carport/Vorne 1/",
-        "Draußen/Carport/Vorne 2/",
-        "Draußen/Auffahrt/Außen/1",
-        "Draußen/Auffahrt/Außen/2",
-        "Draußen/Auffahrt/Innen/1",
-        "Draußen/Auffahrt/Innen/2",
-        "Draußen/Auffahrt/Innen/3",
-        "Draußen/Auffahrt/Innen/4"
-        ]
+    {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 12},
+    {"lamp": "Draußen/Terrasse/L/Ost", "t_x": 12},
+    {"lamp": "Draußen/Terrasse/R/Ost", "t_x": 12},
+    {"lamp": "Draußen/Küche/L/Nord", "t_x": 12},
+    {"lamp": "Draußen/Küche/R/Nord", "t_x": 12},
+    {"lamp": "Draußen/Haustür/West", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Außen/1", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Außen/2", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/1", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/2", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/3", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/4", "t_x": 12}
+]
+
 zone_daymode = [
-        "Draußen/Terrasse/Tür/Ost",
-        "Draußen/Terrasse/L/Ost",
-        "Draußen/Terrasse/R/Ost",
-        "Draußen/Küche/L/Nord",
-        "Draußen/Küche/R/Nord",
-        "Draußen/Haustür/West",
-        "Draußen/Carport/Vorne 1/",
-        "Draußen/Carport/Vorne 2/",
-        "Bibliothek/Hue white spot/R",
-        "Bibliothek/Hue white spot/L",
-        "Zwischenraum/Schrank/lightstrip",
-        "Flur/Haustür/Tisch/Hue white",
-        "Draußen/Auffahrt/Außen/1",
-        "Draußen/Auffahrt/Außen/2",
-        "Draußen/Auffahrt/Innen/1",
-        "Draußen/Auffahrt/Innen/2",
-        "Draußen/Auffahrt/Innen/3",
-        "Draußen/Auffahrt/Innen/4"
-        ]
+    {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 12},
+    {"lamp": "Draußen/Terrasse/L/Ost", "t_x": 12},
+    {"lamp": "Draußen/Terrasse/R/Ost", "t_x": 12},
+    {"lamp": "Draußen/Küche/L/Nord", "t_x": 12},
+    {"lamp": "Draußen/Küche/R/Nord", "t_x": 12},
+    {"lamp": "Draußen/Haustür/West", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 12},
+    {"lamp": "Bibliothek/Hue white spot/R", "t_x": 12},
+    {"lamp": "Bibliothek/Hue white spot/L", "t_x": 12},
+    {"lamp": "Zwischenraum/Schrank/lightstrip", "t_x": 12},
+    {"lamp": "Flur/Haustür/Tisch/Hue white", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Außen/1", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Außen/2", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/1", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/2", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/3", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/4", "t_x": 12}
+]
 
 zone_outside = [
-        "Draußen/Terrasse/Tür/Ost",
-        "Draußen/Terrasse/L/Ost",
-        "Draußen/Terrasse/R/Ost",
-        "Draußen/Küche/L/Nord",
-        "Draußen/Küche/R/Nord",
-        "Draußen/Haustür/West",
-        "Draußen/Carport/Vorne 1/",
-        "Draußen/Carport/Vorne 2/"
-        ]
+    {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 12},
+    {"lamp": "Draußen/Terrasse/L/Ost", "t_x": 12},
+    {"lamp": "Draußen/Terrasse/R/Ost", "t_x": 12},
+    {"lamp": "Draußen/Küche/L/Nord", "t_x": 12},
+    {"lamp": "Draußen/Küche/R/Nord", "t_x": 12},
+    {"lamp": "Draußen/Haustür/West", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 12}
+]
+
 zone_runway = [
-		"Draußen/Auffahrt/Innen/1",
-		"Draußen/Auffahrt/Innen/2",
-        "Draußen/Auffahrt/Außen/1",
-        "Draußen/Auffahrt/Innen/3",
-        "Draußen/Auffahrt/Außen/2",
-        "Draußen/Auffahrt/Innen/4",
-        "Draußen/Carport/Vorne 1/",
-        "Draußen/Carport/Vorne 2/"
-        ]
+    {"lamp": "Draußen/Auffahrt/Innen/1", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/2", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Außen/1", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/3", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Außen/2", "t_x": 12},
+    {"lamp": "Draußen/Auffahrt/Innen/4", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 12}
+]
+
 zone_cominghome = [
-        "Draußen/Terrasse/Tür/Ost",
-        "Draußen/Terrasse/L/Ost",
-        "Draußen/Terrasse/R/Ost",
-        "Draußen/Küche/L/Nord",
-        "Draußen/Küche/R/Nord",
-        "Draußen/Haustür/West",
-        "Draußen/Carport/Vorne 1/",
-        "Draußen/Carport/Vorne 2/",
-        "Olli/Sony TV/Links/Hue Play",
-        "Olli/Sony TV/Rechts/Hue Play"               
-        ]
+    {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 12},
+    {"lamp": "Draußen/Terrasse/L/Ost", "t_x": 12},
+    {"lamp": "Draußen/Terrasse/R/Ost", "t_x": 12},
+    {"lamp": "Draußen/Küche/L/Nord", "t_x": 12},
+    {"lamp": "Draußen/Küche/R/Nord", "t_x": 12},
+    {"lamp": "Draußen/Haustür/West", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 12},
+    {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 12},
+    {"lamp": "Olli/Sony TV/Links/Hue Play", "t_x": 12},
+    {"lamp": "Olli/Sony TV/Rechts/Hue Play", "t_x": 12}
+]
+
 zone_waylight = [
-		"Bibliothek/Hue white spot/R",
-		"Bibliothek/Hue white spot/L",
-		"Zwischenraum/Schrank/lightstrip",
-		"Flur/Haustür/Tisch/Hue white"
-		]
+    {"lamp": "Bibliothek/Hue white spot/R", "t_x": 12},
+    {"lamp": "Bibliothek/Hue white spot/L", "t_x": 12},
+    {"lamp": "Zwischenraum/Schrank/lightstrip", "t_x": 12},
+    {"lamp": "Flur/Haustür/Tisch/Hue white", "t_x": 12}
+]
+
 
 
 
@@ -173,9 +179,10 @@ zone_nightmode = [
 ]
 
 # Data structure to track lamp state and time last turned on
-lamp_states = {item["lamp"]: {"on": False, "last_turned_on_time": None} for item in zone_nightmode}
+lamp_states = {item["lamp"]: {"on": False, "last_turned_on_time": None, "brightness": None} for item in zone_nightmode}
 
-def check_lamp_state(lamp_array):
+
+def check_lamp_state(lamp_array, reset_or_off):
     current_datetime = datetime.datetime.now()
     
     true_lamps = []
@@ -190,16 +197,30 @@ def check_lamp_state(lamp_array):
             # Check if the lamp was turned on for the first time or turned back on
             if lamp_states[lamp]["last_turned_on_time"] is None:
                 lamp_states[lamp]["last_turned_on_time"] = current_datetime
+                # If reset_or_off is "reset," store the brightness when the lamp is turned on
+                if reset_or_off == "reset":
+                    brightness = b.get_light(lamp, 'bri')
+                    lamp_states[lamp]["brightness"] = brightness
 
     for lamp in true_lamps:
-            last_turned_on_time = lamp_states[lamp]["last_turned_on_time"]
-            t_x = [item["t_x"] for item in zone_nightmode if item["lamp"] == lamp][0]
+        last_turned_on_time = lamp_states[lamp]["last_turned_on_time"]
+        t_x = [item["t_x"] for item in lamp_array if item["lamp"] == lamp][0]
 
-            if (current_datetime - last_turned_on_time).total_seconds() > t_x:
+        if (current_datetime - last_turned_on_time).total_seconds() > t_x:
+            if reset_or_off == "reset" and "brightness" in lamp_states[lamp]:
+                # Reset the lamp to its previous state including brightness
+                brightness = lamp_states[lamp]["brightness"]
+                b.set_light(lamp, 'on', True)
+                b.set_light(lamp, 'bri', brightness)
+            else:
+                # Turn off the lamp
                 b.set_light(lamp, 'on', False)
-                lamp_states[lamp]["on"] = False
-                lamp_states[lamp]["last_turned_on_time"] = None
+
+            lamp_states[lamp]["on"] = False
+            lamp_states[lamp]["last_turned_on_time"] = None
+
     return true_lamps
+
 
 
 
@@ -209,7 +230,7 @@ def main_function():
         current_time = datetime.datetime.now()
 
         # Check the state of lamps and update true_lamps
-        true_lamps = check_lamp_state(zone_nightmode)
+        true_lamps = check_lamp_state(zone_nightmode, "reset")
 
 
         time.sleep(2)
