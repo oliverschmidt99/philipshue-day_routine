@@ -1,0 +1,87 @@
+{
+    "Dummy": [
+        {"lamp": "Elena/Deckelampe", "t_x": 120}
+    ],
+    "Olli": [
+      {"lamp": "Olli/Sony TV/Links/Hue Play", "t_x": 10},
+      {"lamp": "Olli/Sony TV/Rechts/Hue Play", "t_x": 10},
+      {"lamp": "Olli/Regal/Hue Go", "t_x": 10},
+      {"lamp": "Olli/Schreibtisch/Hue Go", "t_x": 10},
+      {"lamp": "Olli/Decke 1/Hue color", "t_x": 10}
+    ],
+    "outside": [
+      {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 120},
+      {"lamp": "Draußen/Terrasse/L/Ost", "t_x": 120},
+      {"lamp": "Draußen/Terrasse/R/Ost", "t_x": 120},
+      {"lamp": "Draußen/Küche/L/Nord", "t_x": 120},
+      {"lamp": "Draußen/Küche/R/Nord", "t_x": 120},
+      {"lamp": "Draußen/Haustür/West", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Außen/1", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Außen/2", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/1", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/2", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/3", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/4", "t_x": 120}
+    ],
+    "zone_daymode": [
+      {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 120},
+      {"lamp": "Draußen/Terrasse/L/Ost", "t_x": 120},
+      {"lamp": "Draußen/Terrasse/R/Ost", "t_x": 120},
+      {"lamp": "Draußen/Küche/L/Nord", "t_x": 120},
+      {"lamp": "Draußen/Küche/R/Nord", "t_x": 120},
+      {"lamp": "Draußen/Haustür/West", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 120},
+      {"lamp": "Bibliothek/Hue white spot/R", "t_x": 120},
+      {"lamp": "Bibliothek/Hue white spot/L", "t_x": 120},
+      {"lamp": "Zwischenraum/Schrank/lightstrip", "t_x": 120},
+      {"lamp": "Flur/Haustür/Tisch/Hue white", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Außen/1", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Außen/2", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/1", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/2", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/3", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/4", "t_x": 120}
+    ],
+    "zone_outside": [
+      {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 120},
+      {"lamp": "Draußen/Terrasse/L/Ost", "t_x": 120},
+      {"lamp": "Draußen/Terrasse/R/Ost", "t_x": 120},
+      {"lamp": "Draußen/Küche/L/Nord", "t_x": 120},
+      {"lamp": "Draußen/Küche/R/Nord", "t_x": 120},
+      {"lamp": "Draußen/Haustür/West", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 120}
+    ],
+    "zone_runway": [
+      {"lamp": "Draußen/Auffahrt/Innen/1", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/2", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Außen/1", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/3", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Außen/2", "t_x": 120},
+      {"lamp": "Draußen/Auffahrt/Innen/4", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 120}
+    ],
+    "zone_cominghome": [
+      {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 120},
+      {"lamp": "Draußen/Terrasse/L/Ost", "t_x": 120},
+      {"lamp": "Draußen/Terrasse/R/Ost", "t_x": 120},
+      {"lamp": "Draußen/Küche/L/Nord", "t_x": 120},
+      {"lamp": "Draußen/Küche/R/Nord", "t_x": 120},
+      {"lamp": "Draußen/Haustür/West", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 120},
+      {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 120},
+      {"lamp": "Olli/Sony TV/Links/Hue Play", "t_x": 120},
+      {"lamp": "Olli/Sony TV/Rechts/Hue Play", "t_x": 120}
+    ],
+    "zone_waylight": [
+      {"lamp": "Bibliothek/Hue white spot/R", "t_x": 120},
+      {"lamp": "Bibliothek/Hue white spot/L", "t_x": 120},
+      {"lamp": "Zwischenraum/Schrank/lightstrip", "t_x": 120},
+      {"lamp": "Flur/Haustür/Tisch/Hue white", "t_x": 120}
+    ]
+  }
+  
