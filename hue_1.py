@@ -18,6 +18,8 @@ light_names = b.get_light_objects("name")
 lights = b.lights
 
 
+Dummy = ["Elena/Deckelampe"]
+
 Pfad_json = "/home/oliver/Dokumente/autostart/zonen.json"
 Pfad_log = "/home/oliver/Dokumente/autostart/outside.log"
 # '/home/oliver/Desktop/autostart/outside.log'
@@ -149,40 +151,28 @@ def check_lamp_state(lamp_array, lamp_states):
             lamp_states[lamp]["last_turned_on_time"] = None
 
 
-def coming_home(lamp_states):
+def coming_home():
     current_datetime = datetime.datetime.now()
-    end_time = current_datetime + timedelta(seconds=18)
+    end_time = current_datetime + timedelta(seconds=5)
 
-    for light_name, light_data in zonen_json["Dummy"]:
-        on = b.get_light(light_name, "on")
-    b.set_light(zonen_json["Dummy"], "on", False)
+    on = b.get_light(Dummy[0], "on")
+    b.set_light(Dummy[0], "on", False)
 
     if on:
-        logging.info("Coming Home - Mode")
+        logging.info("Mode - Coming Home - On")
 
-        while datetime.now() < end_time:
+        while current_datetime < end_time:
             # Turn on lights in zone_runway
-            for light in zonen_json["zone_runway"]:
-                light_names[light].on = True
-                light_names[light].brightness = 250
-                time.sleep(1)
+            for item in zonen_json["zone_runway"]:
+                lamp = item["lamp"]
+                b.set_light(lamp, "on", True)
+                b.set_light(lamp, "bri", 250)
+                time.sleep(2)
 
         # After the delay, turn on lights in zone_cominghome
-        turn_on_lights(zonen_json["zone_runway"], 180, None, None)
-
-        # Calculate the minimum t_x value among all lamps
-        min_t_x = min(lamp_states[lamp]["t_x"] for lamp in lamp_states)
-
-        while datetime.now() - end_time < timedelta(seconds=min_t_x):
-            for lamp in lamp_states:
-                last_turned_on_time = lamp_states[lamp]["last_turned_on_time"]
-                t_x = lamp_states[lamp]["t_x"]
-
-                if (current_datetime - last_turned_on_time).total_seconds() > t_x:
-                    logging.info("Mode - Turn_off_light", lamp)
-                    b.set_light(lamp, "on", False)
-                    lamp_states[lamp]["on"] = False
-                    lamp_states[lamp]["last_turned_on_time"] = None
+        turn_on_lights(zonen_json["zone_cominghome"], 180, None, None)
+        time.sleep(180)
+        logging.info("Mode - Coming Home - off")
 
 
 zonen_json = open_json(Pfad_json)
@@ -236,9 +226,9 @@ def main_function():
                     Evening += 1
                     Day = 0
                     logging.info("Mode - Evening")
-                turn_on_lights(zonen_json["outside"], 150, None, None)
+                turn_on_lights(zonen_json["outside"], 100, None, None)
                 turn_on_lights(zonen_json["zone_waylight"], 150, None, None)
-                # coming_home(lamp_states_dummy)
+                coming_home()
 
             elif (
                 sunrise_time_deltatime < datetime.datetime.now().time() <= sunrise_time
@@ -249,13 +239,14 @@ def main_function():
                     logging.info("Mode - Morning")
                 turn_on_lights(zonen_json["outside"], 150, None, None)
                 turn_on_lights(zonen_json["zone_waylight"], 150, None, None)
+                coming_home()
             else:
                 if Night != 1:
                     Night += 1
                     Morning = 0
                     logging.info("Mode - Night")
                 check_lamp_state(zonen_json["zone_daymode"], lamp_states_zone_daymode)
-                # coming_home(lamp_states_dummy)
+                coming_home()
 
 
 if __name__ == "__main__":
