@@ -5,6 +5,7 @@ import ephem
 import pytz
 import logging
 import json
+import os
 
 BRIDGE_IP = "192.168.178.34"
 
@@ -19,13 +20,20 @@ lights = b.lights
 
 Dummy = ["Elena/Deckelampe"]
 
-Pfad_json_zonen = "/home/oliver/Dokumente/autostart/zonen.json"
-Pfad_json_settings = "/home/oliver/Dokumente/autostart/settings.json"
-Pfad_log = "/home/oliver/Dokumente/autostart/outside.log"
-# '/home/oliver/Desktop/autostart/outside.log'
-# /home/olli/Schreibtisch/SAP/hue/daly/outside/outside.log
+aktueller_pfad = os.path.dirname(__file__)
+
+# Dateinamen definieren
+datei_zonen = "zonen.json"
+datei_settings = "settings.json"
+datei_log = "outside.log"
+
+# Dateipfade erstellen
+pfad_json_zonen = os.path.join(aktueller_pfad, datei_zonen)
+pfad_json_settings = os.path.join(aktueller_pfad, datei_settings)
+pfad_log = os.path.join(aktueller_pfad, datei_log)
+
 logging.basicConfig(
-    filename=Pfad_log, level=logging.INFO, format="%(asctime)s %(message)s"
+    filename=pfad_log, level=logging.INFO, format="%(asctime)s %(message)s"
 )
 
 
@@ -175,7 +183,7 @@ def coming_home():
         logging.info("Mode - Coming Home - off")
 
 
-zonen_json = open_json(Pfad_json_zonen)
+zonen_json = open_json(pfad_json_zonen)
 
 
 def main_function():
@@ -198,7 +206,7 @@ def main_function():
         datetime.datetime.today(), datetime.time()
     ).time()
     while True:
-        daten = open_json(Pfad_json_settings)
+        daten = open_json(pfad_json_settings)
 
         for time_entry in daten["time"]:
             # Extrahiere die Stunden, Minuten und Sekunden
