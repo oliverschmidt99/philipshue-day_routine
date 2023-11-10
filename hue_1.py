@@ -1,5 +1,4 @@
 from phue import Bridge
-from datetime import datetime, timedelta
 import time
 import datetime
 import ephem
@@ -20,7 +19,8 @@ lights = b.lights
 
 Dummy = ["Elena/Deckelampe"]
 
-Pfad_json = "/home/oliver/Dokumente/autostart/zonen.json"
+Pfad_json_zonen = "/home/oliver/Dokumente/autostart/zonen.json"
+Pfad_json_settings = "/home/oliver/Dokumente/autostart/settings.json"
 Pfad_log = "/home/oliver/Dokumente/autostart/outside.log"
 # '/home/oliver/Desktop/autostart/outside.log'
 # /home/olli/Schreibtisch/SAP/hue/daly/outside/outside.log
@@ -153,7 +153,7 @@ def check_lamp_state(lamp_array, lamp_states):
 
 def coming_home():
     current_datetime = datetime.datetime.now()
-    end_time = current_datetime + timedelta(seconds=5)
+    end_time = current_datetime + datetime.timedelta(seconds=5)
 
     on = b.get_light(Dummy[0], "on")
     b.set_light(Dummy[0], "on", False)
@@ -175,7 +175,7 @@ def coming_home():
         logging.info("Mode - Coming Home - off")
 
 
-zonen_json = open_json(Pfad_json)
+zonen_json = open_json(Pfad_json_zonen)
 
 
 def main_function():
@@ -190,28 +190,44 @@ def main_function():
     Day = 0
     Evening = 0
     Night = 0
+
+    sunrise_time_deltatime = datetime.datetime.combine(
+        datetime.datetime.today(), datetime.time()
+    ).time()
+    sunset_time_deltatime = datetime.datetime.combine(
+        datetime.datetime.today(), datetime.time()
+    ).time()
     while True:
+        daten = open_json(Pfad_json_settings)
+
+        for time_entry in daten["time"]:
+            # Extrahiere die Stunden, Minuten und Sekunden
+            stunden = time_entry["H"]
+            minuten = time_entry["M"]
+            sekunden = time_entry["S"]
+
+            # Setze die Variable entsprechend
+            var_name = time_entry["var"]
+
+            if "sunrise_time_" in var_name:
+                sunrise_time_deltatime = datetime.datetime.combine(
+                    datetime.datetime.today(), datetime.time(stunden, minuten, sekunden)
+                ).time()
+            elif "sunset_time_" in var_name:
+                sunset_time_deltatime = datetime.datetime.combine(
+                    datetime.datetime.today(), datetime.time(stunden, minuten, sekunden)
+                ).time()
+
         formatted_sunrise_time = sunrise()
         formatted_sunset_time = sunset()
-        deltatime = datetime.timedelta(hours=1)
 
         sunrise_time = datetime.datetime.strptime(
             formatted_sunrise_time, "%H:%M:%S"
         ).time()
-        sunrise_time_deltatime = (
-            datetime.datetime.combine(datetime.datetime.today(), sunrise_time)
-            - deltatime
-        )
-        sunrise_time_deltatime = sunrise_time_deltatime.time()
 
         sunset_time = datetime.datetime.strptime(
             formatted_sunset_time, "%H:%M:%S"
         ).time()
-        sunset_time_deltatime = (
-            datetime.datetime.combine(datetime.datetime.today(), sunset_time)
-            + deltatime
-        )
-        sunset_time_deltatime = sunset_time_deltatime.time()
 
         if sunrise_time < datetime.datetime.now().time() < sunset_time:
             if Day != 1:
@@ -221,24 +237,22 @@ def main_function():
             check_lamp_state(zonen_json["zone_daymode"], lamp_states_zone_daymode)
 
         else:
-            if sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
-                if Evening != 1:
-                    Evening += 1
-                    Day = 0
-                    logging.info("Mode - Evening")
-                turn_on_lights(zonen_json["outside"], 100, None, None)
-                turn_on_lights(zonen_json["zone_waylight"], 150, None, None)
-                coming_home()
-
-            elif (
-                sunrise_time_deltatime < datetime.datetime.now().time() <= sunrise_time
-            ):
+            if sunrise_time_deltatime < datetime.datetime.now().time() <= sunrise_time:
                 if Morning != 1:
                     Morning += 1
                     Evening = 0
                     logging.info("Mode - Morning")
                 turn_on_lights(zonen_json["outside"], 150, None, None)
                 turn_on_lights(zonen_json["zone_waylight"], 150, None, None)
+                coming_home()
+
+            elif sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
+                if Evening != 1:
+                    Evening += 1
+                    Day = 0
+                    logging.info("Mode - Evening")
+                turn_on_lights(zonen_json["outside"], 254, None, None)
+                turn_on_lights(zonen_json["zone_waylight"], 254, None, None)
                 coming_home()
             else:
                 if Night != 1:
