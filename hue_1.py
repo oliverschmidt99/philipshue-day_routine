@@ -268,7 +268,7 @@ def main_function():
                     Night += 1
                     Morning = 0
                     logging.info("Mode - Night")
-                turn_on_lights[zonen_json["zone_waylight"], 40, None, None]
+                turn_on_lights(zonen_json["outside"], 80, None, None)
                 check_lamp_state(zonen_json["zone_outside"], lamp_states_zone_outside)
                 #coming_home()
 
