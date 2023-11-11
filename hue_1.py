@@ -153,7 +153,7 @@ def check_lamp_state(lamp_array, lamp_states):
         t_x = lamp_states[lamp]["t_x"]
 
         if (current_datetime - last_turned_on_time).total_seconds() > t_x:
-            logging.info("Mode - Turn_off_light", lamp)
+            logging.info("Mode - Turn_off_light %s", lamp)
             b.set_light(lamp, "on", False)
             lamp_states[lamp]["on"] = False
             lamp_states[lamp]["last_turned_on_time"] = None
