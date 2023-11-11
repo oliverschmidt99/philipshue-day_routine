@@ -191,8 +191,8 @@ def main_function():
 
     lamp_states_Olli = initialize_lamp_states(zonen_json["Olli"])
     lamp_states_zone_daymode = initialize_lamp_states(zonen_json["zone_daymode"])
-    lamp_states_dummy = initialize_lamp_states(zonen_json["Dummy"])
-    lamp_states_zone_cominghome = initialize_lamp_states(zonen_json["zone_cominghome"])
+    lamp_states_zone_waylight = initialize_lamp_states(zonen_json["zone_waylight"])
+    lamp_states_zone_outside = initialize_lamp_states(zonen_json["zone_outside"])
 
     Morning = 0
     Day = 0
@@ -242,6 +242,7 @@ def main_function():
                 Day += 1
                 Night = 0
                 logging.info("Mode - Day")
+                turn_off_lights[lamp_states_zone_daymode]
             check_lamp_state(zonen_json["zone_daymode"], lamp_states_zone_daymode)
 
         else:
@@ -250,9 +251,9 @@ def main_function():
                     Morning += 1
                     Evening = 0
                     logging.info("Mode - Morning")
-                turn_on_lights(zonen_json["outside"], 150, None, None)
-                turn_on_lights(zonen_json["zone_waylight"], 150, None, None)
-                coming_home()
+                turn_on_lights(zonen_json["outside"], 254, None, None)
+                turn_on_lights(zonen_json["zone_waylight"], 180, None, None)
+                #coming_home()
 
             elif sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
                 if Evening != 1:
@@ -261,14 +262,15 @@ def main_function():
                     logging.info("Mode - Evening")
                 turn_on_lights(zonen_json["outside"], 254, None, None)
                 turn_on_lights(zonen_json["zone_waylight"], 254, None, None)
-                coming_home()
+                #coming_home()
             else:
                 if Night != 1:
                     Night += 1
                     Morning = 0
                     logging.info("Mode - Night")
-                check_lamp_state(zonen_json["zone_daymode"], lamp_states_zone_daymode)
-                coming_home()
+                turn_on_lights[zonen_json["zone_waylight"], 40, None, None]
+                check_lamp_state(zonen_json["zone_outside"], lamp_states_zone_outside)
+                #coming_home()
 
 
 if __name__ == "__main__":
