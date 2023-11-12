@@ -187,7 +187,7 @@ zonen_json = open_json(pfad_json_zonen)
 
 
 def main_function():
-    logging.info("\nRestart\n")
+    logging.info("Restart\n")
 
     lamp_states_zone_daymode = initialize_lamp_states(zonen_json["zone_daymode"])
     lamp_states_zone_outside = initialize_lamp_states(zonen_json["zone_outside"])
@@ -204,9 +204,6 @@ def main_function():
         datetime.datetime.today(), datetime.time()
     ).time()
     
-    a = b.get_group
-    print(a)
-
     while True:
         daten = open_json(pfad_json_settings)
 
@@ -258,7 +255,7 @@ def main_function():
                     logging.info("Mode - Morning")
                 turn_on_lights(zonen_json["outside"], 254, None, None)
                 turn_on_lights(zonen_json["zone_waylight"], 180, None, None)
-                #coming_home()
+                coming_home()
 
             elif sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
                 if Evening != 1:
@@ -267,7 +264,7 @@ def main_function():
                     logging.info("Mode - Evening")
                 turn_on_lights(zonen_json["zone_outside"], 254, None, None)
                 turn_on_lights(zonen_json["zone_waylight"], 254, None, None)
-                #coming_home()
+                coming_home()
             else:
                 if Night != 1:
                     Night += 1
@@ -275,7 +272,7 @@ def main_function():
                     logging.info("Mode - Night")
                 turn_on_lights(zonen_json["zone_waylight"], 80, None, None)
                 check_lamp_state(zonen_json["zone_outside"], lamp_states_zone_outside)
-                #coming_home()
+                coming_home()
 
 
 if __name__ == "__main__":
