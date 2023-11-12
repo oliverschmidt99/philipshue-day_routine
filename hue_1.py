@@ -242,7 +242,10 @@ def main_function():
                 Day += 1
                 Night = 0
                 logging.info("Mode - Day")
-                turn_off_lights[lamp_states_zone_daymode]
+                turn_off_lights(zonen_json["zone_daymode"])
+                turn_off_lights(zonen_json["outside"])
+                turn_off_lights(zonen_json["zone_waylight"])
+
             check_lamp_state(zonen_json["zone_daymode"], lamp_states_zone_daymode)
 
         else:
