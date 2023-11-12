@@ -169,7 +169,7 @@ def coming_home():
     if on:
         logging.info("Mode - Coming Home - On")
 
-        while current_datetime < end_time:
+        while datetime.datetime.now() < end_time:
             # Turn on lights in zone_runway
             for item in zonen_json["zone_runway"]:
                 lamp = item["lamp"]
@@ -205,6 +205,10 @@ def main_function():
     sunset_time_deltatime = datetime.datetime.combine(
         datetime.datetime.today(), datetime.time()
     ).time()
+    
+    a = b.get_group
+    print(a)
+
     while True:
         daten = open_json(pfad_json_settings)
 
