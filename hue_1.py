@@ -253,8 +253,8 @@ def main_function():
                     Morning += 1
                     Evening = 0
                     logging.info("Mode - Morning")
-                turn_on_lights(zonen_json["outside"], 254, None, None)
-                turn_on_lights(zonen_json["zone_waylight"], 180, None, None)
+                    turn_on_lights(zonen_json["outside"], 254, None, None)
+                    turn_on_lights(zonen_json["zone_waylight"], 180, None, None)
                 coming_home()
 
             elif sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
@@ -262,15 +262,15 @@ def main_function():
                     Evening += 1
                     Day = 0
                     logging.info("Mode - Evening")
-                turn_on_lights(zonen_json["zone_outside"], 254, None, None)
-                turn_on_lights(zonen_json["zone_waylight"], 254, None, None)
+                    turn_on_lights(zonen_json["zone_outside"], 254, None, None)
+                    turn_on_lights(zonen_json["zone_waylight"], 180, None, None)
                 coming_home()
             else:
                 if Night != 1:
                     Night += 1
                     Morning = 0
                     logging.info("Mode - Night")
-                turn_on_lights(zonen_json["zone_waylight"], 80, None, None)
+                    turn_on_lights(zonen_json["zone_waylight"], 80, None, None)
                 check_lamp_state(zonen_json["zone_outside"], lamp_states_zone_outside)
                 coming_home()
 
