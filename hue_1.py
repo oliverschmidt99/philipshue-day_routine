@@ -152,11 +152,14 @@ def check_lamp_state(lamp_array, lamp_states):
         last_turned_on_time = lamp_states[lamp]["last_turned_on_time"]
         t_x = lamp_states[lamp]["t_x"]
 
-        if (current_datetime - last_turned_on_time).total_seconds() > t_x:
-            logging.info("Mode - Turn_off_light %s", lamp)
-            b.set_light(lamp, "on", False)
-            lamp_states[lamp]["on"] = False
-            lamp_states[lamp]["last_turned_on_time"] = None
+        if last_turned_on_time is not None:
+            if (current_datetime - last_turned_on_time).total_seconds() > t_x:
+                logging.info("Mode - Turn_off_light %s", lamp)
+                b.set_light(lamp, "on", False)
+                lamp_states[lamp]["on"] = False
+                lamp_states[lamp]["last_turned_on_time"] = None
+        else:
+            logging.warning("Last turned on time is None for lamp %s", lamp)
 
 
 def coming_home():
@@ -203,7 +206,7 @@ def main_function():
     sunset_time_deltatime = datetime.datetime.combine(
         datetime.datetime.today(), datetime.time()
     ).time()
-    
+
     while True:
         daten = open_json(pfad_json_settings)
 
