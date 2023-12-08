@@ -2,14 +2,14 @@
     "time": [
         {
             "var": "sunrise_time_",
-            "H": 6,
-            "M": 0,
+            "H": 5,
+            "M": 30,
             "S": 0
         },
         {
             "var": "sunset_time_",
             "H": 22,
-            "M": 0,
+            "M": 30,
             "S": 0
         }
     ]
