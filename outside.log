@@ -4,3 +4,279 @@
 2023-11-29 07:07:20,449 Restart
 
 2023-11-29 07:07:27,547 Mode - Morning
+2023-11-29 08:19:58,031 Mode - Day
+2023-11-29 08:19:58,152 Mode - Day
+2023-11-29 08:25:31,135 Restart
+
+2023-11-29 08:25:32,863 Mode - Day
+2023-11-29 09:01:06,046 Mode - Turn_off_light Flur/Olli/Decke/1
+2023-11-29 09:01:06,187 Mode - Turn_off_light Flur/Olli/Decke/2
+2023-11-29 09:01:06,329 Mode - Turn_off_light Flur/Niko/Decke
+2023-11-29 09:01:08,375 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-11-29 09:01:08,480 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-11-29 15:49:04,061 Mode - Turn_off_light Draußen/Haustür/West
+2023-11-29 15:49:04,184 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-11-29 15:49:04,299 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-11-29 16:17:16,552 Mode - Evening
+2023-11-29 18:39:35,782 Mode - Coming Home - On
+2023-11-29 18:42:55,841 Mode - Coming Home - off
+2023-11-29 18:42:56,199 Mode - Coming Home - On
+2023-11-29 18:46:18,628 Mode - Coming Home - off
+2023-11-29 22:00:00,150 Mode - Night
+2023-11-29 22:02:06,260 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-11-29 22:02:06,431 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-11-29 22:02:06,606 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-11-29 22:02:06,775 Mode - Turn_off_light Draußen/Küche/L/Nord
+2023-11-29 22:02:06,932 Mode - Turn_off_light Draußen/Küche/R/Nord
+2023-11-29 22:02:07,105 Mode - Turn_off_light Draußen/Haustür/West
+2023-11-29 22:18:16,528 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-11-29 22:18:16,688 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-11-29 22:18:16,861 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-11-30 06:00:00,735 Mode - Morning
+2023-11-30 08:21:31,376 Mode - Day
+2023-11-30 15:48:04,709 Mode - Turn_off_light Draußen/Haustür/West
+2023-11-30 15:48:04,843 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-11-30 15:48:04,959 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-11-30 16:16:26,143 Mode - Evening
+2023-11-30 22:00:00,154 Mode - Night
+2023-11-30 22:02:03,489 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-11-30 22:02:03,623 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-11-30 22:02:03,736 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-11-30 22:02:03,845 Mode - Turn_off_light Draußen/Küche/L/Nord
+2023-11-30 22:02:03,956 Mode - Turn_off_light Draußen/Küche/R/Nord
+2023-11-30 22:02:04,062 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-01 06:00:01,580 Mode - Morning
+2023-12-01 08:23:03,156 Mode - Day
+2023-12-01 08:28:53,446 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-01 15:48:04,813 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-01 15:48:04,953 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-01 15:48:05,073 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-01 16:15:38,826 Mode - Evening
+2023-12-01 18:06:49,403 Mode - Coming Home - On
+2023-12-01 18:10:09,468 Mode - Coming Home - off
+2023-12-01 18:50:46,042 Mode - Coming Home - On
+2023-12-01 18:54:05,776 Mode - Coming Home - off
+2023-12-01 19:28:47,849 Mode - Coming Home - On
+2023-12-01 19:32:07,498 Mode - Coming Home - off
+2023-12-01 19:32:12,766 Mode - Coming Home - On
+2023-12-01 19:36:21,838 Mode - Coming Home - off
+2023-12-01 22:00:00,050 Mode - Night
+2023-12-02 00:54:08,560 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-02 01:22:15,108 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-02 01:22:15,275 Mode - Turn_off_light Draußen/Carport/Vorne 1/
+2023-12-02 01:22:15,422 Mode - Turn_off_light Draußen/Carport/Vorne 2/
+2023-12-02 01:22:15,561 Last turned on time is None for lamp Draußen/Carport/Vorne 1/
+2023-12-02 01:22:15,563 Last turned on time is None for lamp Draußen/Carport/Vorne 2/
+2023-12-02 01:22:15,565 Mode - Turn_off_light Draußen/Auffahrt/Außen/1
+2023-12-02 01:22:15,791 Mode - Turn_off_light Draußen/Auffahrt/Außen/2
+2023-12-02 01:22:16,244 Mode - Turn_off_light Draußen/Auffahrt/Innen/1
+2023-12-02 01:22:16,544 Mode - Turn_off_light Draußen/Auffahrt/Innen/2
+2023-12-02 01:22:16,751 Mode - Turn_off_light Draußen/Auffahrt/Innen/3
+2023-12-02 01:22:16,905 Mode - Turn_off_light Draußen/Auffahrt/Innen/4
+2023-12-02 02:10:35,286 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-02 02:10:35,449 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-02 02:10:35,608 Mode - Turn_off_light Draußen/Küche/L/Nord
+2023-12-02 02:10:35,754 Mode - Turn_off_light Draußen/Küche/R/Nord
+2023-12-02 02:10:35,906 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-02 02:10:38,259 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-12-02 06:00:01,393 Mode - Morning
+2023-12-02 08:24:32,105 Mode - Day
+2023-12-02 15:46:55,299 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-02 15:46:59,461 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-02 15:47:03,688 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-02 15:47:14,179 Mode - Turn_off_light Draußen/Auffahrt/Innen/1
+2023-12-02 15:47:14,314 Mode - Turn_off_light Draußen/Auffahrt/Innen/2
+2023-12-02 15:47:14,433 Mode - Turn_off_light Draußen/Auffahrt/Innen/3
+2023-12-02 15:47:14,538 Mode - Turn_off_light Draußen/Auffahrt/Innen/4
+2023-12-02 15:49:13,589 Mode - Turn_off_light Draußen/Auffahrt/Außen/1
+2023-12-02 15:49:13,714 Mode - Turn_off_light Draußen/Auffahrt/Außen/2
+2023-12-02 15:55:19,498 Mode - Turn_off_light Bibliothek/Hue white spot/R
+2023-12-02 15:55:19,630 Mode - Turn_off_light Bibliothek/Hue white spot/L
+2023-12-02 16:06:04,400 Mode - Turn_off_light Bibliothek/Hue white spot/R
+2023-12-02 16:06:04,541 Mode - Turn_off_light Bibliothek/Hue white spot/L
+2023-12-02 16:14:56,718 Mode - Evening
+2023-12-02 22:00:00,017 Mode - Night
+2023-12-02 22:02:03,275 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-12-02 22:02:03,437 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-02 22:02:03,549 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-02 22:02:03,658 Mode - Turn_off_light Draußen/Küche/L/Nord
+2023-12-02 22:02:03,765 Mode - Turn_off_light Draußen/Küche/R/Nord
+2023-12-02 22:02:03,879 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-02 22:02:03,995 Mode - Turn_off_light Draußen/Carport/Vorne 1/
+2023-12-02 22:02:04,106 Mode - Turn_off_light Draußen/Carport/Vorne 2/
+2023-12-02 22:02:04,222 Last turned on time is None for lamp Draußen/Carport/Vorne 1/
+2023-12-02 22:02:04,225 Last turned on time is None for lamp Draußen/Carport/Vorne 2/
+2023-12-02 22:02:04,227 Mode - Turn_off_light Draußen/Auffahrt/Außen/1
+2023-12-02 22:02:04,333 Mode - Turn_off_light Draußen/Auffahrt/Außen/2
+2023-12-02 22:02:04,451 Mode - Turn_off_light Draußen/Auffahrt/Innen/1
+2023-12-02 22:02:04,563 Mode - Turn_off_light Draußen/Auffahrt/Innen/2
+2023-12-02 22:02:04,679 Mode - Turn_off_light Draußen/Auffahrt/Innen/3
+2023-12-02 22:02:04,799 Mode - Turn_off_light Draußen/Auffahrt/Innen/4
+2023-12-03 06:00:01,762 Mode - Morning
+2023-12-03 08:26:00,042 Mode - Day
+2023-12-03 10:20:24,414 Mode - Turn_off_light Flur/Olli/Decke/1
+2023-12-03 10:20:24,546 Mode - Turn_off_light Flur/Olli/Decke/2
+2023-12-03 15:46:02,300 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-03 15:46:04,566 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-03 15:46:04,693 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-03 16:14:16,693 Mode - Evening
+2023-12-03 16:56:50,099 Restart
+
+2023-12-03 16:56:52,895 Mode - Evening
+2023-12-03 21:59:42,150 Restart
+
+2023-12-03 21:59:45,885 Mode - Evening
+2023-12-03 22:00:00,054 Mode - Night
+2023-12-03 22:00:02,779 Mode - Night
+2023-12-03 22:02:07,864 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-12-03 22:02:08,075 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-03 22:02:08,240 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-03 22:02:08,428 Mode - Turn_off_light Draußen/Küche/L/Nord
+2023-12-03 22:02:08,671 Mode - Turn_off_light Draußen/Küche/R/Nord
+2023-12-03 22:02:08,866 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-03 22:02:09,040 Mode - Turn_off_light Draußen/Carport/Vorne 1/
+2023-12-03 22:02:09,231 Mode - Turn_off_light Draußen/Carport/Vorne 2/
+2023-12-03 22:02:09,391 Last turned on time is None for lamp Draußen/Carport/Vorne 1/
+2023-12-03 22:02:09,395 Last turned on time is None for lamp Draußen/Carport/Vorne 2/
+2023-12-03 22:02:09,397 Mode - Turn_off_light Draußen/Auffahrt/Außen/1
+2023-12-03 22:02:09,582 Mode - Turn_off_light Draußen/Auffahrt/Außen/2
+2023-12-03 22:02:09,757 Mode - Turn_off_light Draußen/Auffahrt/Innen/1
+2023-12-03 22:02:09,917 Mode - Turn_off_light Draußen/Auffahrt/Innen/2
+2023-12-03 22:02:10,101 Mode - Turn_off_light Draußen/Auffahrt/Innen/3
+2023-12-03 22:02:10,257 Mode - Turn_off_light Draußen/Auffahrt/Innen/4
+2023-12-04 06:00:01,247 Mode - Morning
+2023-12-04 06:00:03,034 Mode - Morning
+2023-12-04 08:27:25,035 Mode - Day
+2023-12-04 08:27:25,056 Mode - Day
+2023-12-04 15:46:03,715 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-04 15:46:03,943 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-04 15:46:04,651 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-04 15:46:04,884 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-04 15:46:08,688 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-04 15:46:09,429 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-04 16:13:38,221 Mode - Evening
+2023-12-04 16:13:41,897 Mode - Evening
+2023-12-04 22:00:00,072 Mode - Night
+2023-12-04 22:00:00,317 Mode - Night
+2023-12-04 22:00:04,823 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-12-04 22:00:05,031 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-04 22:00:05,275 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-04 22:00:05,497 Mode - Turn_off_light Draußen/Küche/L/Nord
+2023-12-04 22:00:05,667 Mode - Turn_off_light Draußen/Küche/R/Nord
+2023-12-04 22:00:05,853 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-04 22:00:06,113 Mode - Turn_off_light Draußen/Carport/Vorne 1/
+2023-12-04 22:00:06,285 Mode - Turn_off_light Draußen/Carport/Vorne 2/
+2023-12-04 22:00:06,495 Last turned on time is None for lamp Draußen/Carport/Vorne 1/
+2023-12-04 22:00:06,499 Last turned on time is None for lamp Draußen/Carport/Vorne 2/
+2023-12-04 22:00:06,513 Mode - Turn_off_light Draußen/Auffahrt/Außen/1
+2023-12-04 22:00:06,745 Mode - Turn_off_light Draußen/Auffahrt/Außen/2
+2023-12-04 22:00:06,948 Mode - Turn_off_light Draußen/Auffahrt/Innen/1
+2023-12-04 22:00:07,126 Mode - Turn_off_light Draußen/Auffahrt/Innen/2
+2023-12-04 22:00:07,307 Mode - Turn_off_light Draußen/Auffahrt/Innen/3
+2023-12-04 22:00:07,518 Mode - Turn_off_light Draußen/Auffahrt/Innen/4
+2023-12-05 06:00:00,421 Mode - Morning
+2023-12-05 06:00:00,684 Mode - Morning
+2023-12-05 08:28:48,052 Mode - Day
+2023-12-05 08:28:48,063 Mode - Day
+2023-12-05 15:45:06,937 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-05 15:45:07,153 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-05 15:45:07,275 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-05 15:45:07,313 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-05 15:45:07,453 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-05 15:45:07,651 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-05 16:13:06,319 Mode - Evening
+2023-12-05 16:13:06,895 Mode - Evening
+2023-12-05 22:00:00,156 Mode - Night
+2023-12-05 22:00:00,248 Mode - Night
+2023-12-05 22:27:34,132 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-05 22:28:21,486 Mode - Turn_off_light Draußen/Carport/Vorne 1/
+2023-12-05 22:28:21,659 Mode - Turn_off_light Draußen/Carport/Vorne 2/
+2023-12-05 22:28:21,885 Last turned on time is None for lamp Draußen/Carport/Vorne 1/
+2023-12-05 22:28:21,887 Last turned on time is None for lamp Draußen/Carport/Vorne 2/
+2023-12-05 22:28:21,888 Mode - Turn_off_light Draußen/Auffahrt/Außen/1
+2023-12-05 22:28:22,077 Mode - Turn_off_light Draußen/Auffahrt/Außen/2
+2023-12-05 22:28:22,326 Mode - Turn_off_light Draußen/Auffahrt/Innen/1
+2023-12-05 22:28:22,546 Mode - Turn_off_light Draußen/Auffahrt/Innen/2
+2023-12-05 22:28:22,764 Mode - Turn_off_light Draußen/Auffahrt/Innen/3
+2023-12-05 22:28:22,973 Mode - Turn_off_light Draußen/Auffahrt/Innen/4
+2023-12-05 22:29:36,181 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-05 22:30:46,946 Mode - Turn_off_light Draußen/Auffahrt/Außen/2
+2023-12-05 22:30:47,480 Mode - Turn_off_light Draußen/Auffahrt/Innen/1
+2023-12-05 22:30:47,688 Mode - Turn_off_light Draußen/Auffahrt/Innen/2
+2023-12-05 22:30:47,896 Mode - Turn_off_light Draußen/Auffahrt/Innen/3
+2023-12-05 22:30:48,085 Mode - Turn_off_light Draußen/Auffahrt/Innen/4
+2023-12-05 22:30:48,636 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-05 22:30:48,810 Mode - Turn_off_light Draußen/Küche/L/Nord
+2023-12-05 22:30:49,204 Mode - Turn_off_light Draußen/Küche/R/Nord
+2023-12-05 22:30:49,455 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-05 22:30:52,427 Mode - Turn_off_light Draußen/Carport/Vorne 1/
+2023-12-05 22:30:52,635 Mode - Turn_off_light Draußen/Carport/Vorne 2/
+2023-12-05 22:30:52,890 Last turned on time is None for lamp Draußen/Carport/Vorne 1/
+2023-12-05 22:30:52,893 Last turned on time is None for lamp Draußen/Carport/Vorne 2/
+2023-12-05 22:30:52,894 Mode - Turn_off_light Draußen/Auffahrt/Außen/1
+2023-12-05 22:30:53,579 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-12-05 22:30:53,756 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-05 22:32:54,015 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-12-05 22:32:54,182 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-05 22:33:05,111 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-05 22:33:07,665 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-06 06:00:00,314 Mode - Morning
+2023-12-06 06:00:02,764 Mode - Morning
+2023-12-06 06:47:57,404 ERROR: invalid/missing parameters in body for light Elena/Deckelampe
+2023-12-06 07:11:54,353 ERROR: invalid/missing parameters in body for light Elena/Deckelampe
+2023-12-06 08:18:14,340 Restart
+
+2023-12-06 08:18:17,048 Mode - Morning
+2023-12-06 08:30:09,191 Mode - Day
+2023-12-06 09:01:54,757 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-06 15:45:02,917 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-06 15:45:03,030 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-06 15:45:05,122 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-06 16:12:36,795 Mode - Evening
+2023-12-06 22:00:00,032 Mode - Night
+2023-12-06 22:02:03,208 Mode - Turn_off_light Draußen/Terrasse/Tür/Ost
+2023-12-06 22:02:03,325 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-06 22:02:03,677 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-06 22:02:03,786 Mode - Turn_off_light Draußen/Küche/L/Nord
+2023-12-06 22:02:03,893 Mode - Turn_off_light Draußen/Küche/R/Nord
+2023-12-06 22:02:03,998 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-06 22:02:04,109 Mode - Turn_off_light Draußen/Carport/Vorne 1/
+2023-12-06 22:02:04,218 Mode - Turn_off_light Draußen/Carport/Vorne 2/
+2023-12-06 22:02:04,326 Last turned on time is None for lamp Draußen/Carport/Vorne 1/
+2023-12-06 22:02:04,327 Last turned on time is None for lamp Draußen/Carport/Vorne 2/
+2023-12-06 22:02:04,328 Mode - Turn_off_light Draußen/Auffahrt/Außen/1
+2023-12-06 22:02:04,445 Mode - Turn_off_light Draußen/Auffahrt/Außen/2
+2023-12-06 22:02:04,564 Mode - Turn_off_light Draußen/Auffahrt/Innen/1
+2023-12-06 22:02:04,681 Mode - Turn_off_light Draußen/Auffahrt/Innen/2
+2023-12-06 22:02:04,791 Mode - Turn_off_light Draußen/Auffahrt/Innen/3
+2023-12-06 22:02:04,904 Mode - Turn_off_light Draußen/Auffahrt/Innen/4
+2023-12-07 06:00:00,974 Mode - Morning
+2023-12-07 08:31:27,023 Mode - Day
+2023-12-07 15:44:02,943 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-07 15:44:03,052 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-07 15:44:05,228 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-07 16:12:09,557 Mode - Evening
+2023-12-07 19:01:12,882 Mode - Coming Home - On
+2023-12-07 19:04:33,099 Mode - Coming Home - off
+2023-12-07 20:50:50,673 Mode - Coming Home - On
+2023-12-07 20:54:12,139 Mode - Coming Home - off
+2023-12-07 22:00:00,060 Mode - Night
+2023-12-08 06:00:00,086 Mode - Morning
+2023-12-08 08:32:42,171 Mode - Day
+2023-12-08 08:47:36,091 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-08 12:56:59,876 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-08 12:57:04,164 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-08 13:04:57,859 Mode - Turn_off_light Bibliothek/Hue white spot/R
+2023-12-08 13:05:02,088 Mode - Turn_off_light Bibliothek/Hue white spot/L
+2023-12-08 13:24:54,707 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-08 13:27:02,971 Mode - Turn_off_light Draußen/Terrasse/R/Ost
+2023-12-08 13:27:05,077 Mode - Turn_off_light Draußen/Terrasse/L/Ost
+2023-12-08 13:34:59,798 Mode - Turn_off_light Bibliothek/Hue white spot/L
+2023-12-08 13:35:10,160 Mode - Turn_off_light Bibliothek/Hue white spot/R
+2023-12-08 15:44:03,494 Mode - Turn_off_light Zwischenraum/Schrank/lightstrip
+2023-12-08 15:44:03,604 Mode - Turn_off_light Flur/Haustür/Tisch/Hue white
+2023-12-08 15:44:05,788 Mode - Turn_off_light Draußen/Haustür/West
+2023-12-08 16:11:48,407 Mode - Evening
+2023-12-08 18:42:42,118 Restart
+
+2023-12-08 18:42:46,298 Mode - Evening
