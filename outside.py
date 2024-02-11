@@ -7,7 +7,7 @@ import logging
 import json
 import os
 
-BRIDGE_IP = "192.168.178.34"
+BRIDGE_IP = "192.168.178.42"
 
 b = Bridge(BRIDGE_IP)
 b.connect()

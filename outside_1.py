@@ -5,7 +5,7 @@ import ephem
 import pytz
 import logging
 
-BRIDGE_IP = "192.168.178.34"
+BRIDGE_IP = "192.168.178.42"
 
 b = Bridge(BRIDGE_IP)
 b.connect()
