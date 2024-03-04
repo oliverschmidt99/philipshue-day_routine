@@ -78,7 +78,7 @@
       {"lamp": "Draußen/Carport/Vorne 1/", "t_x": 120},
       {"lamp": "Draußen/Carport/Vorne 2/", "t_x": 120},
       {"lamp": "Draußen/Carport/Hinten 1/", "t_x": 240},
-      {"lamp": "Draußen/Carport/Hinten 2/", "t_x": 240},
+      {"lamp": "Draußen/Carport/Hinten 2/", "t_x": 240}
     ],
     "zone_cominghome": [
       {"lamp": "Draußen/Terrasse/Tür/Ost", "t_x": 120},
