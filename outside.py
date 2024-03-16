@@ -1,3 +1,9 @@
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+
 from phue import Bridge
 import time
 import datetime
@@ -6,6 +12,13 @@ import pytz
 import logging
 import json
 import os
+
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
 
 BRIDGE_IP = "192.168.178.42"
 
@@ -16,6 +29,12 @@ b.get_api()
 sen = b.get_sensor_objects("name")
 light_names = b.get_light_objects("name")
 lights = b.lights
+
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
 
 
 aktueller_pfad = os.path.dirname(__file__)
@@ -36,6 +55,12 @@ logging.basicConfig(
 )
 
 
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+
 bri_very_bright = 254
 bri_bright = 160
 bri_half = 70
@@ -43,28 +68,23 @@ bri_low = 20
 bri_very_low = 10
 
 
-# Liste von den Zonen, Zimmern und Flure
-Flur_Haustür = 7
-Flur_Niko = 5
-Flur_Olli = 8
-Flur_Zwischenraum = 6
-Outdoor_Auffahrt = 84
-Outdoor_Eingangstür = 17
-Outdoor_Kueche_Wand = 10
-Outdoor_Terrasse = 12
-Zimmer_Bibliothek = 81
-Zimmer_Elena = 2
-Zimmer_Laundry = 13
-Zimmer_Niko = 3
-Zimmer_Olli = 1
-Zone_Auffahrt = 83
-Zone_Flure = 82
-Zone_Outdoor = 24
-Zone_Treppenhaus_Olli_Niko = 85
-Zone_Treppenhaus_Elena = 86
-Zone_Night_Light = 87
+# Liste von Sensoren
 
-zone_runway = {
+Zimmer_Olli_Sen_motion = 2
+Zimmer_Olli_Sen_bri = 3
+Zimmer_Olli_Sen_temp = 4
+
+Outdoor_Carport_Sen_motion = 190
+Outdoor_Carport_Sen_bri = 191
+Outdoor_Carport_Sen_temp = 192
+
+Outdoor_Terrasse_Sen_motion = 193
+Outdoor_Terrasse_Sen_bri = 194
+Outdoor_Terrasse_Sen_temp = 195
+
+
+# Liste von den Zonen, Zimmern und Flure
+zone_comminghome = {
     "Draußen/Auffahrt/Innen/1",
     "Draußen/Auffahrt/Außen/1",
     "Draußen/Auffahrt/Innen/2",
@@ -82,6 +102,12 @@ def open_json(pfad):
     with open(pfad, "r") as datei:
         daten = json.load(datei)
     return daten
+
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
 
 
 def sunrise():
@@ -134,6 +160,12 @@ def sunset():
     return formatted_sunset_time
 
 
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+
 def turn_off_groups(group_ids):
     for group_id in group_ids:
         # Schalte die Gruppe aus
@@ -149,6 +181,28 @@ def turn_on_groups(group_ids, brightness, t_time):
         print(f"Gruppe {group_id} wurde eingeschaltet.")
 
 
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+
+def get_motion_sensor_brightness(sensor_id):
+    # Abrufen der Helligkeit des Motion Sensors
+    sensor_info = b.get_sensor(sensor_id)
+    brightness = sensor_info["state"]["lightlevel"]
+
+    return brightness
+
+
+def get_motion_sensor_temperature(sensor_id):
+    # Abrufen der Helligkeit des Motion Sensors
+    sensor_info = b.get_sensor(sensor_id)
+    temperature = sensor_info["state"]["temperature"]
+
+    return temperature
+
+
 def get_motion_sensor_status(sensor_id):
     # Abrufen der Sensorinformationen
     sensor_info = b.get_sensor(sensor_id)
@@ -159,28 +213,96 @@ def get_motion_sensor_status(sensor_id):
     return motion_detected
 
 
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+
+def initialize_lamp_states(zonen_states):
+    lamp_states = {
+        item["group_id"]: {
+            "on": False,
+            "last_turned_on_time": None,
+            "brightness": None,
+            "t_x": item.get("t_x", 0),
+        }
+        for item in zonen_states
+    }
+    return lamp_states
+
+
+def check_lamp_state(lamp_array, lamp_states):
+    current_datetime = datetime.datetime.now()
+    true_groups = []
+
+    for item in lamp_array:
+        group_id = item["group_id"]
+        on_state = b.get_group(group_id, "on")
+
+        if on_state:
+            true_groups.append(group_id)
+            lamp_states[group_id]["on"] = True
+
+            # Check if the lamp was turned on for the first time or turned back on
+            if lamp_states[group_id]["last_turned_on_time"] is None:
+                lamp_states[group_id]["last_turned_on_time"] = current_datetime
+
+    for group_id in true_groups:
+        last_turned_on_time = lamp_states[group_id]["last_turned_on_time"]
+        t_x = lamp_states[group_id]["t_x"]
+
+        if last_turned_on_time is not None:
+            if (current_datetime - last_turned_on_time).total_seconds() > t_x:
+                logging.info("Mode - Turn_off_light %s", group_id)
+                b.set_group(group_id, "on", False)
+                lamp_states[group_id]["on"] = False
+                lamp_states[group_id]["last_turned_on_time"] = None
+        else:
+            logging.warning("Last turned on time is None for group %s", group_id)
+
+
+zonen_json = open_json(pfad_json_zonen)
+
+lamp_states_Zone_Flure = initialize_lamp_states(zonen_json["Zone_Flure"])
+lamp_states_Zone_Outdoor = initialize_lamp_states(zonen_json["Zone_Outdoor"])
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+
 def coming_home():
     current_datetime = datetime.datetime.now()
-    end_time = current_datetime + datetime.timedelta(seconds=5)
+    end_time = current_datetime + datetime.timedelta(seconds=20)
 
-    on = get_motion_sensor_status(190)
+    on = get_motion_sensor_status(Outdoor_Carport_Sen_motion)
 
     if on:
         logging.info("Mode - Coming Home - On")
 
         while datetime.datetime.now() < end_time:
             # Turn on lights in zone_runway
-            for lamp in zone_runway:
+            for lamp in zone_comminghome:
                 b.set_light(lamp, "on", True)
                 b.set_light(lamp, "bri", bri_very_bright)
                 time.sleep(1)
-        time.sleep(180)
+        
+        logging.info("Mode - Coming Home - off")
         return True
+
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
 
 
 def main_function():
     logging.info("Restart\n")
 
+    time.sleep(1)
     Morning = 0
     Day = 0
     Evening = 0
@@ -231,7 +353,15 @@ def main_function():
                 Night = 0
                 logging.info("Mode - Day")
                 print("DAY")
-                turn_off_groups([Zone_Outdoor, Zone_Flure])
+                turn_off_groups(
+                    [
+                        zonen_json["Zone_Outdoor"][0]["group_id"],
+                        zonen_json["Zone_Night_Light"][0]["group_id"],
+                    ]
+                )
+
+            check_lamp_state(zonen_json["Zone_Night_Light"], lamp_states_Zone_Flure)
+            check_lamp_state(zonen_json["Zone_Outdoor"], lamp_states_Zone_Outdoor)
 
         else:
             if sunrise_time_deltatime < datetime.datetime.now().time() <= sunrise_time:
@@ -240,10 +370,28 @@ def main_function():
                     Evening = 0
                     logging.info("Mode - Morning")
                     print("MORNING")
-                    turn_on_groups([Zone_Outdoor, Zone_Flure], bri_bright, 100)
-
-                if coming_home() == True:
+                    turn_on_groups(
+                        [
+                            zonen_json["Zone_Outdoor"][0]["group_id"],
+                            zonen_json["Zone_Night_Light"][0]["group_id"],
+                        ],
+                        bri_bright,
+                        100,
+                    )
+                coming_home()
+                if coming_home == True:
                     Morning = 0
+
+            montion = get_motion_sensor_status(Outdoor_Terrasse_Sen_motion)
+            if montion == True:
+                turn_on_groups(
+                    [
+                        zonen_json["Outdoor_Terrasse"][0]["group_id"],
+                        zonen_json["Outdoor_Kueche_Wand"][0]["group_id"],
+                    ],
+                    bri_very_bright,
+                    10,
+                )
 
             elif sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
                 if Evening != 1:
@@ -251,10 +399,29 @@ def main_function():
                     Day = 0
                     logging.info("Mode - Evening")
                     print("EVENING")
-                    turn_on_groups([Zone_Outdoor, Zone_Flure], bri_half, 100)
+                    turn_on_groups(
+                        [
+                            zonen_json["Zone_Outdoor"][0]["group_id"],
+                            zonen_json["Zone_Night_Light"][0]["group_id"],
+                        ],
+                        bri_half,
+                        100,
+                    )
 
-                if coming_home() == True:
-                    Evening = 0
+                montion = get_motion_sensor_status(Outdoor_Terrasse_Sen_motion)
+                if montion == True:
+                    turn_on_groups(
+                        [
+                            zonen_json["Outdoor_Terrasse"][0]["group_id"],
+                            zonen_json["Outdoor_Kueche_Wand"][0]["group_id"],
+                        ],
+                        bri_very_bright,
+                        10,
+                    )
+
+                coming_home()
+                if coming_home == True:
+                   Evening = 0
 
             else:
                 if Night != 1:
@@ -262,11 +429,32 @@ def main_function():
                     Morning = 0
                     logging.info("Mode - Night")
                     print("NIGHT")
-                    turn_off_groups([Zone_Outdoor, Zone_Flure])
-                    turn_on_groups([Zone_Night_Light], bri_very_low, 200)
+                    turn_off_groups(
+                        [
+                            zonen_json["Zone_Outdoor"][0]["group_id"],
+                            zonen_json["Zone_Flure"][0]["group_id"],
+                        ]
+                    )
+                    turn_on_groups(
+                        [zonen_json["Zone_Night_Light"][0]["group_id"]],
+                        bri_very_low,
+                        200,
+                    )
 
-                if coming_home() == True:
-                    Night = 0
+                montion = get_motion_sensor_status(Outdoor_Terrasse_Sen_motion)
+                if montion == True:
+                    turn_on_groups(
+                        [
+                            zonen_json["Outdoor_Terrasse"][0]["group_id"],
+                            zonen_json["Outdoor_Kueche_Wand"][0]["group_id"],
+                        ],
+                        bri_very_bright,
+                        10,
+                    )
+
+                coming_home()
+                check_lamp_state(zonen_json["Zone_Flure"], lamp_states_Zone_Flure)
+                check_lamp_state(zonen_json["Zone_Outdoor"], lamp_states_Zone_Outdoor)
 
 
 if __name__ == "__main__":

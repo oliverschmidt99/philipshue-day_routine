@@ -19,61 +19,66 @@ lights = b.lights
 
 
 zone_runway = {
-    'Draußen/Auffahrt/Innen/1',
-    'Draußen/Auffahrt/Innen/2',
-    'Draußen/Auffahrt/Außen/1',
-    'Draußen/Auffahrt/Innen/3',
-    'Draußen/Auffahrt/Innen/4',
-    'Draußen/Auffahrt/Außen/2',
-    'Draußen/Carport/Vorne/1',
-    'Draußen/Carport/Vorne/2',
-    'Draußen/Carport/Hinten/1',
-    'Draußen/Carport/Hinten/2',
+    "Draußen/Auffahrt/Innen/1",
+    "Draußen/Auffahrt/Innen/2",
+    "Draußen/Auffahrt/Außen/1",
+    "Draußen/Auffahrt/Innen/3",
+    "Draußen/Auffahrt/Innen/4",
+    "Draußen/Auffahrt/Außen/2",
+    "Draußen/Carport/Vorne/1",
+    "Draußen/Carport/Vorne/2",
+    "Draußen/Carport/Hinten/1",
+    "Draußen/Carport/Hinten/2",
 }
 
 
-def coming_home():
-    current_datetime = datetime.datetime.now()
-    end_time = current_datetime + datetime.timedelta(seconds=5)
-
-    on = get_motion_sensor_status(193)
-
-    if on:
-        logging.info("Mode - Coming Home - On")
-
-        while datetime.datetime.now() < end_time:
-            # Turn on lights in zone_runway
-            for lamp in zone_runway:
-                b.set_light(lamp, "on", True)
-                b.set_light(lamp, "bri", 250)
-                time.sleep(2)
+def get_all_sensors_info():
+    # Abrufen von Informationen über alle Sensoren
+    all_sensors_info = b.get_sensor()
+    
+    # Ausgabe der erhaltenen Informationen für jeden Sensor
+    for sensor_id, sensor_info in all_sensors_info.items():
+        print(f"Sensor ID: {sensor_id}")
+        print(f"Sensor ID: {sensor_info}")
+        print()  # Leerzeile für bessere Lesbarkeit
 
 
-def get_motion_sensor_status(sensor_id):
-    # Abrufen der Sensorinformationen
+
+def get_motion_sensor_brightness(sensor_id):
+    # Abrufen der Helligkeit des Motion Sensors
     sensor_info = b.get_sensor(sensor_id)
+    brightness = sensor_info['state']['lightlevel']
     
-    # Überprüfen, ob Bewegung erkannt wurde
-    motion_detected = sensor_info['state']['presence']
+    return brightness
+
+
+def get_motion_sensor_temperature(sensor_id):
+    # Abrufen der Helligkeit des Motion Sensors
+    sensor_info = b.get_sensor(sensor_id)
+    temperature = sensor_info['state']['temperature']
     
-    return motion_detected
+    return temperature
 
-groups = b.get_group()
-
-# Drucke die Namen aller Gruppen
-for group_id, group_info in groups.items():
-    print("Gruppen-ID:", group_id)
-    print("Gruppenname:", group_info["name"])
-    print()
-
-# Beispielaufruf der Funktion für den ersten Motion Sensor
-motion_sensor_id = 193  # Beispiel: ID 1 für den ersten Motion Sensor
-while True:
-    coming_home()
-    motion_detected = get_motion_sensor_status(motion_sensor_id)
-    print(f"Bewegung erkannt: {motion_detected}")
-    time.sleep(1)
+sen_bri = 191  # Beispiel: ID 1 für den ersten Motion Sensor
+sen_temp = 195
+#while True:
+#    brightness = get_motion_sensor_brightness(sen_bri)
+#    temperature = get_motion_sensor_temperature(sen_temp)
+#    
+#    print("")
+#    print(f"Aktuelle Helligkeit des Motion Sensors: {brightness}")
+#    print(f"Aktuelle Temperatur des Motion Sensors: {temperature}")
 
 
 
+# Aufruf der Funktion
+get_all_sensors_info()
+
+b.set_sensor(2, 'name', "Zimmer_Olli_Sen_motion")
+b.set_sensor(3, 'name', "Zimmer_Olli_Sen_bri")
+b.set_sensor(4, 'name', "Zimmer_Olli_Sen_temp")
+#
+#b.set_sensor(193, 'name', "Outdoor_Terrasse_Sen_motion")
+#b.set_sensor(194, 'name', "Outdoor_Terrasse_Sen_bri")
+#b.set_sensor(195, 'name', "Outdoor_Terrasse_Sen_temp")
 
