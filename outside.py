@@ -224,10 +224,10 @@ def Day(day):
         turn_off_groups(
             [
                 zonen_json["Zone_Outdoor"][0]["group_id"],
-                zonen_json["Zone_Night_Light"][0]["group_id"],
+                zonen_json["Zone_Flure"][0]["group_id"],
             ]
         )
-    check_lamp_state(zonen_json["Zone_Night_Light"], lamp_states_Zone_Flure)
+    check_lamp_state(zonen_json["Zone_Flure"], lamp_states_Zone_Flure)
     check_lamp_state(zonen_json["Zone_Outdoor"], lamp_states_Zone_Outdoor)
     return day
 
@@ -236,7 +236,7 @@ def Morning(morning):
     turn_on_groups(
         [
             zonen_json["Zone_Outdoor"][0]["group_id"],
-            zonen_json["Zone_Night_Light"][0]["group_id"],
+            zonen_json["Zone_Flure"][0]["group_id"],
         ],
         bri_bright,
         100,
@@ -260,7 +260,7 @@ def Evening(evening):
     turn_on_groups(
         [
             zonen_json["Zone_Outdoor"][0]["group_id"],
-            zonen_json["Zone_Night_Light"][0]["group_id"],
+            zonen_json["Zone_Flure"][0]["group_id"],
         ],
         bri_half,
         100,
