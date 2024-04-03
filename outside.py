@@ -231,7 +231,16 @@ def main_function():
                 Night = 0
                 logging.info("Mode - Day")
                 print("DAY")
-                turn_off_groups([Zone_Outdoor, Zone_Flure])
+                turn_off_groups(
+                    [
+                        Zone_Outdoor,
+                        Zone_Flure,
+                        Outdoor_Auffahrt,
+                        Outdoor_Eingangstür,
+                        Outdoor_Kueche_Wand,
+                        Outdoor_Terrasse,
+                    ]
+                )
 
         else:
             if sunrise_time_deltatime < datetime.datetime.now().time() <= sunrise_time:
@@ -240,7 +249,18 @@ def main_function():
                     Evening = 0
                     logging.info("Mode - Morning")
                     print("MORNING")
-                    turn_on_groups([Zone_Outdoor, Zone_Flure], bri_bright, 100)
+                    turn_on_groups(
+                        [
+                            Zone_Outdoor,
+                            Zone_Flure,
+                            Outdoor_Auffahrt,
+                            Outdoor_Eingangstür,
+                            Outdoor_Kueche_Wand,
+                            Outdoor_Terrasse,
+                        ],
+                        bri_bright,
+                        100,
+                    )
 
                 if coming_home() == True:
                     Morning = 0
@@ -251,7 +271,18 @@ def main_function():
                     Day = 0
                     logging.info("Mode - Evening")
                     print("EVENING")
-                    turn_on_groups([Zone_Outdoor, Zone_Flure], bri_half, 100)
+                    turn_on_groups(
+                        [
+                            Zone_Outdoor,
+                            Zone_Flure,
+                            Outdoor_Auffahrt,
+                            Outdoor_Eingangstür,
+                            Outdoor_Kueche_Wand,
+                            Outdoor_Terrasse,
+                        ],
+                        bri_half,
+                        100,
+                    )
 
                 if coming_home() == True:
                     Evening = 0
@@ -262,8 +293,17 @@ def main_function():
                     Morning = 0
                     logging.info("Mode - Night")
                     print("NIGHT")
-                    turn_off_groups([Zone_Outdoor, Zone_Flure])
-                    turn_on_groups([Zone_Night_Light], bri_very_low, 200)
+                    turn_off_groups(
+                        [
+                            Zone_Outdoor,
+                            Zone_Flure,
+                            Outdoor_Auffahrt,
+                            Outdoor_Eingangstür,
+                            Outdoor_Kueche_Wand,
+                            Outdoor_Terrasse,
+                        ]
+                    )
+                    turn_on_groups([Zone_Night_Light], bri_low, 200)
 
                 if coming_home() == True:
                     Night = 0
