@@ -37,9 +37,9 @@ logging.basicConfig(
 
 
 bri_very_bright = 254
-bri_bright = 180
-bri_half = 100
-bri_low = 50
+bri_bright = 160
+bri_half = 70
+bri_low = 20
 bri_very_low = 10
 
 
@@ -63,6 +63,19 @@ Zone_Outdoor = 24
 Zone_Treppenhaus_Olli_Niko = 85
 Zone_Treppenhaus_Elena = 86
 Zone_Night_Light = 87
+
+zone_runway = {
+    "Draußen/Auffahrt/Innen/1",
+    "Draußen/Auffahrt/Außen/1",
+    "Draußen/Auffahrt/Innen/2",
+    "Draußen/Auffahrt/Außen/2",
+    "Draußen/Auffahrt/Innen/3",
+    "Draußen/Auffahrt/Innen/4",
+    "Draußen/Carport/Vorne/1",
+    "Draußen/Carport/Vorne/2",
+    "Draußen/Carport/Hinten/1",
+    "Draußen/Carport/Hinten/2",
+}
 
 
 def open_json(pfad):
@@ -146,6 +159,25 @@ def get_motion_sensor_status(sensor_id):
     return motion_detected
 
 
+def coming_home():
+    current_datetime = datetime.datetime.now()
+    end_time = current_datetime + datetime.timedelta(seconds=5)
+
+    on = get_motion_sensor_status(190)
+
+    if on:
+        logging.info("Mode - Coming Home - On")
+
+        while datetime.datetime.now() < end_time:
+            # Turn on lights in zone_runway
+            for lamp in zone_runway:
+                b.set_light(lamp, "on", True)
+                b.set_light(lamp, "bri", bri_very_bright)
+                time.sleep(1)
+        time.sleep(180)
+        return True
+
+
 def main_function():
     logging.info("Restart\n")
 
@@ -220,11 +252,18 @@ def main_function():
                     turn_on_groups(
                         [
                             Zone_Outdoor,
-                            Zone_Night_Light,
+                            Zone_Flure,
+                            Outdoor_Auffahrt,
+                            Outdoor_Eingangstür,
+                            Outdoor_Kueche_Wand,
+                            Outdoor_Terrasse,
                         ],
                         bri_bright,
                         100,
                     )
+
+                if coming_home() == True:
+                    Morning = 0
 
             elif sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
                 if Evening != 1:
@@ -235,11 +274,18 @@ def main_function():
                     turn_on_groups(
                         [
                             Zone_Outdoor,
-                            Zone_Night_Light,
+                            Zone_Flure,
+                            Outdoor_Auffahrt,
+                            Outdoor_Eingangstür,
+                            Outdoor_Kueche_Wand,
+                            Outdoor_Terrasse,
                         ],
-                        bri_bright,
+                        bri_half,
                         100,
                     )
+
+                if coming_home() == True:
+                    Evening = 0
 
             else:
                 if Night != 1:
@@ -250,10 +296,17 @@ def main_function():
                     turn_off_groups(
                         [
                             Zone_Outdoor,
-                            Zone_Night_Light,
+                            Zone_Flure,
+                            Outdoor_Auffahrt,
+                            Outdoor_Eingangstür,
+                            Outdoor_Kueche_Wand,
+                            Outdoor_Terrasse,
                         ]
                     )
                     turn_on_groups([Zone_Night_Light], bri_low, 200)
+
+                if coming_home() == True:
+                    Night = 0
 
 
 if __name__ == "__main__":

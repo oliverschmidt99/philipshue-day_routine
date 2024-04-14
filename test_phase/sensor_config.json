@@ -1,0 +1,38 @@
+{
+    "Zimmer_Olli": {
+        "motion": {
+            "sensor_id": 2,
+            "t_x": 120
+        },
+        "bri": {
+            "sensor_id": 3
+        },
+        "temp": {
+            "sensor_id": 4
+        }
+    },
+    "Outdoor_Carport": {
+        "motion": {
+            "sensor_id": 190,
+            "t_x": 120
+        },
+        "bri": {
+            "sensor_id": 191
+        },
+        "temp": {
+            "sensor_id": 192
+        }
+    },
+    "Outdoor_Terrasse": {
+        "motion": {
+            "sensor_id": 193,
+            "t_x": 120
+        },
+        "bri": {
+            "sensor_id": 194
+        },
+        "temp": {
+            "sensor_id": 195
+        }
+    }
+}
