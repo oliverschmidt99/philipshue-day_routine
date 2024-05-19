@@ -5,7 +5,8 @@ from get_day_mode import *
 from data_work import *
 from get_day_mode import *
 from lamp import *
-
+from sensors import sensor
+from phue import Bridge
 
 sen = b.get_sensor_objects("name")
 light_names = b.get_light_objects("name")
@@ -23,6 +24,20 @@ pfad_log = os.path.join(aktueller_pfad, datei_log)
 
 
 def main_function():
+
+    data = open_json(datei_sen)
+    sensors = [sensors(0, 0, 0)]
+
+    for sensor_data in data:
+        sensors.append(sensor(sensor_data))
+
+    test1 = sensors(1, 1, 1)
+    test1.sensor_ip
+    while True:
+        sensor[1].turn_off_after_motion(100, 1)
+        for sensor in sensors:
+            sensor.turn_off_after_motion(100, 1)
+        break
 
     day_mode = 0
     morning = 0
