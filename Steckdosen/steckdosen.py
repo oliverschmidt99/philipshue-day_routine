@@ -1,0 +1,2 @@
+import tuya_iot
+

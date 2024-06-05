@@ -207,6 +207,7 @@ def main_function():
                         Outdoor_Eingangstür,
                         Outdoor_Kueche_Wand,
                         Outdoor_Terrasse,
+                        Zone_Night_Light,
                     ]
                 )
 
@@ -223,7 +224,7 @@ def main_function():
                             Zone_Night_Light,
                         ],
                         bri_bright,
-                        100,
+                        150,
                     )
 
             elif sunset_time <= datetime.datetime.now().time() < sunset_time_deltatime:
@@ -238,7 +239,7 @@ def main_function():
                             Zone_Night_Light,
                         ],
                         bri_bright,
-                        100,
+                        150,
                     )
 
             else:
