@@ -8,14 +8,14 @@ from data_work import *
 def turn_off_groups(group_ids):
     for group_id in group_ids:
         b.set_group(group_id, "on", False)
-        print(f"Gruppe {group_id} wurde ausgeschaltet.")
+        #print(f"Gruppe {group_id} wurde ausgeschaltet.")
 
 
 def turn_on_groups(group_ids, brightness, t_time):
     for group_id in group_ids:
         b.set_group(group_id, "on", True)
         b.set_group(group_id, "bri", brightness, transitiontime=t_time)
-        print(f"Gruppe {group_id} wurde eingeschaltet.")
+        #print(f"Gruppe {group_id} wurde eingeschaltet.")
 
 
 def check_lamp_state(lamp_array, lamp_states):

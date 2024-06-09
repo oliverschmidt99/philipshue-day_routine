@@ -26,18 +26,16 @@ pfad_log = os.path.join(aktueller_pfad, datei_log)
 def main_function():
 
     data = open_json(datei_sen)
-    sensors = [sensors(0, 0, 0)]
 
-    for sensor_data in data:
-        sensors.append(sensor(sensor_data))
+    sensor_id = sensor.get_sensor_id(data, "Zimmer_Olli", "motion")
 
-    test1 = sensors(1, 1, 1)
-    test1.sensor_ip
-    while True:
-        sensor[1].turn_off_after_motion(100, 1)
-        for sensor in sensors:
-            sensor.turn_off_after_motion(100, 1)
-        break
+    print(sensor_id)
+
+    # while True:
+    #     sensor[1].turn_off_after_motion(100, 1)
+    #     for sensor in sensors:
+    #         sensor.turn_off_after_motion(100, 1)
+    #     break
 
     day_mode = 0
     morning = 0
@@ -45,8 +43,6 @@ def main_function():
     evening = 0
     night = 0
 
-    conf_sen = open_json(datei_sen)
-    print(conf_sen)
     while True:
 
         day_mode = get_Day_mode()

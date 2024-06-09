@@ -1,7 +1,9 @@
 import datetime
 import ephem
 import pytz
-import threading
+
+from sensors import sensor
+
 
 from huebridge import *
 from lamp import *
@@ -30,6 +32,9 @@ zone_comminghome = {
     "Draußen/Carport/Hinten/1",
     "Draußen/Carport/Hinten/2",
 }
+
+
+sen_carport = sensor(2, [8], 120)
 
 
 def sunrise():
@@ -115,13 +120,7 @@ def Day(day):
                 zonen_json["Zone_Flure"][0]["group_id"],
             ]
         )
-    timex = datetime.datetime.now()
 
-    thread = threading.Thread(
-        target=motion_sensor_thread,
-        args=(2, 10, [zonen_json["Zimmer_Olli"][0]["group_id"]], timex, 250),
-    )
-    thread.start()
     return day
 
 
@@ -139,6 +138,10 @@ def Morning(morning):
 
 
 def Evening(evening):
+
+    # print(sen_carport.get_motion_sensor_status())
+    sen_carport.turn_off_after_motion(250, 20)
+
     turn_on_groups(
         [
             zonen_json["Zone_Outdoor"][0]["group_id"],

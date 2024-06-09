@@ -2,11 +2,13 @@ from huebridge import *
 import time
 from lamp import turn_on_groups, turn_off_groups
 
+
 class sensor:
     sensor_id = 0
     group_ids = 0
     wait_time = 0
     last_active_time = 0
+
     def __init__(
         self,
         sensor_id,
@@ -17,6 +19,14 @@ class sensor:
         self.group_ids = group_ids
         self.wait_time = wait_time
 
+    def get_sensor_id(daten, zimmer_name, sensor_type):
+        room = daten.get(zimmer_name)
+        if room:
+            sensor = room.get(sensor_type)
+            if sensor:
+                return sensor.get("sensor_id")
+        return None
+
     def get_motion_sensor_status(self):
         sensor_info = b.get_sensor(self.sensor_id)
         motion_detected = sensor_info.get("state", {}).get("presence", False)
@@ -24,20 +34,16 @@ class sensor:
 
     def turn_off_after_motion(self, brightness, t_time):
 
-        if self.get_motion_sensor_status(self.sensor_id) == True:
+        if self.get_motion_sensor_status() == True:
             print("Moin")
             turn_on_groups(self.group_ids, brightness, t_time)
             self.last_active_time = time.time()
             return
 
         # Compare wait_time with current_time
-        if self.last_active_time + self.wait_time >= time():
+        if self.last_active_time + self.wait_time >= time.time():
             print("bye")
             turn_off_groups(self.group_ids)
-
-
-
-
 
 
 
@@ -50,7 +56,6 @@ class sensor:
     #         if wait_time is None:
     #             break
     #         time.sleep(10)
-
 
     # def get_motion_sensor_status(sensor_id):
     #     sensor_info = b.get_sensor(sensor_id)
