@@ -11,16 +11,10 @@ BRIDGE_IP = "192.168.178.42"
 
 b = Bridge(BRIDGE_IP)
 b.connect()
-b.get_api()
 
-sen = b.get_sensor_objects("name")
-light_names = b.get_light_objects("name")
-lights = b.lights
-groups = b.get_group()
+# Holen Sie sich alle Sensordaten
+sensors = b.get_sensor()
 
-
-# Gruppeninformationen abrufen
-
-# Ausgabe der Gruppennamen und IDs
-for name, group_id in groups.items():
-    print(f"Gruppenname: {name}, ID: {group_id}","\n")
+# Ausgabe der Sensor-IDs und Namen
+for sensor_id, sensor_data in sensors.items():
+    print(f"Sensor ID: {sensor_id}, Sensor Name: {sensor_data['name']}")
