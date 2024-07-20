@@ -20,6 +20,12 @@ logging.basicConfig(
     filename=pfad_log, level=logging.INFO, format="%(asctime)s %(message)s"
 )
 
+# Const
+BRI_OFF = 0
+BRI_LOW = 50
+BRI_MID = 150
+BRI_MAX = 255
+
 
 if __name__ == "__main__":
     print("This program is running")
@@ -32,14 +38,14 @@ if __name__ == "__main__":
     zone_outside = Room([24], None, [190, 193], "zone_outside")
     zone_outside_ts = Daily_time(6, 0, 0, 22, 0, 0)  # ts -> time span;
     zone_outside_rt = Routine(
-        zone_outside_ts, zone_outside, 200, 0, 200, 10, mod_outside
+        zone_outside_ts, zone_outside, BRI_MAX, BRI_OFF, BRI_MAX, BRI_OFF, mod_outside
     )  # rt -> routine
 
     mod_inside = 1
     zone_inside = Room([87], None, None, "zone_inside")
     zone_inside_ts = Daily_time(5, 30, 0, 23, 0, 0)  # ts -> time span;
     zone_inside_rt = Routine(
-        zone_inside_ts, zone_inside, 200, 0, 200, 10, mod_inside
+        zone_inside_ts, zone_inside, BRI_MAX, BRI_OFF, BRI_MAX, BRI_LOW, mod_inside
     )  # rt -> routine
 
     while True:
