@@ -60,6 +60,14 @@ class Daily_time(Time_format):
         return formatted_sunset_time
 
     def get_time_span(self):
+        """get_time_span(self)
+
+        returns
+        :1 = Day
+        :2 = Morning
+        :3 = Afternoon
+        :4 = Night
+        """
 
         formatted_sunrise_time = Daily_time.sunrise()
         formatted_sunset_time = Daily_time.sunset()
