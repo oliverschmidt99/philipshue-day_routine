@@ -1,2 +1,2 @@
-outside.log
-outside.log
+*.log
+*.pyc
