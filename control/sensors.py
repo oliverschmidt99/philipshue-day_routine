@@ -1,6 +1,5 @@
 from huebridge import *
 import time
-from lamp import turn_on_groups, turn_off_groups
 
 
 class sensor:
