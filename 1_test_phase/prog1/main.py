@@ -32,16 +32,17 @@ if __name__ == "__main__":
     )
 
     olli = Routine(
-        daily_time=Daily_time(8, 0, 22, 0),
         room=room_olli,
-        bri_afternoon=BRI_MAX,
-        bri_day=BRI_MAX,
-        bri_morning=BRI_MAX,
-        bri_night=BRI_MID,
-        mod_afternoon=0,
+        daily_time=Daily_time(6, 0, 19, 0),
+        morning=Scene(bri=200, sat=250, ct=400, t_time=10),
+        day=Scene(bri=254, sat=250, ct=0, t_time=0),
+        afternoon=Scene(bri=254, sat=250, ct=300, t_time=10),
+        night=Scene(bri=100, sat=250, ct=500, t_time=10),
+        mod_morning=0,
         mod_day=0,
-        mod_mornig=0,
+        mod_afternoon=0,
         mod_night=0,
+        bri_check=True,
     )
 
     """
@@ -77,12 +78,8 @@ if __name__ == "__main__":
     """
     while True:
 
-        olli.adjust_lighting()
+        olli.run_routine()
 
-        a = room_olli.temperature.get_temperature()
-        print(a)
-        b = room_olli.brightness.get_brightness()
-        print(b)
-        c = room_olli.motion.get_motion()
-        print(c)
+        
+
         time.sleep(2)

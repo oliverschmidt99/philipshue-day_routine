@@ -20,6 +20,10 @@ class Time_format:
 class Daily_time(Time_format):
 
     def __init__(self, H1, M1, H2, M2):
+        """
+        :H1, M1:-> Start_time   Mornig
+        :H2, M2:-> End_time     Night
+        """
         self.H1 = H1
         self.M1 = M1
         self.S1 = 0
@@ -79,20 +83,32 @@ class Daily_time(Time_format):
             formatted_sunset_time, "%H:%M:%S"
         ).time()
 
+        """
+        ###########################   Extra!
+        delta = datetime.timedelta(hours=2)
+        sunset_time_dt = datetime.datetime.combine(datetime.date.today(), sunset_time)
+        new_sunset_time_dt = sunset_time_dt - delta
+        new_sunset_time = new_sunset_time_dt.time()
+        ###########################
+        """
         current_time = datetime.datetime.now().time()
 
         start_time = datetime.time(self.H1, self.M1, self.S1)
         end_time = datetime.time(self.H2, self.M2, self.S2)
 
-        if sunrise_time < current_time < sunset_time:
+        if sunrise_time < current_time < sunset_time:  # Day
+            print("Day")
             return 1
         else:
-            if start_time < current_time <= sunrise_time:
+            if start_time < current_time <= sunrise_time:  # Mornig
+                print("Mornig")
                 return 2
-            elif sunset_time <= current_time < end_time:
+            elif sunset_time <= current_time < end_time:  # Afternoon
+                print("Afternoon")
                 return 3
-            else:
-                return 3
+            else:  # Night
+                print("Night")
+                return 4
 
 
 class Daily_routine(Daily_time):

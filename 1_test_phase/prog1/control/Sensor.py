@@ -2,17 +2,20 @@ from control.huebridge import *
 from control.Room import *
 
 import logging
+import time
 
 
 class Sensor:
 
-    def __init__(self, sensor_id, name_room):
+    def __init__(self, bridge_ip, sensor_id, name_room):
+        self.bridge = Bridge(bridge_ip)
         self.sensor_id = sensor_id
+        self.bridge.connect()
+        self.sensor_data = self.bridge.get_sensor(sensor_id)
         self.name_room = name_room
-        self.sensor_data = self.get_sensor(sensor_id)
 
     def get_sensor(self, sensor_id):
-        return b.get_sensor(sensor_id)
+        return self.bridge.get_sensor(sensor_id)
 
     def get_attribute(self, attribute_name):
         sen = self.get_sensor(self.sensor_id)
@@ -20,24 +23,40 @@ class Sensor:
 
 
 class Motion(Sensor):
-    def __init__(self, sensor_id, name_room):
-        super().__init__(sensor_id, name_room)
+
+    last_active_time = 0
+
+    def __init__(self, bridge_ip, sensor_id, name_room, room_instance):
+        super().__init__(bridge_ip, sensor_id, name_room)
+        self.room_instance = room_instance
 
     def get_motion(self):
         return self.get_attribute("presence")
 
+    def turn_off_after_motion(self, brightness, t_time, wait_time):
+        if self.get_motion():
+            print("Moin")
+            self.room_instance.turn_on_groups(brightness, t_time)
+            self.last_active_time = time.time()
+            return
+        if self.last_active_time + wait_time <= time.time():
+            print("bye")
+            self.room_instance.turn_off_groups()
+
 
 class Brightness(Sensor):
-    def __init__(self, sensor_id, name_room):
-        super().__init__(sensor_id, name_room)
+
+    def __init__(self, bridge_ip, sensor_id, name_room, room_instance):
+        super().__init__(bridge_ip, sensor_id, name_room)
+        self.room_instance = room_instance
 
     def get_brightness(self):
         return self.get_attribute("lightlevel")
 
 
 class Temperature(Sensor):
-    def __init__(self, sensor_id, name_room):
-        super().__init__(sensor_id, name_room)
+    def __init__(self, bridge_ip, sensor_id, name_room):
+        super().__init__(bridge_ip, sensor_id, name_room)
 
     def get_temperature(self):
         temperature = self.get_attribute("temperature")

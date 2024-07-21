@@ -1,0 +1,1390 @@
+2024-07-21 21:21:21,654 
+This program is running
+
+2024-07-21 21:21:21,654 Attempting to connect to the bridge...
+2024-07-21 21:21:21,654 Using ip: 192.168.178.42
+2024-07-21 21:21:21,654 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:21,654 Attempting to connect to the bridge...
+2024-07-21 21:21:21,654 Using ip: 192.168.178.42
+2024-07-21 21:21:21,654 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:21,663 Attempting to connect to the bridge...
+2024-07-21 21:21:21,663 Using ip: 192.168.178.42
+2024-07-21 21:21:21,663 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:21,663 Attempting to connect to the bridge...
+2024-07-21 21:21:21,663 Using ip: 192.168.178.42
+2024-07-21 21:21:21,663 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:21,677 Attempting to connect to the bridge...
+2024-07-21 21:21:21,677 Using ip: 192.168.178.42
+2024-07-21 21:21:21,677 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:21,677 Attempting to connect to the bridge...
+2024-07-21 21:21:21,677 Using ip: 192.168.178.42
+2024-07-21 21:21:21,677 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:21,707 Daymod		Day		room_olli
+2024-07-21 21:21:21,707 State		on		room_olli
+2024-07-21 21:21:24,290 Daymod		Day		room_olli
+2024-07-21 21:21:24,290 State		on		room_olli
+2024-07-21 21:21:26,571 Daymod		Day		room_olli
+2024-07-21 21:21:26,571 State		on		room_olli
+2024-07-21 21:21:28,761 Daymod		Day		room_olli
+2024-07-21 21:21:28,761 State		on		room_olli
+2024-07-21 21:21:38,128 
+This program is running
+
+2024-07-21 21:21:38,128 Attempting to connect to the bridge...
+2024-07-21 21:21:38,128 Using ip: 192.168.178.42
+2024-07-21 21:21:38,128 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:38,128 Attempting to connect to the bridge...
+2024-07-21 21:21:38,128 Using ip: 192.168.178.42
+2024-07-21 21:21:38,128 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:38,138 Attempting to connect to the bridge...
+2024-07-21 21:21:38,138 Using ip: 192.168.178.42
+2024-07-21 21:21:38,138 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:38,138 Attempting to connect to the bridge...
+2024-07-21 21:21:38,138 Using ip: 192.168.178.42
+2024-07-21 21:21:38,138 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:38,153 Attempting to connect to the bridge...
+2024-07-21 21:21:38,153 Using ip: 192.168.178.42
+2024-07-21 21:21:38,153 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:38,153 Attempting to connect to the bridge...
+2024-07-21 21:21:38,153 Using ip: 192.168.178.42
+2024-07-21 21:21:38,153 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:21:38,184 Daymod		Day		room_olli
+2024-07-21 21:21:38,184 State		on		room_olli
+2024-07-21 21:21:40,583 Daymod		Day		room_olli
+2024-07-21 21:21:40,583 State		on		room_olli
+2024-07-21 21:21:42,781 Daymod		Day		room_olli
+2024-07-21 21:21:42,781 State		on		room_olli
+2024-07-21 21:21:44,970 Daymod		Day		room_olli
+2024-07-21 21:21:44,970 State		on		room_olli
+2024-07-21 21:21:47,161 Daymod		Day		room_olli
+2024-07-21 21:21:47,161 State		on		room_olli
+2024-07-21 21:21:49,350 Daymod		Day		room_olli
+2024-07-21 21:21:49,350 State		on		room_olli
+2024-07-21 21:21:51,540 Daymod		Day		room_olli
+2024-07-21 21:21:51,540 State		on		room_olli
+2024-07-21 21:21:53,746 Daymod		Day		room_olli
+2024-07-21 21:21:53,746 State		on		room_olli
+2024-07-21 21:21:56,302 Daymod		Day		room_olli
+2024-07-21 21:21:56,302 State		on		room_olli
+2024-07-21 21:21:58,491 Daymod		Day		room_olli
+2024-07-21 21:21:58,491 State		on		room_olli
+2024-07-21 21:22:00,680 Daymod		Day		room_olli
+2024-07-21 21:22:00,680 State		on		room_olli
+2024-07-21 21:22:03,769 
+This program is running
+
+2024-07-21 21:22:03,769 Attempting to connect to the bridge...
+2024-07-21 21:22:03,769 Using ip: 192.168.178.42
+2024-07-21 21:22:03,769 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:03,769 Attempting to connect to the bridge...
+2024-07-21 21:22:03,769 Using ip: 192.168.178.42
+2024-07-21 21:22:03,769 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:03,778 Attempting to connect to the bridge...
+2024-07-21 21:22:03,778 Using ip: 192.168.178.42
+2024-07-21 21:22:03,778 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:03,778 Attempting to connect to the bridge...
+2024-07-21 21:22:03,778 Using ip: 192.168.178.42
+2024-07-21 21:22:03,778 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:03,793 Attempting to connect to the bridge...
+2024-07-21 21:22:03,793 Using ip: 192.168.178.42
+2024-07-21 21:22:03,793 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:03,793 Attempting to connect to the bridge...
+2024-07-21 21:22:03,793 Using ip: 192.168.178.42
+2024-07-21 21:22:03,793 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:03,825 Daymod		Day		room_olli
+2024-07-21 21:22:03,825 State		on		room_olli
+2024-07-21 21:22:06,134 Daymod		Day		room_olli
+2024-07-21 21:22:06,134 State		on		room_olli
+2024-07-21 21:22:08,591 Daymod		Day		room_olli
+2024-07-21 21:22:08,591 State		on		room_olli
+2024-07-21 21:22:11,048 Daymod		Day		room_olli
+2024-07-21 21:22:11,048 State		on		room_olli
+2024-07-21 21:22:13,514 Daymod		Day		room_olli
+2024-07-21 21:22:13,514 State		on		room_olli
+2024-07-21 21:22:15,763 
+This program is running
+
+2024-07-21 21:22:15,763 Attempting to connect to the bridge...
+2024-07-21 21:22:15,763 Using ip: 192.168.178.42
+2024-07-21 21:22:15,763 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:15,763 Attempting to connect to the bridge...
+2024-07-21 21:22:15,763 Using ip: 192.168.178.42
+2024-07-21 21:22:15,763 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:15,771 Attempting to connect to the bridge...
+2024-07-21 21:22:15,771 Using ip: 192.168.178.42
+2024-07-21 21:22:15,771 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:15,771 Attempting to connect to the bridge...
+2024-07-21 21:22:15,771 Using ip: 192.168.178.42
+2024-07-21 21:22:15,771 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:15,786 Attempting to connect to the bridge...
+2024-07-21 21:22:15,786 Using ip: 192.168.178.42
+2024-07-21 21:22:15,786 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:15,786 Attempting to connect to the bridge...
+2024-07-21 21:22:15,786 Using ip: 192.168.178.42
+2024-07-21 21:22:15,786 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:15,821 Daymod		Day		room_olli
+2024-07-21 21:22:15,821 State		on		room_olli
+2024-07-21 21:22:15,921 ERROR: invalid value, 100000}, for parameter, transitiontime for group 1
+2024-07-21 21:22:18,256 Daymod		Day		room_olli
+2024-07-21 21:22:18,256 State		on		room_olli
+2024-07-21 21:22:18,351 ERROR: invalid value, 100000}, for parameter, transitiontime for group 1
+2024-07-21 21:22:20,728 Daymod		Day		room_olli
+2024-07-21 21:22:20,728 State		on		room_olli
+2024-07-21 21:22:20,831 ERROR: invalid value, 100000}, for parameter, transitiontime for group 1
+2024-07-21 21:22:23,202 Daymod		Day		room_olli
+2024-07-21 21:22:23,202 State		on		room_olli
+2024-07-21 21:22:23,301 ERROR: invalid value, 100000}, for parameter, transitiontime for group 1
+2024-07-21 21:22:25,639 Daymod		Day		room_olli
+2024-07-21 21:22:25,639 State		on		room_olli
+2024-07-21 21:22:25,731 ERROR: invalid value, 100000}, for parameter, transitiontime for group 1
+2024-07-21 21:22:37,266 
+This program is running
+
+2024-07-21 21:22:37,266 Attempting to connect to the bridge...
+2024-07-21 21:22:37,266 Using ip: 192.168.178.42
+2024-07-21 21:22:37,266 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:37,266 Attempting to connect to the bridge...
+2024-07-21 21:22:37,266 Using ip: 192.168.178.42
+2024-07-21 21:22:37,266 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:37,276 Attempting to connect to the bridge...
+2024-07-21 21:22:37,276 Using ip: 192.168.178.42
+2024-07-21 21:22:37,276 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:37,276 Attempting to connect to the bridge...
+2024-07-21 21:22:37,276 Using ip: 192.168.178.42
+2024-07-21 21:22:37,276 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:37,291 Attempting to connect to the bridge...
+2024-07-21 21:22:37,291 Using ip: 192.168.178.42
+2024-07-21 21:22:37,291 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:37,291 Attempting to connect to the bridge...
+2024-07-21 21:22:37,291 Using ip: 192.168.178.42
+2024-07-21 21:22:37,291 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:22:37,321 Daymod		Day		room_olli
+2024-07-21 21:22:37,321 State		on		room_olli
+2024-07-21 21:22:37,791 Daymod		Day		room_olli
+2024-07-21 21:22:37,791 State		on		room_olli
+2024-07-21 21:22:38,342 Daymod		Day		room_olli
+2024-07-21 21:22:38,342 State		on		room_olli
+2024-07-21 21:22:38,867 Daymod		Day		room_olli
+2024-07-21 21:22:38,868 State		on		room_olli
+2024-07-21 21:22:39,386 Daymod		Day		room_olli
+2024-07-21 21:22:39,386 State		on		room_olli
+2024-07-21 21:22:39,940 Daymod		Day		room_olli
+2024-07-21 21:22:39,940 State		on		room_olli
+2024-07-21 21:22:40,505 Daymod		Day		room_olli
+2024-07-21 21:22:40,505 State		on		room_olli
+2024-07-21 21:22:41,018 Daymod		Day		room_olli
+2024-07-21 21:22:41,018 State		on		room_olli
+2024-07-21 21:22:41,626 Daymod		Day		room_olli
+2024-07-21 21:22:41,626 State		on		room_olli
+2024-07-21 21:22:42,220 Daymod		Day		room_olli
+2024-07-21 21:22:42,220 State		on		room_olli
+2024-07-21 21:22:42,816 Daymod		Day		room_olli
+2024-07-21 21:22:42,816 State		on		room_olli
+2024-07-21 21:22:43,347 Daymod		Day		room_olli
+2024-07-21 21:22:43,347 State		on		room_olli
+2024-07-21 21:22:43,860 Daymod		Day		room_olli
+2024-07-21 21:22:43,860 State		on		room_olli
+2024-07-21 21:22:44,471 Daymod		Day		room_olli
+2024-07-21 21:22:44,471 State		on		room_olli
+2024-07-21 21:22:44,996 Daymod		Day		room_olli
+2024-07-21 21:22:44,996 State		on		room_olli
+2024-07-21 21:22:45,584 Daymod		Day		room_olli
+2024-07-21 21:22:45,584 State		on		room_olli
+2024-07-21 21:22:46,146 Daymod		Day		room_olli
+2024-07-21 21:22:46,146 State		on		room_olli
+2024-07-21 21:22:46,678 Daymod		Day		room_olli
+2024-07-21 21:22:46,678 State		on		room_olli
+2024-07-21 21:22:47,236 Daymod		Day		room_olli
+2024-07-21 21:22:47,236 State		on		room_olli
+2024-07-21 21:22:47,827 Daymod		Day		room_olli
+2024-07-21 21:22:47,827 State		on		room_olli
+2024-07-21 21:22:48,383 Daymod		Day		room_olli
+2024-07-21 21:22:48,383 State		on		room_olli
+2024-07-21 21:22:48,910 Daymod		Day		room_olli
+2024-07-21 21:22:48,910 State		on		room_olli
+2024-07-21 21:22:49,555 Daymod		Day		room_olli
+2024-07-21 21:22:49,555 State		on		room_olli
+2024-07-21 21:22:50,179 Daymod		Day		room_olli
+2024-07-21 21:22:50,179 State		on		room_olli
+2024-07-21 21:23:44,100 
+This program is running
+
+2024-07-21 21:23:44,100 Attempting to connect to the bridge...
+2024-07-21 21:23:44,100 Using ip: 192.168.178.42
+2024-07-21 21:23:44,101 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:23:44,101 Attempting to connect to the bridge...
+2024-07-21 21:23:44,101 Using ip: 192.168.178.42
+2024-07-21 21:23:44,101 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:23:44,108 Attempting to connect to the bridge...
+2024-07-21 21:23:44,108 Using ip: 192.168.178.42
+2024-07-21 21:23:44,108 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:23:44,108 Attempting to connect to the bridge...
+2024-07-21 21:23:44,108 Using ip: 192.168.178.42
+2024-07-21 21:23:44,108 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:23:44,123 Attempting to connect to the bridge...
+2024-07-21 21:23:44,123 Using ip: 192.168.178.42
+2024-07-21 21:23:44,123 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:23:44,123 Attempting to connect to the bridge...
+2024-07-21 21:23:44,123 Using ip: 192.168.178.42
+2024-07-21 21:23:44,123 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:23:44,156 State		on		room_olli
+2024-07-21 21:23:44,390 Daymod		Day		room_olli
+2024-07-21 21:23:44,390 State		on		room_olli
+2024-07-21 21:23:44,770 State		on		room_olli
+2024-07-21 21:23:45,000 State		on		room_olli
+2024-07-21 21:23:45,230 State		on		room_olli
+2024-07-21 21:23:45,460 State		on		room_olli
+2024-07-21 21:23:45,690 State		on		room_olli
+2024-07-21 21:23:45,920 State		on		room_olli
+2024-07-21 21:23:46,160 State		on		room_olli
+2024-07-21 21:23:46,389 State		on		room_olli
+2024-07-21 21:23:46,620 State		on		room_olli
+2024-07-21 21:23:46,849 State		on		room_olli
+2024-07-21 21:23:47,084 State		on		room_olli
+2024-07-21 21:23:47,325 State		on		room_olli
+2024-07-21 21:23:47,556 State		on		room_olli
+2024-07-21 21:23:47,814 State		on		room_olli
+2024-07-21 21:23:48,190 State		on		room_olli
+2024-07-21 21:23:48,421 State		on		room_olli
+2024-07-21 21:23:48,650 State		on		room_olli
+2024-07-21 21:23:48,890 State		on		room_olli
+2024-07-21 21:23:49,121 State		on		room_olli
+2024-07-21 21:23:49,363 State		on		room_olli
+2024-07-21 21:23:49,590 State		on		room_olli
+2024-07-21 21:23:49,823 State		on		room_olli
+2024-07-21 21:23:50,060 State		on		room_olli
+2024-07-21 21:23:50,290 State		on		room_olli
+2024-07-21 21:23:50,520 State		on		room_olli
+2024-07-21 21:23:50,749 State		on		room_olli
+2024-07-21 21:23:50,980 State		on		room_olli
+2024-07-21 21:23:51,210 State		on		room_olli
+2024-07-21 21:23:51,443 State		on		room_olli
+2024-07-21 21:23:51,669 State		on		room_olli
+2024-07-21 21:23:51,900 State		on		room_olli
+2024-07-21 21:23:52,130 State		on		room_olli
+2024-07-21 21:23:52,361 State		on		room_olli
+2024-07-21 21:23:52,600 State		on		room_olli
+2024-07-21 21:23:52,829 State		on		room_olli
+2024-07-21 21:23:53,060 State		on		room_olli
+2024-07-21 21:23:53,301 State		on		room_olli
+2024-07-21 21:23:53,530 State		on		room_olli
+2024-07-21 21:23:53,762 State		on		room_olli
+2024-07-21 21:23:54,011 State		on		room_olli
+2024-07-21 21:23:54,256 State		on		room_olli
+2024-07-21 21:23:54,488 State		on		room_olli
+2024-07-21 21:23:54,720 State		on		room_olli
+2024-07-21 21:23:54,951 State		on		room_olli
+2024-07-21 21:23:55,180 State		on		room_olli
+2024-07-21 21:23:55,328 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:55,410 State		on		room_olli
+2024-07-21 21:23:55,558 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:55,640 State		on		room_olli
+2024-07-21 21:23:55,794 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:55,870 State		on		room_olli
+2024-07-21 21:23:56,019 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:56,101 State		on		room_olli
+2024-07-21 21:23:56,248 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:56,330 State		on		room_olli
+2024-07-21 21:23:56,478 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:56,560 State		on		room_olli
+2024-07-21 21:23:56,709 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:56,790 State		on		room_olli
+2024-07-21 21:23:56,938 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:57,021 State		on		room_olli
+2024-07-21 21:23:57,168 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:57,249 State		on		room_olli
+2024-07-21 21:23:57,397 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:57,479 State		on		room_olli
+2024-07-21 21:23:57,628 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:57,710 State		on		room_olli
+2024-07-21 21:23:57,884 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:58,030 State		on		room_olli
+2024-07-21 21:23:58,265 State		on		room_olli
+2024-07-21 21:23:58,489 State		on		room_olli
+2024-07-21 21:23:58,720 State		on		room_olli
+2024-07-21 21:23:58,950 State		on		room_olli
+2024-07-21 21:23:59,098 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:59,181 State		on		room_olli
+2024-07-21 21:23:59,328 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:59,410 State		on		room_olli
+2024-07-21 21:23:59,558 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:59,640 State		on		room_olli
+2024-07-21 21:23:59,789 ERROR: Internal error, 404 for group 1
+2024-07-21 21:23:59,869 State		on		room_olli
+2024-07-21 21:24:00,038 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:00,123 State		on		room_olli
+2024-07-21 21:24:00,269 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:00,350 State		on		room_olli
+2024-07-21 21:24:00,498 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:00,580 State		on		room_olli
+2024-07-21 21:24:00,729 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:00,810 State		on		room_olli
+2024-07-21 21:24:00,958 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:01,038 State		on		room_olli
+2024-07-21 21:24:01,186 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:01,269 State		on		room_olli
+2024-07-21 21:24:01,418 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:01,502 State		on		room_olli
+2024-07-21 21:24:01,658 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:01,740 State		on		room_olli
+2024-07-21 21:24:01,888 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:01,970 State		on		room_olli
+2024-07-21 21:24:02,118 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:02,201 State		on		room_olli
+2024-07-21 21:24:02,442 State		on		room_olli
+2024-07-21 21:24:02,681 State		on		room_olli
+2024-07-21 21:24:02,921 State		on		room_olli
+2024-07-21 21:24:03,160 State		on		room_olli
+2024-07-21 21:24:03,390 State		on		room_olli
+2024-07-21 21:24:03,548 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:03,630 State		on		room_olli
+2024-07-21 21:24:03,778 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:03,859 State		on		room_olli
+2024-07-21 21:24:04,009 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:04,090 State		on		room_olli
+2024-07-21 21:24:04,239 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:04,320 State		on		room_olli
+2024-07-21 21:24:04,468 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:04,550 State		on		room_olli
+2024-07-21 21:24:04,699 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:04,780 State		on		room_olli
+2024-07-21 21:24:04,929 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:05,011 State		on		room_olli
+2024-07-21 21:24:05,156 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:05,240 State		on		room_olli
+2024-07-21 21:24:05,388 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:05,470 State		on		room_olli
+2024-07-21 21:24:05,618 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:05,700 State		on		room_olli
+2024-07-21 21:24:05,848 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:05,937 State		on		room_olli
+2024-07-21 21:24:06,048 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:06,130 State		on		room_olli
+2024-07-21 21:24:06,278 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:06,360 State		on		room_olli
+2024-07-21 21:24:06,515 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:06,589 State		on		room_olli
+2024-07-21 21:24:06,739 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:06,821 State		on		room_olli
+2024-07-21 21:24:06,969 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:07,051 State		on		room_olli
+2024-07-21 21:24:07,300 State		on		room_olli
+2024-07-21 21:24:07,530 State		on		room_olli
+2024-07-21 21:24:07,759 State		on		room_olli
+2024-07-21 21:24:08,010 State		on		room_olli
+2024-07-21 21:24:08,158 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:08,240 State		on		room_olli
+2024-07-21 21:24:08,388 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:08,470 State		on		room_olli
+2024-07-21 21:24:08,617 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:08,700 State		on		room_olli
+2024-07-21 21:24:08,847 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:08,930 State		on		room_olli
+2024-07-21 21:24:09,078 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:09,160 State		on		room_olli
+2024-07-21 21:24:09,307 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:09,389 State		on		room_olli
+2024-07-21 21:24:09,538 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:09,619 State		on		room_olli
+2024-07-21 21:24:09,770 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:09,850 State		on		room_olli
+2024-07-21 21:24:09,998 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:10,080 State		on		room_olli
+2024-07-21 21:24:10,228 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:10,312 State		on		room_olli
+2024-07-21 21:24:10,458 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:10,540 State		on		room_olli
+2024-07-21 21:24:10,688 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:10,788 State		on		room_olli
+2024-07-21 21:24:11,061 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:11,150 Daymod		Day		room_olli
+2024-07-21 21:24:11,150 State		on		room_olli
+2024-07-21 21:24:11,299 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:11,378 Daymod		Day		room_olli
+2024-07-21 21:24:11,378 State		on		room_olli
+2024-07-21 21:24:11,528 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:11,610 Daymod		Day		room_olli
+2024-07-21 21:24:11,610 State		on		room_olli
+2024-07-21 21:24:11,768 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:11,821 Daymod		Day		room_olli
+2024-07-21 21:24:11,821 State		on		room_olli
+2024-07-21 21:24:12,051 Daymod		Day		room_olli
+2024-07-21 21:24:12,051 State		on		room_olli
+2024-07-21 21:24:12,280 Daymod		Day		room_olli
+2024-07-21 21:24:12,280 State		on		room_olli
+2024-07-21 21:24:12,521 Daymod		Day		room_olli
+2024-07-21 21:24:12,521 State		on		room_olli
+2024-07-21 21:24:12,670 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:12,751 Daymod		Day		room_olli
+2024-07-21 21:24:12,751 State		on		room_olli
+2024-07-21 21:24:12,899 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:12,980 Daymod		Day		room_olli
+2024-07-21 21:24:12,980 State		on		room_olli
+2024-07-21 21:24:13,160 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:13,249 Daymod		Day		room_olli
+2024-07-21 21:24:13,249 State		on		room_olli
+2024-07-21 21:24:13,399 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:13,481 Daymod		Day		room_olli
+2024-07-21 21:24:13,481 State		on		room_olli
+2024-07-21 21:24:13,629 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:13,710 Daymod		Day		room_olli
+2024-07-21 21:24:13,710 State		on		room_olli
+2024-07-21 21:24:13,868 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:13,956 Daymod		Day		room_olli
+2024-07-21 21:24:13,956 State		on		room_olli
+2024-07-21 21:24:14,107 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:14,190 Daymod		Day		room_olli
+2024-07-21 21:24:14,190 State		on		room_olli
+2024-07-21 21:24:14,338 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:14,420 Daymod		Day		room_olli
+2024-07-21 21:24:14,420 State		on		room_olli
+2024-07-21 21:24:14,577 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:14,660 Daymod		Day		room_olli
+2024-07-21 21:24:14,660 State		on		room_olli
+2024-07-21 21:24:14,807 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:14,890 Daymod		Day		room_olli
+2024-07-21 21:24:14,890 State		on		room_olli
+2024-07-21 21:24:15,037 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:15,120 Daymod		Day		room_olli
+2024-07-21 21:24:15,120 State		on		room_olli
+2024-07-21 21:24:15,267 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:15,350 Daymod		Day		room_olli
+2024-07-21 21:24:15,350 State		on		room_olli
+2024-07-21 21:24:15,498 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:15,579 Daymod		Day		room_olli
+2024-07-21 21:24:15,579 State		on		room_olli
+2024-07-21 21:24:15,728 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:15,853 State		on		room_olli
+2024-07-21 21:24:16,058 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:16,141 State		on		room_olli
+2024-07-21 21:24:16,371 State		on		room_olli
+2024-07-21 21:24:16,601 State		on		room_olli
+2024-07-21 21:24:16,830 State		on		room_olli
+2024-07-21 21:24:17,060 State		on		room_olli
+2024-07-21 21:24:17,209 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:17,290 State		on		room_olli
+2024-07-21 21:24:17,439 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:17,520 State		on		room_olli
+2024-07-21 21:24:17,668 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:17,750 State		on		room_olli
+2024-07-21 21:24:17,899 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:17,991 State		on		room_olli
+2024-07-21 21:24:18,138 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:18,233 State		on		room_olli
+2024-07-21 21:24:18,379 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:18,460 State		on		room_olli
+2024-07-21 21:24:18,608 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:18,690 State		on		room_olli
+2024-07-21 21:24:18,839 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:18,921 State		on		room_olli
+2024-07-21 21:24:19,069 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:19,150 State		on		room_olli
+2024-07-21 21:24:19,298 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:19,381 State		on		room_olli
+2024-07-21 21:24:19,530 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:19,608 State		on		room_olli
+2024-07-21 21:24:19,769 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:19,851 State		on		room_olli
+2024-07-21 21:24:20,008 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:20,090 State		on		room_olli
+2024-07-21 21:24:20,239 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:20,324 State		on		room_olli
+2024-07-21 21:24:20,478 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:20,560 State		on		room_olli
+2024-07-21 21:24:20,826 State		on		room_olli
+2024-07-21 21:24:21,140 State		on		room_olli
+2024-07-21 21:24:21,380 State		on		room_olli
+2024-07-21 21:24:21,610 State		on		room_olli
+2024-07-21 21:24:21,768 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:21,852 State		on		room_olli
+2024-07-21 21:24:21,999 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:22,080 State		on		room_olli
+2024-07-21 21:24:22,239 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:22,325 State		on		room_olli
+2024-07-21 21:24:22,478 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:22,560 State		on		room_olli
+2024-07-21 21:24:22,708 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:22,791 State		on		room_olli
+2024-07-21 21:24:22,948 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:23,030 State		on		room_olli
+2024-07-21 21:24:23,178 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:23,260 State		on		room_olli
+2024-07-21 21:24:23,408 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:23,489 State		on		room_olli
+2024-07-21 21:24:23,638 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:23,720 State		on		room_olli
+2024-07-21 21:24:36,132 
+This program is running
+
+2024-07-21 21:24:36,132 Attempting to connect to the bridge...
+2024-07-21 21:24:36,132 Using ip: 192.168.178.42
+2024-07-21 21:24:36,132 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:24:36,132 Attempting to connect to the bridge...
+2024-07-21 21:24:36,132 Using ip: 192.168.178.42
+2024-07-21 21:24:36,132 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:24:36,142 Attempting to connect to the bridge...
+2024-07-21 21:24:36,142 Using ip: 192.168.178.42
+2024-07-21 21:24:36,142 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:24:36,142 Attempting to connect to the bridge...
+2024-07-21 21:24:36,143 Using ip: 192.168.178.42
+2024-07-21 21:24:36,143 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:24:36,157 Attempting to connect to the bridge...
+2024-07-21 21:24:36,157 Using ip: 192.168.178.42
+2024-07-21 21:24:36,157 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:24:36,157 Attempting to connect to the bridge...
+2024-07-21 21:24:36,157 Using ip: 192.168.178.42
+2024-07-21 21:24:36,157 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:24:36,192 State		on		room_olli
+2024-07-21 21:24:36,413 Daymod		Day		room_olli
+2024-07-21 21:24:36,413 State		on		room_olli
+2024-07-21 21:24:36,852 State		on		room_olli
+2024-07-21 21:24:37,380 State		on		room_olli
+2024-07-21 21:24:37,650 State		on		room_olli
+2024-07-21 21:24:37,881 State		on		room_olli
+2024-07-21 21:24:38,120 State		on		room_olli
+2024-07-21 21:24:38,349 State		on		room_olli
+2024-07-21 21:24:38,579 State		on		room_olli
+2024-07-21 21:24:38,819 State		on		room_olli
+2024-07-21 21:24:39,050 State		on		room_olli
+2024-07-21 21:24:39,286 State		on		room_olli
+2024-07-21 21:24:39,510 State		on		room_olli
+2024-07-21 21:24:39,657 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:39,740 State		on		room_olli
+2024-07-21 21:24:39,887 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:40,029 State		on		room_olli
+2024-07-21 21:24:40,259 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:40,341 State		on		room_olli
+2024-07-21 21:24:40,492 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:40,572 State		on		room_olli
+2024-07-21 21:24:40,728 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:40,810 State		on		room_olli
+2024-07-21 21:24:40,968 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:41,050 State		on		room_olli
+2024-07-21 21:24:41,198 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:41,280 State		on		room_olli
+2024-07-21 21:24:41,431 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:41,521 State		on		room_olli
+2024-07-21 21:24:41,667 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:41,754 State		on		room_olli
+2024-07-21 21:24:41,897 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:41,990 State		on		room_olli
+2024-07-21 21:24:42,096 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:42,180 State		on		room_olli
+2024-07-21 21:24:42,329 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:42,411 State		on		room_olli
+2024-07-21 21:24:42,559 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:42,640 State		on		room_olli
+2024-07-21 21:24:42,788 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:42,870 State		on		room_olli
+2024-07-21 21:24:43,019 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:43,100 State		on		room_olli
+2024-07-21 21:24:43,248 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:43,331 State		on		room_olli
+2024-07-21 21:24:43,561 State		on		room_olli
+2024-07-21 21:24:43,708 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:43,791 State		on		room_olli
+2024-07-21 21:24:44,039 State		on		room_olli
+2024-07-21 21:24:44,187 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:44,269 State		on		room_olli
+2024-07-21 21:24:44,418 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:44,500 State		on		room_olli
+2024-07-21 21:24:44,648 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:44,730 State		on		room_olli
+2024-07-21 21:24:44,960 State		on		room_olli
+2024-07-21 21:24:45,118 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:45,200 State		on		room_olli
+2024-07-21 21:24:45,347 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:45,430 State		on		room_olli
+2024-07-21 21:24:45,578 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:45,659 State		on		room_olli
+2024-07-21 21:24:45,808 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:45,890 State		on		room_olli
+2024-07-21 21:24:46,037 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:46,120 State		on		room_olli
+2024-07-21 21:24:46,267 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:46,350 State		on		room_olli
+2024-07-21 21:24:46,515 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:46,660 Daymod		Day		room_olli
+2024-07-21 21:24:46,660 State		on		room_olli
+2024-07-21 21:24:46,808 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:46,888 Daymod		Day		room_olli
+2024-07-21 21:24:46,888 State		on		room_olli
+2024-07-21 21:24:47,039 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:47,119 Daymod		Day		room_olli
+2024-07-21 21:24:47,119 State		on		room_olli
+2024-07-21 21:24:47,268 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:47,347 Daymod		Day		room_olli
+2024-07-21 21:24:47,347 State		on		room_olli
+2024-07-21 21:24:47,499 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:47,579 Daymod		Day		room_olli
+2024-07-21 21:24:47,579 State		on		room_olli
+2024-07-21 21:24:47,729 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:47,809 Daymod		Day		room_olli
+2024-07-21 21:24:47,809 State		on		room_olli
+2024-07-21 21:24:47,992 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:48,166 Daymod		Day		room_olli
+2024-07-21 21:24:48,166 State		on		room_olli
+2024-07-21 21:24:48,318 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:48,398 Daymod		Day		room_olli
+2024-07-21 21:24:48,398 State		on		room_olli
+2024-07-21 21:24:48,709 Daymod		Day		room_olli
+2024-07-21 21:24:48,710 State		on		room_olli
+2024-07-21 21:24:48,898 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:48,979 Daymod		Day		room_olli
+2024-07-21 21:24:48,979 State		on		room_olli
+2024-07-21 21:24:49,128 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:49,209 Daymod		Day		room_olli
+2024-07-21 21:24:49,209 State		on		room_olli
+2024-07-21 21:24:49,698 Daymod		Day		room_olli
+2024-07-21 21:24:49,698 State		on		room_olli
+2024-07-21 21:24:49,847 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:49,928 Daymod		Day		room_olli
+2024-07-21 21:24:49,928 State		on		room_olli
+2024-07-21 21:24:50,078 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:50,158 Daymod		Day		room_olli
+2024-07-21 21:24:50,158 State		on		room_olli
+2024-07-21 21:24:50,308 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:50,389 Daymod		Day		room_olli
+2024-07-21 21:24:50,389 State		on		room_olli
+2024-07-21 21:24:50,541 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:50,618 Daymod		Day		room_olli
+2024-07-21 21:24:50,618 State		on		room_olli
+2024-07-21 21:24:50,770 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:50,848 Daymod		Day		room_olli
+2024-07-21 21:24:50,848 State		on		room_olli
+2024-07-21 21:24:50,999 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:51,078 Daymod		Day		room_olli
+2024-07-21 21:24:51,078 State		on		room_olli
+2024-07-21 21:24:51,228 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:51,308 Daymod		Day		room_olli
+2024-07-21 21:24:51,308 State		on		room_olli
+2024-07-21 21:24:51,458 ERROR: Internal error, 404 for group 1
+2024-07-21 21:24:51,538 Daymod		Day		room_olli
+2024-07-21 21:24:51,538 State		on		room_olli
+2024-07-21 21:25:13,050 
+This program is running
+
+2024-07-21 21:25:13,050 Attempting to connect to the bridge...
+2024-07-21 21:25:13,050 Using ip: 192.168.178.42
+2024-07-21 21:25:13,050 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:25:13,050 Attempting to connect to the bridge...
+2024-07-21 21:25:13,051 Using ip: 192.168.178.42
+2024-07-21 21:25:13,051 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:25:13,062 Attempting to connect to the bridge...
+2024-07-21 21:25:13,062 Using ip: 192.168.178.42
+2024-07-21 21:25:13,062 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:25:13,062 Attempting to connect to the bridge...
+2024-07-21 21:25:13,062 Using ip: 192.168.178.42
+2024-07-21 21:25:13,062 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:25:13,073 Attempting to connect to the bridge...
+2024-07-21 21:25:13,073 Using ip: 192.168.178.42
+2024-07-21 21:25:13,073 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:25:13,073 Attempting to connect to the bridge...
+2024-07-21 21:25:13,073 Using ip: 192.168.178.42
+2024-07-21 21:25:13,073 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:25:13,109 State		on		room_olli
+2024-07-21 21:25:13,447 Daymod		Day		room_olli
+2024-07-21 21:25:13,448 State		on		room_olli
+2024-07-21 21:25:13,884 State		on		room_olli
+2024-07-21 21:25:14,449 State		on		room_olli
+2024-07-21 21:25:14,710 State		on		room_olli
+2024-07-21 21:25:14,946 State		on		room_olli
+2024-07-21 21:25:15,170 State		on		room_olli
+2024-07-21 21:25:15,400 State		on		room_olli
+2024-07-21 21:25:15,644 State		on		room_olli
+2024-07-21 21:25:16,010 State		on		room_olli
+2024-07-21 21:25:16,237 State		on		room_olli
+2024-07-21 21:25:16,469 State		on		room_olli
+2024-07-21 21:25:16,700 State		on		room_olli
+2024-07-21 21:25:16,930 State		on		room_olli
+2024-07-21 21:25:17,165 State		on		room_olli
+2024-07-21 21:25:17,400 State		on		room_olli
+2024-07-21 21:25:17,630 State		on		room_olli
+2024-07-21 21:25:17,836 State		on		room_olli
+2024-07-21 21:25:18,071 State		on		room_olli
+2024-07-21 21:25:18,320 State		on		room_olli
+2024-07-21 21:25:18,550 State		on		room_olli
+2024-07-21 21:25:18,780 State		on		room_olli
+2024-07-21 21:25:19,010 State		on		room_olli
+2024-07-21 21:25:19,158 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:19,240 State		on		room_olli
+2024-07-21 21:25:19,471 State		on		room_olli
+2024-07-21 21:25:19,700 State		on		room_olli
+2024-07-21 21:25:19,934 State		on		room_olli
+2024-07-21 21:25:20,160 State		on		room_olli
+2024-07-21 21:25:20,311 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:20,389 State		on		room_olli
+2024-07-21 21:25:20,538 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:20,620 State		on		room_olli
+2024-07-21 21:25:20,768 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:20,851 State		on		room_olli
+2024-07-21 21:25:20,997 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:21,080 State		on		room_olli
+2024-07-21 21:25:21,228 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:21,308 State		on		room_olli
+2024-07-21 21:25:21,458 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:21,540 State		on		room_olli
+2024-07-21 21:25:21,770 State		on		room_olli
+2024-07-21 21:25:21,918 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:22,000 State		on		room_olli
+2024-07-21 21:25:22,148 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:22,268 State		on		room_olli
+2024-07-21 21:25:22,479 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:22,561 State		on		room_olli
+2024-07-21 21:25:22,709 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:22,790 State		on		room_olli
+2024-07-21 21:25:22,938 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:23,021 State		on		room_olli
+2024-07-21 21:25:23,169 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:23,251 State		on		room_olli
+2024-07-21 21:25:23,406 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:23,490 State		on		room_olli
+2024-07-21 21:25:23,638 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:23,721 State		on		room_olli
+2024-07-21 21:25:23,900 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:24,071 State		on		room_olli
+2024-07-21 21:25:24,228 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:24,310 State		on		room_olli
+2024-07-21 21:25:24,472 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:24,553 State		on		room_olli
+2024-07-21 21:25:24,790 State		on		room_olli
+2024-07-21 21:25:25,021 State		on		room_olli
+2024-07-21 21:25:25,361 State		on		room_olli
+2024-07-21 21:25:25,618 State		on		room_olli
+2024-07-21 21:25:25,880 State		on		room_olli
+2024-07-21 21:25:26,028 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:26,110 State		on		room_olli
+2024-07-21 21:25:26,349 State		on		room_olli
+2024-07-21 21:25:26,495 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:26,580 State		on		room_olli
+2024-07-21 21:25:26,728 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:26,810 State		on		room_olli
+2024-07-21 21:25:26,958 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:27,042 State		on		room_olli
+2024-07-21 21:25:27,187 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:27,269 State		on		room_olli
+2024-07-21 21:25:27,418 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:27,511 State		on		room_olli
+2024-07-21 21:25:27,617 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:27,701 State		on		room_olli
+2024-07-21 21:25:27,849 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:27,930 State		on		room_olli
+2024-07-21 21:25:28,078 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:28,160 State		on		room_olli
+2024-07-21 21:25:28,308 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:28,391 State		on		room_olli
+2024-07-21 21:25:28,621 State		on		room_olli
+2024-07-21 21:25:28,857 State		on		room_olli
+2024-07-21 21:25:28,969 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:29,050 State		on		room_olli
+2024-07-21 21:25:29,291 State		on		room_olli
+2024-07-21 21:25:29,438 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:29,520 State		on		room_olli
+2024-07-21 21:25:29,668 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:29,750 State		on		room_olli
+2024-07-21 21:25:29,899 ERROR: Internal error, 404 for group 1
+2024-07-21 21:25:29,988 State		on		room_olli
+2024-07-21 21:26:05,216 
+This program is running
+
+2024-07-21 21:26:05,216 Attempting to connect to the bridge...
+2024-07-21 21:26:05,216 Using ip: 192.168.178.42
+2024-07-21 21:26:05,216 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:26:05,216 Attempting to connect to the bridge...
+2024-07-21 21:26:05,216 Using ip: 192.168.178.42
+2024-07-21 21:26:05,216 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:26:05,227 Attempting to connect to the bridge...
+2024-07-21 21:26:05,227 Using ip: 192.168.178.42
+2024-07-21 21:26:05,227 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:26:05,227 Attempting to connect to the bridge...
+2024-07-21 21:26:05,227 Using ip: 192.168.178.42
+2024-07-21 21:26:05,227 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:26:05,242 Attempting to connect to the bridge...
+2024-07-21 21:26:05,242 Using ip: 192.168.178.42
+2024-07-21 21:26:05,242 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:26:05,242 Attempting to connect to the bridge...
+2024-07-21 21:26:05,242 Using ip: 192.168.178.42
+2024-07-21 21:26:05,242 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:26:05,280 State		on		room_olli
+2024-07-21 21:26:05,453 Daymod		Day		room_olli
+2024-07-21 21:26:05,453 State		on		room_olli
+2024-07-21 21:26:05,882 State		on		room_olli
+2024-07-21 21:26:06,505 State		on		room_olli
+2024-07-21 21:26:06,751 State		on		room_olli
+2024-07-21 21:26:06,990 State		on		room_olli
+2024-07-21 21:26:07,220 State		on		room_olli
+2024-07-21 21:26:07,450 State		on		room_olli
+2024-07-21 21:26:07,679 State		on		room_olli
+2024-07-21 21:26:07,918 State		on		room_olli
+2024-07-21 21:26:08,300 Daymod		Day		room_olli
+2024-07-21 21:26:08,301 State		on		room_olli
+2024-07-21 21:26:08,744 Daymod		Day		room_olli
+2024-07-21 21:26:08,744 State		on		room_olli
+2024-07-21 21:26:09,302 Daymod		Day		room_olli
+2024-07-21 21:26:09,302 State		on		room_olli
+2024-07-21 21:26:09,868 Daymod		Day		room_olli
+2024-07-21 21:26:09,868 State		on		room_olli
+2024-07-21 21:26:10,415 Daymod		Day		room_olli
+2024-07-21 21:26:10,415 State		on		room_olli
+2024-07-21 21:26:11,029 Daymod		Day		room_olli
+2024-07-21 21:26:11,029 State		on		room_olli
+2024-07-21 21:26:11,569 Daymod		Day		room_olli
+2024-07-21 21:26:11,570 State		on		room_olli
+2024-07-21 21:26:12,094 Daymod		Day		room_olli
+2024-07-21 21:26:12,094 State		on		room_olli
+2024-07-21 21:26:12,714 Daymod		Day		room_olli
+2024-07-21 21:26:12,714 State		on		room_olli
+2024-07-21 21:26:13,256 Daymod		Day		room_olli
+2024-07-21 21:26:13,256 State		on		room_olli
+2024-07-21 21:26:13,829 Daymod		Day		room_olli
+2024-07-21 21:26:13,829 State		on		room_olli
+2024-07-21 21:26:14,406 Daymod		Day		room_olli
+2024-07-21 21:26:14,406 State		on		room_olli
+2024-07-21 21:26:15,040 State		on		room_olli
+2024-07-21 21:26:15,529 State		on		room_olli
+2024-07-21 21:26:15,801 State		on		room_olli
+2024-07-21 21:26:16,030 State		on		room_olli
+2024-07-21 21:26:16,270 State		on		room_olli
+2024-07-21 21:26:16,499 State		on		room_olli
+2024-07-21 21:26:16,730 State		on		room_olli
+2024-07-21 21:26:16,962 State		on		room_olli
+2024-07-21 21:26:17,200 State		on		room_olli
+2024-07-21 21:26:17,433 State		on		room_olli
+2024-07-21 21:26:17,669 State		on		room_olli
+2024-07-21 21:26:17,900 State		on		room_olli
+2024-07-21 21:26:18,134 State		on		room_olli
+2024-07-21 21:26:18,360 State		on		room_olli
+2024-07-21 21:26:18,590 State		on		room_olli
+2024-07-21 21:26:18,820 State		on		room_olli
+2024-07-21 21:26:18,968 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:19,050 State		on		room_olli
+2024-07-21 21:26:19,197 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:19,280 State		on		room_olli
+2024-07-21 21:26:19,428 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:19,510 State		on		room_olli
+2024-07-21 21:26:19,657 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:19,740 State		on		room_olli
+2024-07-21 21:26:19,888 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:19,984 State		on		room_olli
+2024-07-21 21:26:20,088 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:20,170 State		on		room_olli
+2024-07-21 21:26:20,400 State		on		room_olli
+2024-07-21 21:26:20,631 State		on		room_olli
+2024-07-21 21:26:20,779 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:20,901 Daymod		Day		room_olli
+2024-07-21 21:26:20,901 State		on		room_olli
+2024-07-21 21:26:21,108 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:21,193 Daymod		Day		room_olli
+2024-07-21 21:26:21,193 State		on		room_olli
+2024-07-21 21:26:21,338 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:21,419 Daymod		Day		room_olli
+2024-07-21 21:26:21,419 State		on		room_olli
+2024-07-21 21:26:21,569 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:21,649 Daymod		Day		room_olli
+2024-07-21 21:26:21,649 State		on		room_olli
+2024-07-21 21:26:21,798 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:21,879 Daymod		Day		room_olli
+2024-07-21 21:26:21,879 State		on		room_olli
+2024-07-21 21:26:22,029 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:22,109 Daymod		Day		room_olli
+2024-07-21 21:26:22,109 State		on		room_olli
+2024-07-21 21:26:22,259 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:22,339 Daymod		Day		room_olli
+2024-07-21 21:26:22,339 State		on		room_olli
+2024-07-21 21:26:22,489 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:22,569 Daymod		Day		room_olli
+2024-07-21 21:26:22,569 State		on		room_olli
+2024-07-21 21:26:22,718 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:22,799 Daymod		Day		room_olli
+2024-07-21 21:26:22,799 State		on		room_olli
+2024-07-21 21:26:23,149 Daymod		Day		room_olli
+2024-07-21 21:26:23,149 State		on		room_olli
+2024-07-21 21:26:23,506 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:23,656 Daymod		Day		room_olli
+2024-07-21 21:26:23,656 State		on		room_olli
+2024-07-21 21:26:23,975 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:24,049 Daymod		Day		room_olli
+2024-07-21 21:26:24,049 State		on		room_olli
+2024-07-21 21:26:24,200 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:24,289 Daymod		Day		room_olli
+2024-07-21 21:26:24,289 State		on		room_olli
+2024-07-21 21:26:24,439 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:24,519 Daymod		Day		room_olli
+2024-07-21 21:26:24,519 State		on		room_olli
+2024-07-21 21:26:24,668 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:24,749 Daymod		Day		room_olli
+2024-07-21 21:26:24,749 State		on		room_olli
+2024-07-21 21:26:24,983 Daymod		Day		room_olli
+2024-07-21 21:26:24,983 State		on		room_olli
+2024-07-21 21:26:25,284 Daymod		Day		room_olli
+2024-07-21 21:26:25,284 State		on		room_olli
+2024-07-21 21:26:25,498 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:25,579 Daymod		Day		room_olli
+2024-07-21 21:26:25,579 State		on		room_olli
+2024-07-21 21:26:25,728 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:25,809 Daymod		Day		room_olli
+2024-07-21 21:26:25,809 State		on		room_olli
+2024-07-21 21:26:25,959 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:26,008 Daymod		Day		room_olli
+2024-07-21 21:26:26,008 State		on		room_olli
+2024-07-21 21:26:26,118 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:26,199 Daymod		Day		room_olli
+2024-07-21 21:26:26,199 State		on		room_olli
+2024-07-21 21:26:26,349 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:26,429 Daymod		Day		room_olli
+2024-07-21 21:26:26,429 State		on		room_olli
+2024-07-21 21:26:26,578 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:26,659 Daymod		Day		room_olli
+2024-07-21 21:26:26,659 State		on		room_olli
+2024-07-21 21:26:26,808 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:26,889 Daymod		Day		room_olli
+2024-07-21 21:26:26,889 State		on		room_olli
+2024-07-21 21:26:27,038 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:27,119 Daymod		Day		room_olli
+2024-07-21 21:26:27,119 State		on		room_olli
+2024-07-21 21:26:27,269 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:27,349 Daymod		Day		room_olli
+2024-07-21 21:26:27,349 State		on		room_olli
+2024-07-21 21:26:27,499 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:27,627 State		on		room_olli
+2024-07-21 21:26:27,828 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:27,910 State		on		room_olli
+2024-07-21 21:26:28,068 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:28,150 State		on		room_olli
+2024-07-21 21:26:28,298 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:28,381 State		on		room_olli
+2024-07-21 21:26:28,528 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:28,611 State		on		room_olli
+2024-07-21 21:26:28,768 ERROR: Internal error, 404 for group 1
+2024-07-21 21:26:28,856 State		on		room_olli
+2024-07-21 21:26:29,008 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:21,720 
+This program is running
+
+2024-07-21 21:29:21,721 Attempting to connect to the bridge...
+2024-07-21 21:29:21,721 Using ip: 192.168.178.42
+2024-07-21 21:29:21,721 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:29:21,721 Attempting to connect to the bridge...
+2024-07-21 21:29:21,721 Using ip: 192.168.178.42
+2024-07-21 21:29:21,721 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:29:21,730 Attempting to connect to the bridge...
+2024-07-21 21:29:21,730 Using ip: 192.168.178.42
+2024-07-21 21:29:21,730 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:29:21,730 Attempting to connect to the bridge...
+2024-07-21 21:29:21,730 Using ip: 192.168.178.42
+2024-07-21 21:29:21,730 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:29:21,748 Attempting to connect to the bridge...
+2024-07-21 21:29:21,749 Using ip: 192.168.178.42
+2024-07-21 21:29:21,749 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:29:21,749 Attempting to connect to the bridge...
+2024-07-21 21:29:21,749 Using ip: 192.168.178.42
+2024-07-21 21:29:21,749 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:29:21,782 Daymod		Day		room_olli
+2024-07-21 21:29:21,782 State		on		room_olli
+2024-07-21 21:29:22,491 State		on		room_olli
+2024-07-21 21:29:23,004 Daymod		Day		room_olli
+2024-07-21 21:29:23,004 State		on		room_olli
+2024-07-21 21:29:23,478 Daymod		Day		room_olli
+2024-07-21 21:29:23,478 State		on		room_olli
+2024-07-21 21:29:24,068 Daymod		Day		room_olli
+2024-07-21 21:29:24,068 State		on		room_olli
+2024-07-21 21:29:24,595 Daymod		Day		room_olli
+2024-07-21 21:29:24,595 State		on		room_olli
+2024-07-21 21:29:25,147 Daymod		Day		room_olli
+2024-07-21 21:29:25,147 State		on		room_olli
+2024-07-21 21:29:25,657 Daymod		Day		room_olli
+2024-07-21 21:29:25,657 State		on		room_olli
+2024-07-21 21:29:26,210 Daymod		Day		room_olli
+2024-07-21 21:29:26,210 State		on		room_olli
+2024-07-21 21:29:26,721 Daymod		Day		room_olli
+2024-07-21 21:29:26,721 State		on		room_olli
+2024-07-21 21:29:27,242 Daymod		Day		room_olli
+2024-07-21 21:29:27,242 State		on		room_olli
+2024-07-21 21:29:27,844 Daymod		Day		room_olli
+2024-07-21 21:29:27,844 State		on		room_olli
+2024-07-21 21:29:28,391 Daymod		Day		room_olli
+2024-07-21 21:29:28,391 State		on		room_olli
+2024-07-21 21:29:28,878 Daymod		Day		room_olli
+2024-07-21 21:29:28,878 State		on		room_olli
+2024-07-21 21:29:29,537 Daymod		Day		room_olli
+2024-07-21 21:29:29,537 State		on		room_olli
+2024-07-21 21:29:30,128 Daymod		Day		room_olli
+2024-07-21 21:29:30,128 State		on		room_olli
+2024-07-21 21:29:30,662 Daymod		Day		room_olli
+2024-07-21 21:29:30,662 State		on		room_olli
+2024-07-21 21:29:31,292 Daymod		Day		room_olli
+2024-07-21 21:29:31,292 State		on		room_olli
+2024-07-21 21:29:32,003 Daymod		Day		room_olli
+2024-07-21 21:29:32,003 State		on		room_olli
+2024-07-21 21:29:32,533 Daymod		Day		room_olli
+2024-07-21 21:29:32,533 State		on		room_olli
+2024-07-21 21:29:33,079 Daymod		Day		room_olli
+2024-07-21 21:29:33,079 State		on		room_olli
+2024-07-21 21:29:33,622 Daymod		Day		room_olli
+2024-07-21 21:29:33,622 State		on		room_olli
+2024-07-21 21:29:34,161 Daymod		Day		room_olli
+2024-07-21 21:29:34,161 State		on		room_olli
+2024-07-21 21:29:34,697 Daymod		Day		room_olli
+2024-07-21 21:29:34,697 State		on		room_olli
+2024-07-21 21:29:35,254 Daymod		Day		room_olli
+2024-07-21 21:29:35,254 State		on		room_olli
+2024-07-21 21:29:35,860 Daymod		Day		room_olli
+2024-07-21 21:29:35,860 State		on		room_olli
+2024-07-21 21:29:36,356 Daymod		Day		room_olli
+2024-07-21 21:29:36,356 State		on		room_olli
+2024-07-21 21:29:36,950 Daymod		Day		room_olli
+2024-07-21 21:29:36,950 State		on		room_olli
+2024-07-21 21:29:37,488 Daymod		Day		room_olli
+2024-07-21 21:29:37,488 State		on		room_olli
+2024-07-21 21:29:38,142 Daymod		Day		room_olli
+2024-07-21 21:29:38,142 State		on		room_olli
+2024-07-21 21:29:38,704 Daymod		Day		room_olli
+2024-07-21 21:29:38,704 State		on		room_olli
+2024-07-21 21:29:39,239 Daymod		Day		room_olli
+2024-07-21 21:29:39,239 State		on		room_olli
+2024-07-21 21:29:39,734 Daymod		Day		room_olli
+2024-07-21 21:29:39,735 State		on		room_olli
+2024-07-21 21:29:40,348 Daymod		Day		room_olli
+2024-07-21 21:29:40,348 State		on		room_olli
+2024-07-21 21:29:40,877 Daymod		Day		room_olli
+2024-07-21 21:29:40,877 State		on		room_olli
+2024-07-21 21:29:41,482 Daymod		Day		room_olli
+2024-07-21 21:29:41,482 State		on		room_olli
+2024-07-21 21:29:42,048 Daymod		Day		room_olli
+2024-07-21 21:29:42,048 State		on		room_olli
+2024-07-21 21:29:42,697 Daymod		Day		room_olli
+2024-07-21 21:29:42,697 State		on		room_olli
+2024-07-21 21:29:43,216 Daymod		Day		room_olli
+2024-07-21 21:29:43,216 State		on		room_olli
+2024-07-21 21:29:43,725 Daymod		Day		room_olli
+2024-07-21 21:29:43,725 State		on		room_olli
+2024-07-21 21:29:44,341 Daymod		Day		room_olli
+2024-07-21 21:29:44,341 State		on		room_olli
+2024-07-21 21:29:44,602 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:44,682 Daymod		Day		room_olli
+2024-07-21 21:29:44,682 State		on		room_olli
+2024-07-21 21:29:44,830 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:44,910 Daymod		Day		room_olli
+2024-07-21 21:29:44,910 State		on		room_olli
+2024-07-21 21:29:45,060 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:45,140 Daymod		Day		room_olli
+2024-07-21 21:29:45,140 State		on		room_olli
+2024-07-21 21:29:45,539 Daymod		Day		room_olli
+2024-07-21 21:29:45,539 State		on		room_olli
+2024-07-21 21:29:45,849 Daymod		Day		room_olli
+2024-07-21 21:29:45,849 State		on		room_olli
+2024-07-21 21:29:46,079 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:46,159 Daymod		Day		room_olli
+2024-07-21 21:29:46,159 State		on		room_olli
+2024-07-21 21:29:46,599 Daymod		Day		room_olli
+2024-07-21 21:29:46,599 State		on		room_olli
+2024-07-21 21:29:46,749 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:46,830 Daymod		Day		room_olli
+2024-07-21 21:29:46,830 State		on		room_olli
+2024-07-21 21:29:46,978 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:47,059 Daymod		Day		room_olli
+2024-07-21 21:29:47,059 State		on		room_olli
+2024-07-21 21:29:47,211 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:47,289 Daymod		Day		room_olli
+2024-07-21 21:29:47,290 State		on		room_olli
+2024-07-21 21:29:47,439 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:47,519 Daymod		Day		room_olli
+2024-07-21 21:29:47,519 State		on		room_olli
+2024-07-21 21:29:47,669 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:47,749 Daymod		Day		room_olli
+2024-07-21 21:29:47,749 State		on		room_olli
+2024-07-21 21:29:47,899 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:47,985 Daymod		Day		room_olli
+2024-07-21 21:29:47,985 State		on		room_olli
+2024-07-21 21:29:48,129 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:48,209 Daymod		Day		room_olli
+2024-07-21 21:29:48,209 State		on		room_olli
+2024-07-21 21:29:48,359 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:48,439 Daymod		Day		room_olli
+2024-07-21 21:29:48,439 State		on		room_olli
+2024-07-21 21:29:48,589 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:48,669 Daymod		Day		room_olli
+2024-07-21 21:29:48,669 State		on		room_olli
+2024-07-21 21:29:48,818 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:48,899 Daymod		Day		room_olli
+2024-07-21 21:29:48,899 State		on		room_olli
+2024-07-21 21:29:49,049 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:49,130 Daymod		Day		room_olli
+2024-07-21 21:29:49,131 State		on		room_olli
+2024-07-21 21:29:49,280 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:49,359 Daymod		Day		room_olli
+2024-07-21 21:29:49,359 State		on		room_olli
+2024-07-21 21:29:49,509 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:49,590 Daymod		Day		room_olli
+2024-07-21 21:29:49,590 State		on		room_olli
+2024-07-21 21:29:49,744 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:49,819 Daymod		Day		room_olli
+2024-07-21 21:29:49,819 State		on		room_olli
+2024-07-21 21:29:49,969 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:50,060 Daymod		Day		room_olli
+2024-07-21 21:29:50,060 State		on		room_olli
+2024-07-21 21:29:50,365 Daymod		Day		room_olli
+2024-07-21 21:29:50,365 State		on		room_olli
+2024-07-21 21:29:50,904 Daymod		Day		room_olli
+2024-07-21 21:29:50,905 State		on		room_olli
+2024-07-21 21:29:51,422 Daymod		Day		room_olli
+2024-07-21 21:29:51,422 State		on		room_olli
+2024-07-21 21:29:51,652 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:51,796 Daymod		Day		room_olli
+2024-07-21 21:29:51,796 State		on		room_olli
+2024-07-21 21:29:51,949 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:52,030 Daymod		Day		room_olli
+2024-07-21 21:29:52,030 State		on		room_olli
+2024-07-21 21:29:52,179 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:52,260 Daymod		Day		room_olli
+2024-07-21 21:29:52,260 State		on		room_olli
+2024-07-21 21:29:52,409 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:52,492 Daymod		Day		room_olli
+2024-07-21 21:29:52,492 State		on		room_olli
+2024-07-21 21:29:52,640 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:52,720 Daymod		Day		room_olli
+2024-07-21 21:29:52,720 State		on		room_olli
+2024-07-21 21:29:52,868 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:52,950 Daymod		Day		room_olli
+2024-07-21 21:29:52,950 State		on		room_olli
+2024-07-21 21:29:53,100 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:53,180 Daymod		Day		room_olli
+2024-07-21 21:29:53,180 State		on		room_olli
+2024-07-21 21:29:53,329 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:53,410 Daymod		Day		room_olli
+2024-07-21 21:29:53,410 State		on		room_olli
+2024-07-21 21:29:53,565 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:53,640 Daymod		Day		room_olli
+2024-07-21 21:29:53,640 State		on		room_olli
+2024-07-21 21:29:53,799 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:53,877 Daymod		Day		room_olli
+2024-07-21 21:29:53,877 State		on		room_olli
+2024-07-21 21:29:54,029 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:54,109 Daymod		Day		room_olli
+2024-07-21 21:29:54,109 State		on		room_olli
+2024-07-21 21:29:54,259 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:54,339 Daymod		Day		room_olli
+2024-07-21 21:29:54,339 State		on		room_olli
+2024-07-21 21:29:54,489 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:54,569 Daymod		Day		room_olli
+2024-07-21 21:29:54,569 State		on		room_olli
+2024-07-21 21:29:54,719 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:54,799 Daymod		Day		room_olli
+2024-07-21 21:29:54,800 State		on		room_olli
+2024-07-21 21:29:55,330 Daymod		Day		room_olli
+2024-07-21 21:29:55,331 State		on		room_olli
+2024-07-21 21:29:55,869 Daymod		Day		room_olli
+2024-07-21 21:29:55,869 State		on		room_olli
+2024-07-21 21:29:56,019 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:56,105 Daymod		Day		room_olli
+2024-07-21 21:29:56,105 State		on		room_olli
+2024-07-21 21:29:56,259 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:56,339 Daymod		Day		room_olli
+2024-07-21 21:29:56,339 State		on		room_olli
+2024-07-21 21:29:56,490 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:56,579 Daymod		Day		room_olli
+2024-07-21 21:29:56,579 State		on		room_olli
+2024-07-21 21:29:56,729 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:56,809 Daymod		Day		room_olli
+2024-07-21 21:29:56,809 State		on		room_olli
+2024-07-21 21:29:56,959 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:57,039 Daymod		Day		room_olli
+2024-07-21 21:29:57,039 State		on		room_olli
+2024-07-21 21:29:57,189 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:57,270 Daymod		Day		room_olli
+2024-07-21 21:29:57,270 State		on		room_olli
+2024-07-21 21:29:57,429 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:57,509 Daymod		Day		room_olli
+2024-07-21 21:29:57,509 State		on		room_olli
+2024-07-21 21:29:57,659 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:57,741 Daymod		Day		room_olli
+2024-07-21 21:29:57,741 State		on		room_olli
+2024-07-21 21:29:57,889 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:57,969 Daymod		Day		room_olli
+2024-07-21 21:29:57,969 State		on		room_olli
+2024-07-21 21:29:58,129 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:58,210 Daymod		Day		room_olli
+2024-07-21 21:29:58,210 State		on		room_olli
+2024-07-21 21:29:58,359 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:58,440 Daymod		Day		room_olli
+2024-07-21 21:29:58,440 State		on		room_olli
+2024-07-21 21:29:58,590 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:58,748 Daymod		Day		room_olli
+2024-07-21 21:29:58,749 State		on		room_olli
+2024-07-21 21:29:58,947 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:59,030 Daymod		Day		room_olli
+2024-07-21 21:29:59,030 State		on		room_olli
+2024-07-21 21:29:59,179 ERROR: Internal error, 404 for group 1
+2024-07-21 21:29:59,261 Daymod		Day		room_olli
+2024-07-21 21:29:59,261 State		on		room_olli
+2024-07-21 21:29:59,698 Daymod		Day		room_olli
+2024-07-21 21:29:59,698 State		on		room_olli
+2024-07-21 21:30:00,118 Daymod		Day		room_olli
+2024-07-21 21:30:00,119 State		on		room_olli
+2024-07-21 21:30:00,360 ERROR: Internal error, 404 for group 1
+2024-07-21 21:30:00,440 Daymod		Day		room_olli
+2024-07-21 21:30:00,440 State		on		room_olli
+2024-07-21 21:30:00,559 ERROR: Internal error, 404 for group 1
+2024-07-21 21:30:00,640 Daymod		Day		room_olli
+2024-07-21 21:30:00,640 State		on		room_olli
+2024-07-21 21:30:00,790 ERROR: Internal error, 404 for group 1
+2024-07-21 21:30:00,869 Daymod		Day		room_olli
+2024-07-21 21:30:00,870 State		on		room_olli
+2024-07-21 21:30:01,020 ERROR: Internal error, 404 for group 1
+2024-07-21 21:30:01,104 Daymod		Day		room_olli
+2024-07-21 21:30:01,104 State		on		room_olli
+2024-07-21 21:30:01,249 ERROR: Internal error, 404 for group 1
+2024-07-21 21:30:30,977 
+This program is running
+
+2024-07-21 21:30:30,977 Attempting to connect to the bridge...
+2024-07-21 21:30:30,978 Using ip: 192.168.178.42
+2024-07-21 21:30:30,978 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:30,978 Attempting to connect to the bridge...
+2024-07-21 21:30:30,978 Using ip: 192.168.178.42
+2024-07-21 21:30:30,978 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:30,988 Attempting to connect to the bridge...
+2024-07-21 21:30:30,988 Using ip: 192.168.178.42
+2024-07-21 21:30:30,988 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:30,988 Attempting to connect to the bridge...
+2024-07-21 21:30:30,988 Using ip: 192.168.178.42
+2024-07-21 21:30:30,988 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:31,003 Attempting to connect to the bridge...
+2024-07-21 21:30:31,003 Using ip: 192.168.178.42
+2024-07-21 21:30:31,003 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:31,003 Attempting to connect to the bridge...
+2024-07-21 21:30:31,003 Using ip: 192.168.178.42
+2024-07-21 21:30:31,003 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:31,038 Daymod		Day		room_olli
+2024-07-21 21:30:31,038 State		on		room_olli
+2024-07-21 21:30:31,380 State		on		room_olli
+2024-07-21 21:30:31,844 Daymod		Day		room_olli
+2024-07-21 21:30:31,844 State		on		room_olli
+2024-07-21 21:30:32,336 Daymod		Day		room_olli
+2024-07-21 21:30:32,337 State		on		room_olli
+2024-07-21 21:30:32,877 Daymod		Day		room_olli
+2024-07-21 21:30:32,877 State		on		room_olli
+2024-07-21 21:30:33,428 Daymod		Day		room_olli
+2024-07-21 21:30:33,428 State		on		room_olli
+2024-07-21 21:30:33,951 Daymod		Day		room_olli
+2024-07-21 21:30:33,951 State		on		room_olli
+2024-07-21 21:30:34,512 Daymod		Day		room_olli
+2024-07-21 21:30:34,512 State		on		room_olli
+2024-07-21 21:30:35,039 Daymod		Day		room_olli
+2024-07-21 21:30:35,039 State		on		room_olli
+2024-07-21 21:30:35,600 Daymod		Day		room_olli
+2024-07-21 21:30:35,600 State		on		room_olli
+2024-07-21 21:30:36,159 Daymod		Day		room_olli
+2024-07-21 21:30:36,159 State		on		room_olli
+2024-07-21 21:30:45,053 
+This program is running
+
+2024-07-21 21:30:45,053 Attempting to connect to the bridge...
+2024-07-21 21:30:45,054 Using ip: 192.168.178.42
+2024-07-21 21:30:45,054 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:45,054 Attempting to connect to the bridge...
+2024-07-21 21:30:45,054 Using ip: 192.168.178.42
+2024-07-21 21:30:45,054 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:45,064 Attempting to connect to the bridge...
+2024-07-21 21:30:45,064 Using ip: 192.168.178.42
+2024-07-21 21:30:45,064 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:45,064 Attempting to connect to the bridge...
+2024-07-21 21:30:45,064 Using ip: 192.168.178.42
+2024-07-21 21:30:45,064 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:45,079 Attempting to connect to the bridge...
+2024-07-21 21:30:45,079 Using ip: 192.168.178.42
+2024-07-21 21:30:45,079 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:45,079 Attempting to connect to the bridge...
+2024-07-21 21:30:45,079 Using ip: 192.168.178.42
+2024-07-21 21:30:45,079 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:30:45,113 Daymod		Day		room_olli
+2024-07-21 21:30:45,113 State		on		room_olli
+2024-07-21 21:30:47,559 State		on		room_olli
+2024-07-21 21:30:47,944 Daymod		Day		room_olli
+2024-07-21 21:30:47,944 State		on		room_olli
+2024-07-21 21:30:50,400 Daymod		Day		room_olli
+2024-07-21 21:30:50,400 State		on		room_olli
+2024-07-21 21:30:52,926 Daymod		Day		room_olli
+2024-07-21 21:30:52,926 State		on		room_olli
+2024-07-21 21:30:55,367 Daymod		Day		room_olli
+2024-07-21 21:30:55,367 State		on		room_olli
+2024-07-21 21:30:57,796 Daymod		Day		room_olli
+2024-07-21 21:30:57,796 State		on		room_olli
+2024-07-21 21:31:00,238 Daymod		Day		room_olli
+2024-07-21 21:31:00,238 State		on		room_olli
+2024-07-21 21:31:02,667 Daymod		Day		room_olli
+2024-07-21 21:31:02,667 State		on		room_olli
+2024-07-21 21:31:05,115 Daymod		Day		room_olli
+2024-07-21 21:31:05,115 State		on		room_olli
+2024-07-21 21:31:07,549 Daymod		Day		room_olli
+2024-07-21 21:31:07,549 State		on		room_olli
+2024-07-21 21:31:09,978 Daymod		Day		room_olli
+2024-07-21 21:31:09,978 State		on		room_olli
+2024-07-21 21:31:12,420 Daymod		Day		room_olli
+2024-07-21 21:31:12,421 State		on		room_olli
+2024-07-21 21:31:14,879 Daymod		Day		room_olli
+2024-07-21 21:31:14,879 State		on		room_olli
+2024-07-21 21:31:17,317 Daymod		Day		room_olli
+2024-07-21 21:31:17,317 State		on		room_olli
+2024-07-21 21:31:19,731 Daymod		Day		room_olli
+2024-07-21 21:31:19,731 State		on		room_olli
+2024-07-21 21:31:22,178 Daymod		Day		room_olli
+2024-07-21 21:31:22,178 State		on		room_olli
+2024-07-21 21:31:24,625 Daymod		Day		room_olli
+2024-07-21 21:31:24,625 State		on		room_olli
+2024-07-21 21:31:27,067 Daymod		Day		room_olli
+2024-07-21 21:31:27,067 State		on		room_olli
+2024-07-21 21:31:29,562 Daymod		Day		room_olli
+2024-07-21 21:31:29,562 State		on		room_olli
+2024-07-21 21:31:32,014 Daymod		Day		room_olli
+2024-07-21 21:31:32,014 State		on		room_olli
+2024-07-21 21:31:34,446 Daymod		Day		room_olli
+2024-07-21 21:31:34,446 State		on		room_olli
+2024-07-21 21:31:36,883 Daymod		Day		room_olli
+2024-07-21 21:31:36,883 State		on		room_olli
+2024-07-21 21:31:39,331 Daymod		Day		room_olli
+2024-07-21 21:31:39,332 State		on		room_olli
+2024-07-21 21:31:41,757 Daymod		Day		room_olli
+2024-07-21 21:31:41,757 State		on		room_olli
+2024-07-21 21:31:46,418 
+This program is running
+
+2024-07-21 21:31:46,418 Attempting to connect to the bridge...
+2024-07-21 21:31:46,418 Using ip: 192.168.178.42
+2024-07-21 21:31:46,418 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:31:46,418 Attempting to connect to the bridge...
+2024-07-21 21:31:46,418 Using ip: 192.168.178.42
+2024-07-21 21:31:46,418 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:31:46,431 Attempting to connect to the bridge...
+2024-07-21 21:31:46,431 Using ip: 192.168.178.42
+2024-07-21 21:31:46,431 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:31:46,431 Attempting to connect to the bridge...
+2024-07-21 21:31:46,431 Using ip: 192.168.178.42
+2024-07-21 21:31:46,431 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:31:46,446 Attempting to connect to the bridge...
+2024-07-21 21:31:46,446 Using ip: 192.168.178.42
+2024-07-21 21:31:46,446 Using username from config: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:31:46,446 Attempting to connect to the bridge...
+2024-07-21 21:31:46,446 Using ip: 192.168.178.42
+2024-07-21 21:31:46,446 Using username: PM9in550oPZVBsPPl7maZ4ltK7YIhSRW4dDIOVlY
+2024-07-21 21:31:46,481 Daymod		Day		room_olli
+2024-07-21 21:31:46,481 State		on		room_olli
+2024-07-21 21:31:48,915 State		on		room_olli
+2024-07-21 21:31:49,315 Daymod		Day		room_olli
+2024-07-21 21:31:49,315 State		on		room_olli
+2024-07-21 21:31:51,790 Daymod		Day		room_olli
+2024-07-21 21:31:51,790 State		on		room_olli
+2024-07-21 21:31:54,258 Daymod		Day		room_olli
+2024-07-21 21:31:54,258 State		on		room_olli
+2024-07-21 21:31:58,722 Daymod		Day		room_olli
+2024-07-21 21:31:58,722 State		on		room_olli
+2024-07-21 21:32:01,178 Daymod		Day		room_olli
+2024-07-21 21:32:01,178 State		on		room_olli
+2024-07-21 21:32:03,610 Daymod		Day		room_olli
+2024-07-21 21:32:03,611 State		on		room_olli
+2024-07-21 21:32:06,059 Daymod		Day		room_olli
+2024-07-21 21:32:06,059 State		on		room_olli
+2024-07-21 21:32:08,517 Daymod		Day		room_olli
+2024-07-21 21:32:08,517 State		on		room_olli
+2024-07-21 21:32:10,950 Daymod		Day		room_olli
+2024-07-21 21:32:10,950 State		on		room_olli
