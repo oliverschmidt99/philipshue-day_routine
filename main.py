@@ -23,7 +23,7 @@ logging.basicConfig(
 # Const
 BRI_OFF = 0
 BRI_LOW = 50
-BRI_MID = 150
+BRI_MID = 100
 BRI_MAX = 255
 
 
@@ -36,14 +36,14 @@ if __name__ == "__main__":
     # routine_olli = Routine(room_olli_daytime, room_olli, 50, 100, 100, 200)
 
     zone_outside = Room([24], None, [190, 193], "zone_outside")
-    zone_outside_ts = Daily_time(6, 0, 23, 30)  # ts -> time span;
+    zone_outside_ts = Daily_time(6, 0, 23, 0)  # ts -> time span;
     zone_outside_rt = Routine(
         daily_time=zone_outside_ts,
         room=zone_outside,
         bri_morning=BRI_MAX,
         bri_day=BRI_OFF,
         bri_afternoon=BRI_MAX,
-        bri_night=BRI_LOW,
+        bri_night=BRI_OFF,
         mod_mornig=0,
         mod_day=0,
         mod_afternoon=0,
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         room=zone_inside,
         bri_morning=BRI_MAX,
         bri_day=BRI_OFF,
-        bri_afternoon=BRI_MAX,
+        bri_afternoon=BRI_MID,
         bri_night=BRI_LOW,
         mod_mornig=0,
         mod_day=0,

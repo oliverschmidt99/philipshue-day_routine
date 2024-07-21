@@ -92,7 +92,7 @@ class Daily_time(Time_format):
             elif sunset_time <= current_time < end_time:
                 return 3
             else:
-                return 3
+                return 4
 
 
 class Daily_routine(Daily_time):
