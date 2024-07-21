@@ -8,10 +8,6 @@ import time
 import logging
 import os
 
-sen = b.get_sensor_objects("name")
-light_names = b.get_light_objects("name")
-lights = b.lights
-
 
 aktueller_pfad = os.path.dirname(__file__)
 datei_log = "info.log"
@@ -31,10 +27,24 @@ if __name__ == "__main__":
     print("This program is running")
     logging.info("\nThis program is running\n")
 
-    # room_olli = Room([1], [5, 99], [2, 3, 4])
-    # room_olli_daytime = Daily_time(8, 0, 0, 22, 0, 0)
-    # routine_olli = Routine(room_olli_daytime, room_olli, 50, 100, 100, 200)
+    room_olli = Room(
+        group_ids=[1], switch_ids=[5, 99], sensor_id=2, name_room="room_olli"
+    )
 
+    olli = Routine(
+        daily_time=Daily_time(8, 0, 22, 0),
+        room=room_olli,
+        bri_afternoon=BRI_MAX,
+        bri_day=BRI_MAX,
+        bri_morning=BRI_MAX,
+        bri_night=BRI_MID,
+        mod_afternoon=0,
+        mod_day=0,
+        mod_mornig=0,
+        mod_night=0,
+    )
+
+    """
     zone_outside = Room([24], None, [190, 193], "zone_outside")
     zone_outside_ts = Daily_time(6, 0, 23, 30)  # ts -> time span;
     zone_outside_rt = Routine(
@@ -64,8 +74,15 @@ if __name__ == "__main__":
         mod_afternoon=0,
         mod_night=0,
     )  # rt -> routine
-
+    """
     while True:
-        time.sleep(0.5)
-        zone_outside_rt.adjust_lighting()
-        zone_inside_rt.adjust_lighting()
+
+        olli.adjust_lighting()
+
+        a = room_olli.temperature.get_temperature()
+        print(a)
+        b = room_olli.brightness.get_brightness()
+        print(b)
+        c = room_olli.motion.get_motion()
+        print(c)
+        time.sleep(2)

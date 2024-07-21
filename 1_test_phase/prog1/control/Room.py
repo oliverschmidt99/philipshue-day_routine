@@ -21,9 +21,13 @@ class Room(Sensor):
         self.sensor_id = sensor_id
         self.name_room = name_room
 
-        self.motion = Motion(self.sensor_id, name_room)
-        self.brithness = Brightness(self.sensor_id, name_room)
-        self.temperature = Temperature(self.sensor_id, name_room)
+        self.motion = Motion(sensor_id=self.sensor_id, name_room=self.name_room)
+        self.brightness = Brightness(
+            sensor_id=self.sensor_id + 1, name_room=self.name_room
+        )
+        self.temperature = Temperature(
+            sensor_id=self.sensor_id + 2, name_room=self.name_room
+        )
 
     def turn_off_groups(self):
 
