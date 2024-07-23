@@ -36,7 +36,7 @@ if __name__ == "__main__":
     # routine_olli = Routine(room_olli_daytime, room_olli, 50, 100, 100, 200)
 
     zone_outside = Room([24], None, [190, 193], "zone_outside")
-    zone_outside_ts = Daily_time(6, 0, 23, 0)  # ts -> time span;
+    zone_outside_ts = Daily_time(6, 0, 22, 0)  # ts -> time span;
     zone_outside_rt = Routine(
         daily_time=zone_outside_ts,
         room=zone_outside,
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     )  # rt -> routine
 
     zone_inside = Room([87], None, None, "zone_inside")
-    zone_inside_ts = Daily_time(5, 30, 23, 30)  # ts -> time span;
+    zone_inside_ts = Daily_time(5, 30, 22, 30)  # ts -> time span;
     zone_inside_rt = Routine(
         daily_time=zone_inside_ts,
         room=zone_inside,
