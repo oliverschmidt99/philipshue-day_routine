@@ -42,25 +42,27 @@ class Routine:
         print(now_bri)
 
         if time_span == 1:  # Day
-            if self.bri_check and now_bri < 10000:
-                print("1 1")
+            if self.bri_check and now_bri < 13000:
+                
                 if self.mod_day == 1:
-                    print("1 2")
+                    
                     self.mod_day += 1
                     self.room.turn_on_groups(self.day)
-            else:
-                self.mod_day -= 2
+            elif self.mod_day > 1:
+                
+                self.mod_day -= 1
 
-            if self.mod_day != 1:
-                print("2 1")
+            if self.mod_day < 1:
+                
                 self.mod_day += 1
                 self.mod_night = 0
                 logging.info(f"Daymod\t\tDay\t\t{self.room.name_room}")
                 if self.day.bri == 0:
-                    print("2 2")
+                    
                     self.room.turn_off_groups()
                 else:
-                    self.room.turn_on_groups(self.night)
+                    
+                    self.room.turn_on_groups(self.day)
 
         elif time_span == 2:
             if self.mod_morning != 1:
@@ -77,7 +79,7 @@ class Routine:
             if self.mod_afternoon != 1:
                 self.mod_afternoon += 1
                 self.mod_day = 0
-                logging.info(f"Daymod\t\tAfternoon\t\t{self.room.name_room}")
+                logging.info(f"Daymod\t\tAfternoon\t{self.room.name_room}")
                 if self.afternoon.bri == 0:
                     self.room.turn_off_groups()
                 else:
