@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     
     zone_outside = Room(
-        group_ids=[1], switch_ids=[5, 99], sensor_id=190, name_room="zone_outside"
+        group_ids=[1], switch_ids=[5, 99], sensor_id=194, name_room="zone_outside"
     )
     zone_outside_rt = Routine(
         room=zone_outside,

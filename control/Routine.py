@@ -49,12 +49,12 @@ class Routine:
         
         if self.bri_check is True:
             now_bri = self.room.brightness.get_brightness()
-            #print(now_bri)
+            print(now_bri)
 
         
 
         if time_span == 1:  # Day
-            if self.bri_check and now_bri < 10000:
+            if self.bri_check and now_bri < 15000:
                 if self.mod_day == 1:
                     logging.info(f"bri_check\t\tDark\t\t{self.room.name_room}")
                     self.mod_day += 1

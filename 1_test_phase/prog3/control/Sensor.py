@@ -7,15 +7,15 @@ import time
 
 class Sensor:
 
-    def __init__(self, bridge_ip, sensor_id, name_room):
-        self.bridge = Bridge(bridge_ip)
+    def __init__(self,  sensor_id, name_room):
+        
         self.sensor_id = sensor_id
-        self.bridge.connect()
-        self.sensor_data = self.bridge.get_sensor(sensor_id)
+
+        self.sensor_data = b.get_sensor(sensor_id)
         self.name_room = name_room
 
     def get_sensor(self, sensor_id):
-        return self.bridge.get_sensor(sensor_id)
+        return b.get_sensor(sensor_id)
 
     def get_attribute(self, attribute_name):
         sen = self.get_sensor(self.sensor_id)
@@ -26,8 +26,8 @@ class Motion(Sensor):
 
     last_active_time = 0
 
-    def __init__(self, bridge_ip, sensor_id, name_room, room_instance):
-        super().__init__(bridge_ip, sensor_id, name_room)
+    def __init__(self, sensor_id, name_room, room_instance):
+        super().__init__( sensor_id, name_room)
         self.room_instance = room_instance
 
     def get_motion(self):
@@ -46,8 +46,8 @@ class Motion(Sensor):
 
 class Brightness(Sensor):
 
-    def __init__(self, bridge_ip, sensor_id, name_room, room_instance):
-        super().__init__(bridge_ip, sensor_id, name_room)
+    def __init__(self, sensor_id, name_room, room_instance):
+        super().__init__(sensor_id, name_room)
         self.room_instance = room_instance
 
     def get_brightness(self):
@@ -55,8 +55,8 @@ class Brightness(Sensor):
 
 
 class Temperature(Sensor):
-    def __init__(self, bridge_ip, sensor_id, name_room):
-        super().__init__(bridge_ip, sensor_id, name_room)
+    def __init__(self, sensor_id, name_room):
+        super().__init__(sensor_id, name_room)
 
     def get_temperature(self):
         temperature = self.get_attribute("temperature")
