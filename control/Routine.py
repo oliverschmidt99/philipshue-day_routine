@@ -46,13 +46,17 @@ class Routine:
     def run_routine(self):
 
         time_span = self.daily_time.get_time_span()
-        now_bri = self.room.brightness.get_brightness()
+        
+        if self.bri_check is True:
+            now_bri = self.room.brightness.get_brightness()
+            #print(now_bri)
 
-        print(now_bri)
+        
 
         if time_span == 1:  # Day
-            if self.bri_check and now_bri < 13000:
+            if self.bri_check and now_bri < 10000:
                 if self.mod_day == 1:
+                    logging.info(f"bri_check\t\tDark\t\t{self.room.name_room}")
                     self.mod_day += 1
                     self.room.turn_on_groups(self.afternoon)
             elif self.mod_day > 1:
@@ -60,6 +64,7 @@ class Routine:
                     self.room.turn_off_groups()
                 else:
                     self.room.turn_on_groups(self.day)
+                logging.info(f"bri_check\t\tbright\t\t{self.room.name_room}")
                 self.mod_day -= 1
 
             if self.mod_day < 1:

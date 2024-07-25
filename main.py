@@ -31,6 +31,9 @@ if __name__ == "__main__":
         group_ids=[1], switch_ids=[5, 99], sensor_id=2, name_room="room_olli"
     )
 
+
+
+    """
     olli = Routine(
         room=room_olli,
         daily_time=Daily_time(6, 0, 19, 0),
@@ -44,41 +47,49 @@ if __name__ == "__main__":
         mod_night=0,
         bri_check=True,
     )
-
     """
-    zone_outside = Room([24], None, [190, 193], "zone_outside")
-    zone_outside_ts = Daily_time(6, 0, 23, 30)  # ts -> time span;
+    
+
+    
+    zone_outside = Room(
+        group_ids=[1], switch_ids=[5, 99], sensor_id=190, name_room="zone_outside"
+    )
     zone_outside_rt = Routine(
-        daily_time=zone_outside_ts,
         room=zone_outside,
-        bri_morning=BRI_MAX,
-        bri_day=BRI_OFF,
-        bri_afternoon=BRI_MAX,
-        bri_night=BRI_LOW,
-        mod_mornig=0,
+        daily_time=Daily_time(5, 0, 21, 30),
+        morning=Scene(bri=BRI_MAX, sat=250, ct=0, t_time=1000),
+        day=Scene(bri=BRI_OFF, sat=0, ct=0, t_time=0),
+        afternoon=Scene(bri=BRI_MAX, sat=0, ct=0, t_time=1000),
+        night=Scene(bri=BRI_OFF, sat=0, ct=0, t_time=1000),
+        mod_morning=0,
         mod_day=0,
         mod_afternoon=0,
         mod_night=0,
+        bri_check=False,
     )  # rt -> routine
 
-    zone_inside = Room([87], None, None, "zone_inside")
-    zone_inside_ts = Daily_time(5, 30, 23, 30)  # ts -> time span;
+    zone_inside = Room(
+        group_ids=[87], switch_ids=[5, 99], sensor_id=190, name_room="zone_inside"
+    )
     zone_inside_rt = Routine(
-        daily_time=zone_inside_ts,
         room=zone_inside,
-        bri_morning=BRI_MAX,
-        bri_day=BRI_OFF,
-        bri_afternoon=BRI_MAX,
-        bri_night=BRI_LOW,
-        mod_mornig=0,
+        daily_time=Daily_time(5, 0, 22, 0),
+        morning=Scene(bri=BRI_MID, sat=250, ct=300, t_time=10),
+        day=Scene(bri=BRI_OFF, sat=0, ct=0, t_time=0),
+        afternoon=Scene(bri=BRI_MAX, sat=250, ct=300, t_time=10),
+        night=Scene(bri=BRI_LOW, sat=250, ct=300, t_time=10),
+        mod_morning=0,
         mod_day=0,
         mod_afternoon=0,
         mod_night=0,
+        bri_check=True,
     )  # rt -> routine
-    """
+    
+
     while True:
 
-        olli.run_routine()
+        zone_outside_rt.run_routine()
+        zone_inside_rt.run_routine()
 
         
 

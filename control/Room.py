@@ -22,21 +22,25 @@ class Room(Sensor):
         self.sensor_id = sensor_id
         self.name_room = name_room
 
-        self.motion = Motion(
-            sensor_id=self.sensor_id,
-            name_room=self.name_room,
-            bridge_ip=BRIDGE_IP,
-            room_instance=self,
-        )
-        self.brightness = Brightness(
-            sensor_id=self.sensor_id + 1,
-            name_room=self.name_room,
-            bridge_ip=BRIDGE_IP,
-            room_instance=self,
-        )
-        self.temperature = Temperature(
-            sensor_id=self.sensor_id + 2, name_room=self.name_room, bridge_ip=BRIDGE_IP
-        )
+
+        if self.sensor_id is not None:
+            self.motion = Motion(
+                sensor_id=self.sensor_id,
+                name_room=self.name_room,
+                bridge_ip=BRIDGE_IP,
+                room_instance=self,
+            )
+            self.brightness = Brightness(
+                sensor_id=self.sensor_id + 1,
+                name_room=self.name_room,
+                bridge_ip=BRIDGE_IP,
+                room_instance=self,
+            )
+            self.temperature = Temperature(
+                sensor_id=self.sensor_id + 2, name_room=self.name_room, bridge_ip=BRIDGE_IP
+            )
+        
+
 
     def turn_off_groups(self):
         for group_id in self.group_ids:
