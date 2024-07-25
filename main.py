@@ -76,7 +76,7 @@ if __name__ == "__main__":
         daily_time=Daily_time(5, 0, 22, 0),
         morning=Scene(bri=BRI_MID, sat=250, ct=300, t_time=10),
         day=Scene(bri=BRI_OFF, sat=0, ct=0, t_time=0),
-        afternoon=Scene(bri=BRI_MAX, sat=250, ct=300, t_time=10),
+        afternoon=Scene(bri=BRI_MID, sat=250, ct=200, t_time=10),
         night=Scene(bri=BRI_LOW, sat=250, ct=300, t_time=10),
         mod_morning=0,
         mod_day=0,

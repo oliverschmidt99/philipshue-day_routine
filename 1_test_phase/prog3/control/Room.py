@@ -23,20 +23,20 @@ class Room(Sensor):
         self.name_room = name_room
 
 
-        if self.sensor_id is not None:
-            self.motion = Motion(
-                sensor_id=self.sensor_id,
-                name_room=self.name_room,
-                room_instance=self,
-            )
-            self.brightness = Brightness(
-                sensor_id=self.sensor_id + 1,
-                name_room=self.name_room,
-                room_instance=self,
-            )
-            self.temperature = Temperature(
-                sensor_id=self.sensor_id + 2, name_room=self.name_room
-            )
+        
+        self.motion = Motion(
+            sensor_id=self.sensor_id,
+            name_room=self.name_room,
+            room_instance=self,
+        )
+        self.brightness = Brightness(
+            sensor_id=self.sensor_id,
+            name_room=self.name_room,
+            room_instance=self,
+        )
+        self.temperature = Temperature(
+            sensor_id=self.sensor_id, name_room=self.name_room
+        )
         
 
 

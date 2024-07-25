@@ -27,9 +27,7 @@ if __name__ == "__main__":
     print("This program is running")
     logging.info("\nThis program is running\n")
 
-    room_olli = Room(
-        group_ids=[1], switch_ids=[5, 99], sensor_id=2, name_room="room_olli"
-    )
+    room_olli = Room(group_ids=[1], switch_ids=[5, 99], sensor_id=2, name_room="room_olli")
 
 
 
@@ -61,15 +59,11 @@ if __name__ == "__main__":
         day=Scene(bri=BRI_OFF, sat=0, ct=0, t_time=0),
         afternoon=Scene(bri=BRI_MAX, sat=0, ct=0, t_time=1000),
         night=Scene(bri=BRI_OFF, sat=0, ct=0, t_time=1000),
-        mod_morning=0,
-        mod_day=0,
-        mod_afternoon=0,
-        mod_night=0,
         bri_check=False,
     )  # rt -> routine
 
     zone_inside = Room(
-        group_ids=[87], switch_ids=[5, 99], sensor_id=190, name_room="zone_inside"
+        group_ids=[87], switch_ids=[5, 99], sensor_id=194, name_room="zone_inside"
     )
     zone_inside_rt = Routine(
         room=zone_inside,
@@ -78,10 +72,6 @@ if __name__ == "__main__":
         day=Scene(bri=BRI_OFF, sat=0, ct=0, t_time=0),
         afternoon=Scene(bri=BRI_MAX, sat=250, ct=300, t_time=10),
         night=Scene(bri=BRI_LOW, sat=250, ct=300, t_time=10),
-        mod_morning=0,
-        mod_day=0,
-        mod_afternoon=0,
-        mod_night=0,
         bri_check=True,
     )  # rt -> routine
     

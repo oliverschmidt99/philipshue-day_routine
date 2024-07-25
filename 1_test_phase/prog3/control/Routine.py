@@ -24,11 +24,11 @@ class Routine:
         day: Scene,
         afternoon: Scene,
         night: Scene,
-        mod_morning,
-        mod_day,
-        mod_afternoon,
-        mod_night,
-        bri_check,
+        mod_morning=0,
+        mod_day=0,
+        mod_afternoon=0,
+        mod_night=0,
+        bri_check=0,
     ):
 
         self.room = room

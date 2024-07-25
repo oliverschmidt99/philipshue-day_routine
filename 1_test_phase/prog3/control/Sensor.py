@@ -5,14 +5,24 @@ import logging
 import time
 
 
+class InvalidSensorIDException(Exception):
+    def __init__(self, message="Sensor ID is invalid."):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
+
+
 class Sensor:
 
     def __init__(self,  sensor_id, name_room):
-        
+        if sensor_id is None:
+            exit
         self.sensor_id = sensor_id
-
         self.sensor_data = b.get_sensor(sensor_id)
         self.name_room = name_room
+
 
     def get_sensor(self, sensor_id):
         return b.get_sensor(sensor_id)
@@ -56,7 +66,7 @@ class Brightness(Sensor):
 
 class Temperature(Sensor):
     def __init__(self, sensor_id, name_room):
-        super().__init__(sensor_id, name_room)
+        super().__init__(sensor_id , name_room)
 
     def get_temperature(self):
         temperature = self.get_attribute("temperature")
