@@ -3,103 +3,80 @@ from control.Daily_time_span import *
 from control.Room import *
 
 import numpy as np
-import logging
 
-class InvalidTimeSpanException(Exception):
-    def __init__(self, time_span, message="Invalid time span provided."):
-        self.time_span = time_span
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'{self.message} Time span: {self.time_span}'
 
 class Routine:
 
     def __init__(
         self,
-        room: Room,
-        daily_time: Daily_time,
-        morning: Scene,
-        day: Scene,
-        afternoon: Scene,
-        night: Scene,
-        mod_morning,
+        daily_time: Daily_time,  # Ein Objekt der Klasse Daily_time, das die Tageszeit verwaltet
+        room: Room,  # Ein Objekt der Klasse Room, das einen Raum repräsentiert
+        bri_morning,  # Helligkeitseinstellung für den Morgen
+        bri_day,  # Helligkeitseinstellung für den Tag
+        bri_afternoon,  # Helligkeitseinstellung für den Nachmittag
+        bri_night,  # Helligkeitseinstellung für die Nacht
+        mod_mornig,
         mod_day,
         mod_afternoon,
         mod_night,
-        bri_check,
     ):
-
-        self.room = room
+        # Initialisierung der Instanzvariablen
         self.daily_time = daily_time
-        self.morning = morning
-        self.day = day
-        self.afternoon = afternoon
-        self.night = night
-        self.mod_morning = mod_morning
+        self.room = room
+        self.bri_day = bri_day
+        self.bri_morning = bri_morning
+        self.bri_afternoon = bri_afternoon
+        self.bri_night = bri_night
+        self.mod_mornig = mod_mornig
         self.mod_day = mod_day
         self.mod_afternoon = mod_afternoon
         self.mod_night = mod_night
-        self.bri_check = bri_check
 
-    def run_routine(self):
-
+    def adjust_lighting(self):
+        # Bestimme die aktuelle Tageszeitspanne
         time_span = self.daily_time.get_time_span()
-        now_bri = self.room.brightness.get_brightness()
 
-        print(now_bri)
-
-        if time_span == 1:  # Day
-            if self.bri_check and now_bri < 13000:
-                if self.mod_day == 1:
-                    self.mod_day += 1
-                    self.room.turn_on_groups(self.afternoon)
-            elif self.mod_day > 1:
-                if self.day.bri == 0:
-                    self.room.turn_off_groups()
-                else:
-                    self.room.turn_on_groups(self.day)
-                self.mod_day -= 1
-
-            if self.mod_day < 1:
+        # Passe die Beleuchtung basierend auf der aktuellen Tageszeit an
+        if time_span == 1:
+            if self.mod_day != 1:
                 self.mod_day += 1
                 self.mod_night = 0
                 logging.info(f"Daymod\t\tDay\t\t{self.room.name_room}")
-                if self.day.bri == 0:
+                self.mod = 2
+                if self.bri_day == 0:
                     self.room.turn_off_groups()
                 else:
-                    self.room.turn_on_groups(self.day)
+                    self.room.turn_on_groups(self.bri_day, 10)
 
-        elif time_span == 2:  # Morning
-            if self.mod_morning != 1:
-                self.mod_morning += 1
+        elif time_span == 2:
+            if self.mod_mornig != 1:
+                self.mod_mornig += 1
                 self.mod_afternoon = 0
                 logging.info(f"Daymod\t\tMorning\t\t{self.room.name_room}")
-
-                if self.morning.bri == 0:
+                self.mod = 3
+                if self.bri_morning == 0:
                     self.room.turn_off_groups()
                 else:
-                    self.room.turn_on_groups(self.morning)
+                    self.room.turn_on_groups(self.bri_morning, 10)
 
-        elif time_span == 3:  # Afternoon
+        elif time_span == 3:
             if self.mod_afternoon != 1:
                 self.mod_afternoon += 1
                 self.mod_day = 0
-                logging.info(f"Daymod\t\tAfternoon\t{self.room.name_room}")
-                if self.afternoon.bri == 0:
+                logging.info(f"Daymod\t\tAfternoon\t\t{self.room.name_room}")
+                self.mod = 4
+                if self.bri_afternoon == 0:
                     self.room.turn_off_groups()
                 else:
-                    self.room.turn_on_groups(self.afternoon)
+                    self.room.turn_on_groups(self.bri_afternoon, 10)
 
-        elif time_span == 4:  # Night
+        elif time_span == 4:
             if self.mod_night != 1:
                 self.mod_night += 1
-                self.mod_morning = 0
+                self.mod_mornig = 0
                 logging.info(f"Daymod\t\tNight\t\t{self.room.name_room}")
-                if self.night.bri == 0:
+                self.mod = 1
+                if self.bri_night == 0:
                     self.room.turn_off_groups()
                 else:
-                    self.room.turn_on_groups(self.night)
-        else:
-            raise InvalidTimeSpanException(time_span)
+                    self.room.turn_on_groups(self.bri_night, 10)
