@@ -3,7 +3,16 @@ from control.Daily_time_span import *
 from control.Room import *
 
 import numpy as np
+import logging
 
+class InvalidTimeSpanException(Exception):
+    def __init__(self, time_span, message="Invalid time span provided."):
+        self.time_span = time_span
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message} Time span: {self.time_span}'
 
 class Routine:
 
@@ -43,28 +52,26 @@ class Routine:
 
         if time_span == 1:  # Day
             if self.bri_check and now_bri < 13000:
-                
                 if self.mod_day == 1:
-                    
                     self.mod_day += 1
-                    self.room.turn_on_groups(self.day)
+                    self.room.turn_on_groups(self.afternoon)
             elif self.mod_day > 1:
-                
+                if self.day.bri == 0:
+                    self.room.turn_off_groups()
+                else:
+                    self.room.turn_on_groups(self.day)
                 self.mod_day -= 1
 
             if self.mod_day < 1:
-                
                 self.mod_day += 1
                 self.mod_night = 0
                 logging.info(f"Daymod\t\tDay\t\t{self.room.name_room}")
                 if self.day.bri == 0:
-                    
                     self.room.turn_off_groups()
                 else:
-                    
                     self.room.turn_on_groups(self.day)
 
-        elif time_span == 2:
+        elif time_span == 2:  # Morning
             if self.mod_morning != 1:
                 self.mod_morning += 1
                 self.mod_afternoon = 0
@@ -75,7 +82,7 @@ class Routine:
                 else:
                     self.room.turn_on_groups(self.morning)
 
-        elif time_span == 3:
+        elif time_span == 3:  # Afternoon
             if self.mod_afternoon != 1:
                 self.mod_afternoon += 1
                 self.mod_day = 0
@@ -85,7 +92,7 @@ class Routine:
                 else:
                     self.room.turn_on_groups(self.afternoon)
 
-        elif time_span == 4:
+        elif time_span == 4:  # Night
             if self.mod_night != 1:
                 self.mod_night += 1
                 self.mod_morning = 0
@@ -94,3 +101,5 @@ class Routine:
                     self.room.turn_off_groups()
                 else:
                     self.room.turn_on_groups(self.night)
+        else:
+            raise InvalidTimeSpanException(time_span)

@@ -97,17 +97,17 @@ class Daily_time(Time_format):
         end_time = datetime.time(self.H2, self.M2, self.S2)
 
         if sunrise_time < current_time < sunset_time:  # Day
-            print("Day")
+            #print("Day")
             return 1
         else:
             if start_time < current_time <= sunrise_time:  # Mornig
-                print("Mornig")
+                #print("Mornig")
                 return 2
             elif sunset_time <= current_time < end_time:  # Afternoon
-                print("Afternoon")
+                #print("Afternoon")
                 return 3
             else:  # Night
-                print("Night")
+                #print("Night")
                 return 4
 
 

@@ -35,7 +35,7 @@ if __name__ == "__main__":
         room=room_olli,
         daily_time=Daily_time(6, 0, 19, 0),
         morning=Scene(bri=200, sat=250, ct=400, t_time=10),
-        day=Scene(bri=254, sat=250, ct=0, t_time=0),
+        day=Scene(bri=0, sat=0, ct=0, t_time=0),
         afternoon=Scene(bri=254, sat=250, ct=300, t_time=10),
         night=Scene(bri=100, sat=250, ct=500, t_time=10),
         mod_morning=0,
