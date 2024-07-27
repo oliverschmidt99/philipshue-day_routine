@@ -64,7 +64,7 @@ class Routine:
                     self.room.turn_off_groups()
                 else:
                     self.room.turn_on_groups(self.day)
-                logging.info(f"bri_check\t\tbright\t\t{self.room.name_room}")
+                logging.info(f"bri_check\tbright\t\t{self.room.name_room}")
                 self.mod_day -= 1
 
             if self.mod_day < 1:
