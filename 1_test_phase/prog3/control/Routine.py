@@ -5,6 +5,7 @@ from control.Room import *
 import numpy as np
 import logging
 
+
 class InvalidTimeSpanException(Exception):
     def __init__(self, time_span, message="Invalid time span provided."):
         self.time_span = time_span
@@ -12,7 +13,8 @@ class InvalidTimeSpanException(Exception):
         super().__init__(self.message)
 
     def __str__(self):
-        return f'{self.message} Time span: {self.time_span}'
+        return f"{self.message} Time span: {self.time_span}"
+
 
 class Routine:
 
@@ -46,12 +48,10 @@ class Routine:
     def run_routine(self):
 
         time_span = self.daily_time.get_time_span()
-        
-        if self.bri_check is True:
-            now_bri = self.room.brightness.get_brightness()
-            print(now_bri)
 
-        
+        if self.bri_check is True:
+            now_bri = self.room.sensor.get_brightness()
+            print(now_bri)
 
         if time_span == 1:  # Day
             if self.bri_check and now_bri < 15000:

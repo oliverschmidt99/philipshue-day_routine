@@ -16,13 +16,13 @@ class InvalidSensorIDException(Exception):
 
 class Sensor:
 
-    def __init__(self,  sensor_id, name_room):
+    def __init__(self,  sensor_id, name_room, room_instance):
         if sensor_id is None:
             exit
         self.sensor_id = sensor_id
         self.sensor_data = b.get_sensor(sensor_id)
         self.name_room = name_room
-
+        self.room_instance = room_instance
 
     def get_sensor(self, sensor_id):
         return b.get_sensor(sensor_id)
@@ -31,14 +31,12 @@ class Sensor:
         sen = self.get_sensor(self.sensor_id)
         return sen["state"].get(attribute_name, None)
 
-
-class Motion(Sensor):
-
+    # class Motion(Sensor):
+    #
     last_active_time = 0
-
-    def __init__(self, sensor_id, name_room, room_instance):
-        super().__init__( sensor_id, name_room)
-        self.room_instance = room_instance
+    #
+    #    def __init__(self, sensor_id, name_room, room_instance):
+    #        super().__init__( sensor_id, name_room)
 
     def get_motion(self):
         return self.get_attribute("presence")
@@ -53,20 +51,18 @@ class Motion(Sensor):
             print("bye")
             self.room_instance.turn_off_groups()
 
-
-class Brightness(Sensor):
-
-    def __init__(self, sensor_id, name_room, room_instance):
-        super().__init__(sensor_id, name_room)
-        self.room_instance = room_instance
+    # class Brightness(Sensor):
+    #
+    #    def __init__(self, sensor_id, name_room, room_instance):
+    #        super().__init__(sensor_id, name_room)
+    #        self.room_instance = room_instance
 
     def get_brightness(self):
         return self.get_attribute("lightlevel")
 
-
-class Temperature(Sensor):
-    def __init__(self, sensor_id, name_room):
-        super().__init__(sensor_id , name_room)
+    # class Temperature(Sensor):
+    #    def __init__(self, sensor_id, name_room):
+    #        super().__init__(sensor_id , name_room)
 
     def get_temperature(self):
         temperature = self.get_attribute("temperature")
