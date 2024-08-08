@@ -74,9 +74,9 @@ if __name__ == "__main__":
     zone_inside_rt = Routine(
         room=zone_inside,
         daily_time=Daily_time(5, 0, 22, 0),
-        morning=Scene(bri=BRI_MID, sat=250, ct=300, t_time=10),
+        morning=Scene(bri=BRI_MID, sat=250, ct=400, t_time=10),
         day=Scene(bri=BRI_OFF, sat=0, ct=0, t_time=0),
-        afternoon=Scene(bri=BRI_MID, sat=250, ct=200, t_time=10),
+        afternoon=Scene(bri=BRI_MID, sat=250, ct=400, t_time=10),
         night=Scene(bri=BRI_LOW, sat=250, ct=300, t_time=10),
         mod_morning=0,
         mod_day=0,
@@ -90,7 +90,5 @@ if __name__ == "__main__":
 
         zone_outside_rt.run_routine()
         zone_inside_rt.run_routine()
-
-        
 
         time.sleep(2)
