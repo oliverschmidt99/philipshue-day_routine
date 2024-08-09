@@ -1,63 +1,11 @@
-2024-07-25 19:25:07,926 
+2024-08-09 22:45:20,750 
 This program is running
 
-2024-07-25 19:25:08,070 Daymod		Day		zone_outside
-2024-07-25 19:25:08,070 State		off		zone_outside
-2024-07-25 19:25:08,116 Daymod		Day		zone_inside
-2024-07-25 19:25:08,117 State		off		zone_inside
-2024-07-25 19:25:33,157 
-This program is running
-
-2024-07-25 19:25:33,297 Daymod		Day		zone_outside
-2024-07-25 19:25:33,297 State		off		zone_outside
-2024-07-25 19:25:33,343 Daymod		Day		zone_inside
-2024-07-25 19:25:33,343 State		off		zone_inside
-2024-07-25 19:26:15,680 
-This program is running
-
-2024-07-25 19:26:15,826 Daymod		Day		zone_outside
-2024-07-25 19:26:15,826 State		off		zone_outside
-2024-07-25 19:26:15,875 Daymod		Day		zone_inside
-2024-07-25 19:26:15,875 State		off		zone_inside
-2024-07-25 19:26:31,298 
-This program is running
-
-2024-07-25 19:26:31,453 Daymod		Day		zone_outside
-2024-07-25 19:26:31,453 State		off		zone_outside
-2024-07-25 19:26:31,500 Daymod		Day		zone_inside
-2024-07-25 19:26:31,500 State		off		zone_inside
-2024-07-25 20:13:34,355 
-This program is running
-
-2024-07-25 20:13:34,515 Daymod		Day		zone_outside
-2024-07-25 20:13:34,515 State		off		zone_outside
-2024-07-25 20:13:34,593 Daymod		Day		zone_inside
-2024-07-25 20:13:34,593 State		off		zone_inside
-2024-07-25 20:14:12,124 
-This program is running
-
-2024-07-25 20:14:12,268 Daymod		Day		zone_outside
-2024-07-25 20:14:12,268 State		off		zone_outside
-2024-07-25 20:14:12,343 Daymod		Day		zone_inside
-2024-07-25 20:14:12,343 State		off		zone_inside
-2024-07-26 15:22:41,751 
-This program is running
-
-2024-07-26 15:22:41,891 Daymod		Day		zone_outside
-2024-07-26 15:22:41,891 State		off		zone_outside
-2024-07-26 15:22:42,056 Daymod		Day		zone_inside
-2024-07-26 15:22:42,056 State		off		zone_inside
-2024-07-26 15:31:40,393 
-This program is running
-
-2024-07-26 15:31:40,545 Daymod		Day		zone_outside
-2024-07-26 15:31:40,545 State		off		zone_outside
-2024-07-26 15:31:40,622 Daymod		Day		zone_inside
-2024-07-26 15:31:40,622 State		off		zone_inside
-2024-07-27 12:47:29,437 
-This program is running
-
-2024-07-27 12:47:29,576 Daymod		Day		zone_outside
-2024-07-27 12:47:29,576 State		off		zone_outside
-2024-07-27 12:47:29,652 Daymod		Day		zone_inside
-2024-07-27 12:47:29,652 State		off		zone_inside
+2024-08-09 22:45:20,796 Daymod		Night		zone_outside
+2024-08-09 22:45:20,796 State		off			zone_outside
+2024-08-09 22:45:20,878 Daymod		Afternoon	zone_inside
+2024-08-09 22:45:20,878 State		on			zone_inside
+2024-08-09 22:45:55,393 State		motion		zone_outside
+2024-08-09 22:45:55,393 State		on			zone_outside
+2024-08-09 22:48:12,908 State		motion_over	zone_outside
+2024-08-09 22:48:12,908 State		off			zone_outside

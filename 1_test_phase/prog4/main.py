@@ -41,8 +41,8 @@ if __name__ == "__main__":
   
     # define Rooms
     room_olli   = Room(group_ids=[1], switch_ids=[5, 99], sensor_id=2, name_room="room_olli")
-    zone_outside = Room(group_ids=[24], switch_ids=[5, 99], sensor_id=190, name_room="zone_outside")
-    zone_inside = Room(group_ids=[87], switch_ids=[5, 99], sensor_id=190, name_room="zone_inside") 
+    zone_outside = Room(group_ids=[24], switch_ids=[5, 99], sensor_id=194, name_room="zone_outside")
+    zone_inside = Room(group_ids=[87], switch_ids=[5, 99], sensor_id=194, name_room="zone_inside") 
     
     # define Routines
     """
@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 
     rt_outside = Routine(
                 room       =zone_outside,
-                daily_time =Daily_time(5, 30, 22,0),
+                daily_time =Daily_time(5, 30, 22,30),
                 morning    =Section_Routine(bri_check=False,min_light_level=20000,motion_check=True,wait_time=240,scene=warm_mid,x_scene=warm_max),
                 day        =Section_Routine(bri_check=True,min_light_level=25000,motion_check=False,wait_time=0,scene=off,x_scene=warm_mid),
                 afternoon  =Section_Routine(bri_check=False,min_light_level=10000,motion_check=True,wait_time=240,scene=warm_mid,x_scene=warm_max),
@@ -66,7 +66,7 @@ if __name__ == "__main__":
    
     rt_inside = Routine(
                 room       =zone_inside,
-                daily_time =Daily_time(5, 0, 22,30),
+                daily_time =Daily_time(5, 0, 23,0),
                 morning    =Section_Routine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
                 day        =Section_Routine(bri_check=True,min_light_level=25000,motion_check=False,wait_time=0,scene=off,x_scene=warm_mid),
                 afternoon  =Section_Routine(bri_check=False,min_light_level=10000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
