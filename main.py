@@ -18,7 +18,7 @@ logging.basicConfig(
 
 # Const
 BRI_OFF = 0
-BRI_LOW = 50
+BRI_LOW = 75
 BRI_MID = 150
 BRI_MAX = 240
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
                 morning    =Section_Routine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
                 day        =Section_Routine(bri_check=True,min_light_level=25000,motion_check=False,wait_time=0,scene=off,x_scene=warm_mid),
                 afternoon  =Section_Routine(bri_check=False,min_light_level=10000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
-                night      =Section_Routine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=120,scene=off,x_scene=warm_mid),
+                night      =Section_Routine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=120,scene=warm_low,x_scene=warm_mid),
                 )
    
 
