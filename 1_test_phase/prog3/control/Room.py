@@ -8,8 +8,9 @@ lights = b.lights
 
 
 class Scene:
-    def __init__(self, bri, sat, ct, t_time) -> None:
+    def __init__(self, status , bri, sat, ct, t_time) -> None:
         """:parameters:  'bri' : 0-254, 'sat' : 0-254, 'ct': 154-500"""
+        self.status = status
         self.bri = bri
         self.sat = sat
         self.ct = ct
@@ -32,16 +33,20 @@ class Room():
             )
 
         
+    def turn_groups(self, scene: Scene, status):
+        
+        if status is not None:
+            scene.status = status
 
-    def turn_off_groups(self):
-        for group_id in self.group_ids:
-            logging.info(f"State\t\toff\t\t{self.name_room}")
-            b.set_group(group_id, "on", False)
-
-    def turn_on_groups(self, scene: Scene):
-        for group_id in self.group_ids:
-            logging.info(f"State\t\ton\t\t{self.name_room}")
-            b.set_group(group_id, "on", True)
-            b.set_group(group_id, "bri", scene.bri, transitiontime=scene.t_time)
-            b.set_group(group_id, "sat", scene.sat)
-            b.set_group(group_id, "ct", scene.ct)
+        
+        if scene.status is True:
+            for group_id in self.group_ids:
+                logging.info(f"State\t\ton\t\t\t{self.name_room}")
+                b.set_group(group_id, "on", True)
+                b.set_group(group_id, "bri", scene.bri, transitiontime=scene.t_time)
+                b.set_group(group_id, "sat", scene.sat)
+                b.set_group(group_id, "ct", scene.ct)
+        elif scene.status is False:
+            for group_id in self.group_ids:
+                logging.info(f"State\t\toff\t\t{self.name_room}")
+                b.set_group(group_id, "on", False)

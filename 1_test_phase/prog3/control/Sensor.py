@@ -67,38 +67,59 @@ class Sensor():
             print(f"Error getting temperature attribute: {e}")
             return None
 
-    def turn_off_after_motion(self, scene, wait_time):
-        #try:
-            if self.get_motion():
-                print("Moin")
-                self.room_instance.turn_on_groups(scene)
-                self.last_active_time = time.time()
-                return
-            if self.last_active_time + wait_time <= time.time():
-                print("bye")
-                self.room_instance.turn_off_groups()
-        #except Exception as e:
-        #    print(f"Error in turn_off_after_motion: {e}")
-    
-    def turn_on_low_light(self, scene, min_light_level, room, check):
-        #try:
-            if self.get_brightness() < min_light_level:
-                print("a ", self.get_brightness())
+    def turn_off_after_motion(self, scene, x_scene, wait_time, check):
+        try:
+            if self.get_motion() is True:
+                self.__last_active_time__ = time.time()
                 if check is False:
-                    room.turn_on_groups(scene)
-                    print(check)
+                    logging.info(f"State\t\tmotion\t\t{self.name_room}")
                     check = True
+                    self.room_instance.turn_groups(scene, True)
+                    return check
+                else:
+                    return check
+        
+            if self.__last_active_time__ + wait_time < time.time():
+                if check is True:
+                    logging.info(f"State\t\tmotion_over\t{self.name_room}")
+                    check = False
+                    self.room_instance.turn_groups(x_scene, None)
+                    return check
+                else:
+                    return check
+                
+            else:
+                return check
+                
+        except Exception as e:
+            print(f"Error in turn_off_after_motion: {e}")
+    
+
+
+    def turn_on_low_light(self,scene, x_scene, min_light_level, check):
+        try:
+            if self.get_brightness() < min_light_level:
+                if check is False:
+                    logging.info(f"State\t\tdark\t\t{self.name_room}")
+                    logging.info(f"State\t\tdark\t\t{self.get_brightness()}")
+                    check = True
+                    self.room_instance.turn_groups(x_scene, True)
                     return check
                 else:
                     return check
             else:
                 if check is True:
-                    print("b ", self.get_brightness())
-                    room.turn_off_groups()
+                    logging.info(f"State\t\tbright\t\t{self.name_room}")
+                    logging.info(f"State\t\tbright\t\t{self.get_brightness()}")
                     check = False
+                    self.room_instance.turn_groups(scene, None)
+                    return check
+                else:
                     return check
             
-        #except Exception as e:
-        #    print(f"Error in turn_on_low_light: {e}")
+
+            
+        except Exception as e:
+            print(f"Error in turn_on_low_light: {e}")
 
             
