@@ -75,20 +75,20 @@ class Routine():
             if self.mod_day != 1:
                 self.mod_day += 1
                 self.mod_night = 0
-                logging.info(f"Daymod\t\tDay\t\t{self.room.name_room}")
+                logging.info(f"Daymod\t\tDay\t\t\t{self.room.name_room}")
                 self.room.turn_groups(status=None, scene=self.day.scene)                
                 
             if self.day.bri_check is (None or False):
                 pass
             else:
                 #print("run_routine", self.afternoon.check_a)
-                self.day.check_a = self.room.sensor.turn_on_low_light(self.day.x_scene,self.day.scene, self.day.min_light_level, self.day.check_a)
+                self.day.check_a = self.room.sensor.turn_on_low_light(self.day.scene, self.day.x_scene, self.day.min_light_level, self.day.check_a)
 
 
             if self.day.motion_check is (None or False):
                 pass
             else:
-               self.day.check_b = self.room.sensor.turn_off_after_motion(self.day.x_scene,self.day.scene, self.day.wait_time, self.day.check_b)
+               self.day.check_b = self.room.sensor.turn_off_after_motion(self.day.scene,self.day.x_scene, self.day.wait_time, self.day.check_b)
 
 
            
@@ -106,13 +106,13 @@ class Routine():
                 pass
             else:
                 #print("run_routine", self.afternoon.check_a)
-                self.morning.check_a = self.room.sensor.turn_on_low_light(self.morning.x_scene,self.morning.scene, self.morning.min_light_level, self.morning.check_a)
+                self.morning.check_a = self.room.sensor.turn_on_low_light(self.morning.scene, self.morning.x_scene, self.morning.min_light_level, self.morning.check_a)
 
 
             if self.morning.motion_check is (None or False):
                 pass
             else:
-               self.morning.check_b = self.room.sensor.turn_off_after_motion(self.morning.x_scene,self.morning.scene, self.morning.wait_time, self.morning.check_b)
+               self.morning.check_b = self.room.sensor.turn_off_after_motion(self.morning.scene,self.morning.x_scene, self.morning.wait_time, self.morning.check_b)
 
 
 
@@ -129,13 +129,13 @@ class Routine():
                 pass
             else:
                 #print("run_routine", self.afternoon.check_a)
-                self.afternoon.check_a = self.room.sensor.turn_on_low_light(self.afternoon.x_scene,self.afternoon.scene, self.afternoon.min_light_level, self.afternoon.check_a)
+                self.afternoon.check_a = self.room.sensor.turn_on_low_light(self.afternoon.scene,self.afternoon.x_scene, self.afternoon.min_light_level, self.afternoon.check_a)
 
 
             if self.afternoon.motion_check is (None or False):
                 pass
             else:
-               self.afternoon.check_b = self.room.sensor.turn_off_after_motion(self.afternoon.x_scene,self.afternoon.scene, self.afternoon.wait_time, self.afternoon.check_b)
+               self.afternoon.check_b = self.room.sensor.turn_off_after_motion(self.afternoon.scene,self.afternoon.x_scene, self.afternoon.wait_time, self.afternoon.check_b)
 
 
 
@@ -152,13 +152,13 @@ class Routine():
                 pass
             else:
                 #print("run_routine", self.afternoon.check_a)
-                self.night.check_a = self.room.sensor.turn_on_low_light(self.night.x_scene,self.night.scene, self.night.min_light_level, self.night.check_a)
+                self.night.check_a = self.room.sensor.turn_on_low_light(self.night.scene,self.night.x_scene, self.night.min_light_level, self.night.check_a)
 
 
             if self.night.motion_check is (None or False):
                 pass
             else:
-               self.night.check_b = self.room.sensor.turn_off_after_motion(self.night.x_scene,self.night.scene, self.night.wait_time, self.night.check_b)
+               self.night.check_b = self.room.sensor.turn_off_after_motion(self.night.scene,self.night.x_scene, self.night.wait_time, self.night.check_b)
 
 
         

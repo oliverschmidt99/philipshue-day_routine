@@ -96,23 +96,26 @@ class Sensor():
     
 
 
-    def turn_on_low_light(self,scene, x_scene, min_light_level, check):
+    def turn_on_low_light(self, scene, x_scene, min_light_level, check):
         try:
             if self.get_brightness() < min_light_level:
-                if check is False:
+                if check is True:
                     logging.info(f"State\t\tdark\t\t{self.name_room}")
                     logging.info(f"State\t\tdark\t\t{self.get_brightness()}")
-                    check = True
+                    check = False
                     self.room_instance.turn_groups(x_scene, True)
                     return check
                 else:
                     return check
             else:
-                if check is True:
+                if check is False:
+
                     logging.info(f"State\t\tbright\t\t{self.name_room}")
                     logging.info(f"State\t\tbright\t\t{self.get_brightness()}")
-                    check = False
+                    check = True
                     self.room_instance.turn_groups(scene, None)
+
+
                     return check
                 else:
                     return check

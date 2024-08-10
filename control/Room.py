@@ -35,7 +35,7 @@ class Room():
         
     def turn_groups(self, scene: Scene, status):
         
-        if status is not None:
+        if status is (True or False):
             scene.status = status
 
         if scene.status is None:
