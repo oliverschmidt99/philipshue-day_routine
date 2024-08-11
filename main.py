@@ -31,6 +31,8 @@ if __name__ == "__main__":
     warm_max    = Scene(status=True, bri=BRI_MAX, sat=0, ct=500, t_time=100)
     warm_mid    = Scene(status=True, bri=BRI_MID, sat=0, ct=500, t_time=100)
     warm_low    = Scene(status=True, bri=BRI_LOW, sat=0, ct=500, t_time=100)
+    warm_very_low    = Scene(status=True, bri=30, sat=0, ct=500, t_time=100)
+
 
     cold_max    = Scene(status=True, bri=BRI_MAX, sat=0, ct=154, t_time=100)
     cold_mid    = Scene(status=True, bri=BRI_MID, sat=0, ct=154, t_time=100)
@@ -45,15 +47,14 @@ if __name__ == "__main__":
     zone_inside = Room(group_ids=[87], switch_ids=[5, 99], sensor_id=190, name_room="zone_inside") 
     
     # define Routines
-    """
-    rt_olli = Routine(room       =room_olli,
+    rt_olli = Routine(
+                room       =room_olli,
                 daily_time =Daily_time(5, 0, 22,30),
                 morning    =Section_Routine(bri_check=False,min_light_level=0,motion_check=False,wait_time=10,scene=none,x_scene=none),
-                day        =Section_Routine(bri_check=True,min_light_level=20000,motion_check=False,wait_time=20,scene=off,x_scene=warm),
+                day        =Section_Routine(bri_check=True,min_light_level=20000,motion_check=False,wait_time=60,scene=none,x_scene=warm_mid),
                 afternoon  =Section_Routine(bri_check=False,min_light_level=0,motion_check=False,wait_time=10,scene=none,x_scene=none),
-                night      =Section_Routine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=10,scene=None,x_scene=warm),
+                night      =Section_Routine(bri_check=False,min_light_level=0,motion_check=True,wait_time=120,scene=none,x_scene=warm_very_low),
                 )
-    """
                 
     rt_outside = Routine(
                 room       =zone_outside,
@@ -77,6 +78,7 @@ if __name__ == "__main__":
 
     while True:
 
+        rt_olli.run_routine()
         rt_outside.run_routine()
         rt_inside.run_routine()
 
