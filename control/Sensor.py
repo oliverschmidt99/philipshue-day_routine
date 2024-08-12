@@ -69,60 +69,60 @@ class Sensor():
 
     def turn_off_after_motion(self, scene, x_scene, wait_time, check):
         try:
-            if self.get_motion() is True:
+            current_motion = self.get_motion()
+            
+            if current_motion is None:
+                logging.error(f"Error: Unable to retrieve motion state for {self.name_room}")
+                return check
+            
+            if current_motion:
                 self.__last_active_time__ = time.time()
-                if check is False:
-                    logging.info(f"State\t\tmotion\t\t{self.name_room}")
+                if not check:
+                    logging.info(f"State\t\tmotion detected\t\t{self.name_room}")
                     check = True
                     self.room_instance.turn_groups(scene, True)
-                    return check
-                else:
-                    return check
-        
-            if self.__last_active_time__ + wait_time < time.time():
-                if check is True:
-                    logging.info(f"State\t\tmotion_over\t{self.name_room}")
-                    check = False
-                    self.room_instance.turn_groups(x_scene, None)
-                    return check
-                else:
-                    return check
-                
+                # Das Licht ist bereits an, daher keine weitere Aktion erforderlich
             else:
-                return check
-                
+                # Überprüfe, ob die Wartezeit abgelaufen ist, bevor das Licht ausgeschaltet wird
+                if time.time() > self.__last_active_time__ + wait_time:
+                    if check:
+                        logging.info(f"State\t\tno motion, turning off\t{self.name_room}")
+                        check = False
+                        self.room_instance.turn_groups(x_scene, x_scene.status)
+                # Das Licht ist bereits aus, daher keine weitere Aktion erforderlich
+            
+            return check
+        
         except Exception as e:
-            print(f"Error in turn_off_after_motion: {e}")
+            logging.error(f"Error in turn_off_after_motion: {e}")
+            return check
     
 
 
     def turn_on_low_light(self, scene, x_scene, min_light_level, check):
         try:
-            if self.get_brightness() < min_light_level:
-                if check is True:
-                    logging.info(f"State\t\tdark\t\t{self.name_room}")
-                    logging.info(f"State\t\tdark\t\t{self.get_brightness()}")
-                    check = False
-                    self.room_instance.turn_groups(x_scene, True)
-                    return check
-                else:
-                    return check
-            else:
-                if check is False:
+            current_brightness = self.get_brightness()
 
-                    logging.info(f"State\t\tbright\t\t{self.name_room}")
-                    logging.info(f"State\t\tbright\t\t{self.get_brightness()}")
-                    check = True
-                    self.room_instance.turn_groups(scene, None)
-
-
-                    return check
-                else:
-                    return check
+            if current_brightness is None:
+                logging.error(f"Error: Unable to retrieve brightness for {self.name_room}")
+                return check
             
-
+            if current_brightness < min_light_level:
+                if not check:
+                    logging.info(f"State\t\tdark\t\t{self.name_room}")
+                    logging.info(f"Brightness\t\t{current_brightness}")
+                    check = True
+                    self.room_instance.turn_groups(x_scene, True)
+            else:
+                if check:
+                    logging.info(f"State\t\tbright\t\t{self.name_room}")
+                    logging.info(f"Brightness\t\t{current_brightness}")
+                    check = False
+                    self.room_instance.turn_groups(scene, None)
+            
+            return check
             
         except Exception as e:
-            print(f"Error in turn_on_low_light: {e}")
+            logging.error(f"Error in turn_on_low_light: {e}")
 
             
