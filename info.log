@@ -58,3 +58,15 @@ This program is running
 2024-08-13 16:19:32,129 State		off			zone_outside
 2024-08-13 16:19:32,365 Daymod		Day			zone_inside
 2024-08-13 16:19:32,365 State		off			zone_inside
+2024-08-13 19:13:07,007 
+This program is running
+
+2024-08-13 19:13:07,061 Daymod		Day			room_olli
+2024-08-13 19:13:07,061 State		off			room_olli
+2024-08-13 19:13:07,231 State		dark		room_olli
+2024-08-13 19:13:07,231 Brightness		9561
+2024-08-13 19:13:07,231 State		on			room_olli
+2024-08-13 19:13:08,176 Daymod		Day			zone_outside
+2024-08-13 19:13:08,176 State		off			zone_outside
+2024-08-13 19:13:08,439 Daymod		Day			zone_inside
+2024-08-13 19:13:08,439 State		off			zone_inside

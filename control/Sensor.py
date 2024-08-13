@@ -102,6 +102,7 @@ class Sensor():
     def turn_on_low_light(self, scene, x_scene, min_light_level, check):
         try:
             current_brightness = self.get_brightness()
+            #print(current_brightness)
 
             if current_brightness is None:
                 logging.error(f"Error: Unable to retrieve brightness for {self.name_room}")
