@@ -1,0 +1,60 @@
+2024-08-13 16:13:48,065 
+This program is running
+
+2024-08-13 16:13:48,116 Daymod		Day			room_olli
+2024-08-13 16:13:48,116 State		off			room_olli
+2024-08-13 16:13:48,279 Daymod		Day			zone_outside
+2024-08-13 16:13:48,279 State		off			zone_outside
+2024-08-13 16:13:48,491 Daymod		Day			zone_inside
+2024-08-13 16:13:48,491 State		off			zone_inside
+2024-08-13 16:14:00,790 State		dark		room_olli
+2024-08-13 16:14:00,790 Brightness		10291
+2024-08-13 16:14:00,790 State		on			room_olli
+2024-08-13 16:14:24,239 State		bright		room_olli
+2024-08-13 16:14:24,239 Brightness		15712
+2024-08-13 16:14:24,239 State		off			room_olli
+2024-08-13 16:17:03,886 
+This program is running
+
+2024-08-13 16:17:03,940 Daymod		Day			room_olli
+2024-08-13 16:17:03,940 State		off			room_olli
+2024-08-13 16:17:04,016 Daymod		Day			zone_outside
+2024-08-13 16:17:04,016 State		off			zone_outside
+2024-08-13 16:17:04,096 Daymod		Day			zone_inside
+2024-08-13 16:17:04,096 State		off			zone_inside
+2024-08-13 16:17:42,896 State		dark		room_olli
+2024-08-13 16:17:42,896 Brightness		10200
+2024-08-13 16:17:42,896 State		on			room_olli
+2024-08-13 16:18:00,116 
+This program is running
+
+2024-08-13 16:18:00,171 Daymod		Day			room_olli
+2024-08-13 16:18:00,171 State		off			room_olli
+2024-08-13 16:18:00,326 State		dark		room_olli
+2024-08-13 16:18:00,326 Brightness		10200
+2024-08-13 16:18:00,326 State		on			room_olli
+2024-08-13 16:18:01,385 Daymod		Day			zone_outside
+2024-08-13 16:18:01,385 State		off			zone_outside
+2024-08-13 16:18:01,625 Daymod		Day			zone_inside
+2024-08-13 16:18:01,625 State		off			zone_inside
+2024-08-13 16:18:47,838 
+This program is running
+
+2024-08-13 16:18:47,891 Daymod		Day			room_olli
+2024-08-13 16:18:47,891 State		off			room_olli
+2024-08-13 16:18:48,039 Daymod		Day			zone_outside
+2024-08-13 16:18:48,039 State		off			zone_outside
+2024-08-13 16:18:48,253 Daymod		Day			zone_inside
+2024-08-13 16:18:48,253 State		off			zone_inside
+2024-08-13 16:19:31,118 
+This program is running
+
+2024-08-13 16:19:31,167 Daymod		Day			room_olli
+2024-08-13 16:19:31,167 State		off			room_olli
+2024-08-13 16:19:31,242 State		dark		room_olli
+2024-08-13 16:19:31,242 Brightness		10200
+2024-08-13 16:19:31,242 State		on			room_olli
+2024-08-13 16:19:32,128 Daymod		Day			zone_outside
+2024-08-13 16:19:32,129 State		off			zone_outside
+2024-08-13 16:19:32,365 Daymod		Day			zone_inside
+2024-08-13 16:19:32,365 State		off			zone_inside

@@ -38,7 +38,7 @@ if __name__ == "__main__":
     cold_mid    = Scene(status=True, bri=BRI_MID, sat=0, ct=154, t_time=100)
     cold_low    = Scene(status=True, bri=BRI_LOW, sat=0, ct=154, t_time=100)
     
-    off         = Scene(status=False, bri=BRI_OFF, sat=0, ct=0, t_time=100)
+    off         = Scene(status=False, bri=BRI_OFF, sat=0, ct=0, t_time=0)
     none        = Scene(status=None, bri=BRI_OFF, sat=0, ct=0, t_time=0)
   
     # define Rooms
@@ -51,8 +51,8 @@ if __name__ == "__main__":
                 room       =room_olli,
                 daily_time =Daily_time(5, 0, 22,30),
                 morning    =Section_Routine(bri_check=False,min_light_level=0,motion_check=False,wait_time=10,scene=none,x_scene=none),
-                day        =Section_Routine(bri_check=True,min_light_level=12000,motion_check=False,wait_time=3,scene=off,x_scene=warm_mid),
-                afternoon  =Section_Routine(bri_check=False,min_light_level=0,motion_check=False,wait_time=10,scene=none,x_scene=none),
+                day        =Section_Routine(bri_check=True,min_light_level=12000,motion_check=False,wait_time=3,scene=off,x_scene=warm_max),
+                afternoon  =Section_Routine(bri_check=True,min_light_level=10000,motion_check=False,wait_time=10,scene=none,x_scene=none),
                 night      =Section_Routine(bri_check=False,min_light_level=0,motion_check=False,wait_time=120,scene=none,x_scene=warm_very_low),
                 )
                 
@@ -61,16 +61,16 @@ if __name__ == "__main__":
                 daily_time =Daily_time(5, 30, 22,0),
                 morning    =Section_Routine(bri_check=False,min_light_level =20000,motion_check=True,wait_time=240,scene=warm_mid,x_scene=warm_max),
                 day        =Section_Routine(bri_check=True,min_light_level  =10000,motion_check=False,wait_time=0,scene=off,x_scene=warm_mid),
-                afternoon  =Section_Routine(bri_check=False,min_light_level =10000,motion_check=True,wait_time=240,scene=warm_mid,x_scene=warm_max),
-                night      =Section_Routine(bri_check=False,min_light_level =20000,motion_check=True,wait_time=120,scene=off,x_scene=warm_mid),
+                afternoon  =Section_Routine(bri_check=True,min_light_level =10000,motion_check=True,wait_time=240,scene=warm_mid,x_scene=warm_max),
+                night      =Section_Routine(bri_check=False,min_light_level =20000,motion_check=True,wait_time=120,scene=off,x_scene=warm_low),
                 )
    
     rt_inside = Routine(
                 room       =zone_inside,
                 daily_time =Daily_time(5, 0, 22,30),
                 morning    =Section_Routine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
-                day        =Section_Routine(bri_check=True,min_light_level=15000,motion_check=False,wait_time=0,scene=off,x_scene=warm_mid),
-                afternoon  =Section_Routine(bri_check=False,min_light_level=10000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
+                day        =Section_Routine(bri_check=True,min_light_level=12000,motion_check=False,wait_time=0,scene=off,x_scene=warm_mid),
+                afternoon  =Section_Routine(bri_check=True,min_light_level=12000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
                 night      =Section_Routine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=120,scene=warm_low,x_scene=warm_mid),
                 )
    
