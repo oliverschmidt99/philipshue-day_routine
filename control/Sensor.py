@@ -108,13 +108,13 @@ class Sensor():
                 logging.error(f"Error: Unable to retrieve brightness for {self.name_room}")
                 return check
             
-            if current_brightness < min_light_level:
+            if current_brightness < min_light_level+200:
                 if not check:
                     logging.info(f"State\t\tdark\t\t{self.name_room}")
                     logging.info(f"Brightness\t\t{current_brightness}")
                     check = True
                     self.room_instance.turn_groups(x_scene, True)
-            else:
+            elif current_brightness < min_light_level:
                 if check:
                     logging.info(f"State\t\tbright\t\t{self.name_room}")
                     logging.info(f"Brightness\t\t{current_brightness}")
