@@ -2,19 +2,16 @@ from control.huebridge import *
 from control.Room import *
 from control.Daily_time_span import *
 
-
 import logging
 import time
-
-
 
 class Sensor():
     __last_active_time__ = 0
 
     def __init__(self, sensor_id, name_room, room_instance):
-        self.sensor_id_motion       = sensor_id
-        self.sensor_id_brightness   = sensor_id + 1
-        self.sensor_id_temperature  = sensor_id + 2
+        self.sensor_id_motion = sensor_id
+        self.sensor_id_brightness = sensor_id + 1
+        self.sensor_id_temperature = sensor_id + 2
         try:
             self.sensor_data = b.get_sensor(sensor_id)
         except Exception as e:
@@ -96,25 +93,23 @@ class Sensor():
         except Exception as e:
             logging.error(f"Error in turn_off_after_motion: {e}")
             return check
-    
-
 
     def turn_on_low_light(self, scene, x_scene, min_light_level, check):
         try:
             current_brightness = self.get_brightness()
-            print(current_brightness)
+            logging.debug(f"Current brightness: {current_brightness}, check: {check}")
 
             if current_brightness is None:
                 logging.error(f"Error: Unable to retrieve brightness for {self.name_room}")
                 return check
             
-            if current_brightness < min_light_level+200:
+            if current_brightness <= min_light_level + 200:
                 if not check:
                     logging.info(f"State\t\tdark\t\t{self.name_room}")
                     logging.info(f"Brightness\t\t{current_brightness}")
                     check = True
                     self.room_instance.turn_groups(x_scene, True)
-            elif current_brightness > min_light_level:
+            elif current_brightness >= min_light_level + 200:
                 if check:
                     logging.info(f"State\t\tbright\t\t{self.name_room}")
                     logging.info(f"Brightness\t\t{current_brightness}")
@@ -125,5 +120,4 @@ class Sensor():
             
         except Exception as e:
             logging.error(f"Error in turn_on_low_light: {e}")
-
-            
+            return check
