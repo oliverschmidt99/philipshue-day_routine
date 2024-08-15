@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # define Routines
     rt_olli = Routine(
                 room       =room_olli,
-                daily_time =Daily_time(5, 0, 22,30),
+                daily_time =Daily_time(5, 0, 21,0),
                 morning    =Section_Routine(bri_check=False,min_light_level=0,motion_check=False,wait_time=10,scene=none,x_scene=none),
                 day        =Section_Routine(bri_check=True,min_light_level=14000,motion_check=False,wait_time=3,scene=off,x_scene=warm_max),
                 afternoon  =Section_Routine(bri_check=True,min_light_level=14000,motion_check=False,wait_time=10,scene=none,x_scene=none),
