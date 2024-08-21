@@ -15,17 +15,18 @@ class InvalidTimeSpanException(Exception):
     def __str__(self):
         return f"{self.message} Time span: {self.time_span}"
 
-class Section_Routine:
+
+class SectionRoutine:
     def __init__(
             self,
-            bri_check,
-            min_light_level,
-            motion_check,
-            wait_time,
+            bri_check: bool,
+            min_light_level: float,
+            motion_check: bool,
+            wait_time: int,
             scene: Scene,
             x_scene: Scene,
-            __check_a__=False,
-            __check_b__=False
+            check_a: bool = False,
+            check_b: bool = False
     ) -> None:
         self.bri_check = bri_check
         self.min_light_level = min_light_level
@@ -33,22 +34,23 @@ class Section_Routine:
         self.wait_time = wait_time
         self.scene = scene
         self.x_scene = x_scene
-        self.check_a = __check_a__
-        self.check_b = __check_b__
+        self.check_a = check_a
+        self.check_b = check_b
+
 
 class Routine:
     def __init__(
-        self,
-        room: Room,
-        daily_time: Daily_time,
-        morning: Section_Routine,
-        day: Section_Routine,
-        afternoon: Section_Routine,
-        night: Section_Routine,
-        __mod_morning__=0,
-        __mod_day__=0,
-        __mod_afternoon__=0,
-        __mod_night__=0,
+            self,
+            room: Room,
+            daily_time: Daily_time,
+            morning: SectionRoutine,
+            day: SectionRoutine,
+            afternoon: SectionRoutine,
+            night: SectionRoutine,
+            mod_morning: int = 0,
+            mod_day: int = 0,
+            mod_afternoon: int = 0,
+            mod_night: int = 0,
     ) -> None:
         self.room = room
         self.daily_time = daily_time
@@ -56,107 +58,41 @@ class Routine:
         self.day = day
         self.afternoon = afternoon
         self.night = night
-        self.last_time_span = None
-        self.mod_morning = __mod_morning__
-        self.mod_day = __mod_day__
-        self.mod_afternoon = __mod_afternoon__
-        self.mod_night = __mod_night__
+        self.mod_morning = mod_morning
+        self.mod_day = mod_day
+        self.mod_afternoon = mod_afternoon
+        self.mod_night = mod_night
 
-    def run_routine(self):
-
+    def run_routine(self) -> None:
         time_span = self.daily_time.get_time_span()
 
-        if time_span == 1:  # Day
-            
-            if self.mod_day != 1:
-                self.mod_day += 1
-                self.mod_night = 0
-                logging.info(f"Daymod\t\tDay\t\t\t{self.room.name_room}")
-                self.room.turn_groups(status=None, scene=self.day.scene)                
-                
-            if self.day.bri_check is (None or False):
-                pass
-            else:
-                #print("run_routine", self.afternoon.check_a)
-                self.day.check_a = self.room.sensor.turn_on_low_light(self.day.scene, self.day.x_scene, self.day.min_light_level, self.day.check_a)
-
-
-            if self.day.motion_check is (None or False):
-                pass
-            else:
-               self.day.check_b = self.room.sensor.turn_off_after_motion(self.day.scene,self.day.x_scene, self.day.wait_time, self.day.check_b)
-
-
-           
-        elif time_span == 2:  # Morning
-            
-            if self.morning is None:
-                return
-            if self.mod_morning != 1:
-                self.mod_morning += 1
-                self.mod_afternoon = 0
-                logging.info(f"Daymod\t\tMorning\t\t{self.room.name_room}")
-                self.room.turn_groups(status=None, scene=self.morning.scene)                
-                
-            if self.morning.bri_check is (None or False):
-                pass
-            else:
-                #print("run_routine", self.afternoon.check_a)
-                self.morning.check_a = self.room.sensor.turn_on_low_light(self.morning.scene, self.morning.x_scene, self.morning.min_light_level, self.morning.check_a)
-
-
-            if self.morning.motion_check is (None or False):
-                pass
-            else:
-               self.morning.check_b = self.room.sensor.turn_off_after_motion(self.morning.scene,self.morning.x_scene, self.morning.wait_time, self.morning.check_b)
-
-
-
-
-        elif time_span == 3:  # Afternoon
-            
-            if self.mod_afternoon != 1:
-                self.mod_afternoon += 1
-                self.mod_day = 0
-                logging.info(f"Daymod\t\tAfternoon\t{self.room.name_room}")
-                self.room.turn_groups(status=None, scene=self.afternoon.scene)                
-                
-            if self.afternoon.bri_check is (None or False):
-                pass
-            else:
-                #print("run_routine", self.afternoon.check_a)
-                self.afternoon.check_a = self.room.sensor.turn_on_low_light(self.afternoon.scene,self.afternoon.x_scene, self.afternoon.min_light_level, self.afternoon.check_a)
-
-
-            if self.afternoon.motion_check is (None or False):
-                pass
-            else:
-               self.afternoon.check_b = self.room.sensor.turn_off_after_motion(self.afternoon.scene,self.afternoon.x_scene, self.afternoon.wait_time, self.afternoon.check_b)
-
-
-
-
-        elif time_span == 4:  # Night
-
-            if self.mod_night != 1:  # one time
-                self.mod_night += 1
-                self.mod_morning = 0
-                logging.info(f"Daymod\t\tNight\t\t{self.room.name_room}")
-                self.room.turn_groups(status=None, scene=self.night.scene)
-
-            if self.night.bri_check is (None or False):
-                pass
-            else:
-                #print("run_routine", self.afternoon.check_a)
-                self.night.check_a = self.room.sensor.turn_on_low_light(self.night.scene,self.night.x_scene, self.night.min_light_level, self.night.check_a)
-
-
-            if self.night.motion_check is (None or False):
-                pass
-            else:
-               self.night.check_b = self.room.sensor.turn_off_after_motion(self.night.scene,self.night.x_scene, self.night.wait_time, self.night.check_b)
-
-
-        
+        if time_span == 1:
+            self._run_section(self.day, "Day", self.mod_day, "mod_day", "mod_night")
+        elif time_span == 2:
+            if self.morning:
+                self._run_section(self.morning, "Morning", self.mod_morning, "mod_morning", "mod_afternoon")
+        elif time_span == 3:
+            self._run_section(self.afternoon, "Afternoon", self.mod_afternoon, "mod_afternoon", "mod_day")
+        elif time_span == 4:
+            self._run_section(self.night, "Night", self.mod_night, "mod_night", "mod_morning")
         else:
             raise InvalidTimeSpanException(time_span)
+
+    def _run_section(self, section: SectionRoutine, period_name: str, mod_val: int, mod_attr: str, reset_attr: str) -> None:
+        if mod_val != 1:
+            setattr(self, mod_attr, 1)
+            setattr(self, reset_attr, 0)
+            logging.info(f"Daymod\t\t{period_name}\t\t{self.room.name_room}")
+            self.room.turn_groups(status=None, scene=section.scene)
+
+        if section.bri_check:
+            section.check_a = self.room.sensor.turn_on_low_light(
+            scene=section.scene, x_scene=section.x_scene,
+            min_light_level=section.min_light_level, check=section.check_a
+        )
+
+        if section.motion_check:
+            section.check_b = self.room.sensor.turn_off_after_motion(
+                scene=section.scene, x_scene=section.x_scene,
+                wait_time=section.wait_time, check=section.check_b
+            )

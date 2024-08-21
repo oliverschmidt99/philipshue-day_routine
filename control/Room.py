@@ -1,5 +1,6 @@
 from control.huebridge import *
 from control.Sensor import *
+
 import logging
 
 sen = b.get_sensor_objects("name")
@@ -35,19 +36,28 @@ class Room():
         
     def turn_groups(self, scene: Scene, status):
         
-        if status is (True or False):
-            scene.status = status
+        
+        if status is True :
+            __status__ = status
+        elif status is False:
+            __status__ = status
+        else:
+            __status__ = scene.status
 
-        if scene.status is None:
-            pass
-        if scene.status is True:
+        if __status__ is True:
             for group_id in self.group_ids:
+                
                 logging.info(f"State\t\ton\t\t\t{self.name_room}")
                 b.set_group(group_id, "on", True)
                 b.set_group(group_id, "bri", scene.bri, transitiontime=scene.t_time)
                 b.set_group(group_id, "sat", scene.sat)
                 b.set_group(group_id, "ct", scene.ct)
-        elif scene.status is False:
+        elif __status__ is False:
             for group_id in self.group_ids:
                 logging.info(f"State\t\toff\t\t\t{self.name_room}")
                 b.set_group(group_id, "on", False)
+                b.set_group(group_id, "bri", scene.bri, transitiontime=scene.t_time)
+        elif __status__ is None:
+            for group_id in self.group_ids:
+                logging.info(f"State\t\toff\t\t\t{self.name_room}")
+                b.set_group(group_id, "on", None)

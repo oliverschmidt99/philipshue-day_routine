@@ -1,15 +1,42 @@
-2024-08-15 19:01:26,501 
+
+
+2024-08-21 20:36:02,825 | 
 This program is running
 
-2024-08-15 19:01:26,552 Daymod		Day			room_olli
-2024-08-15 19:01:26,552 State		off			room_olli
-2024-08-15 19:01:26,719 Daymod		Day			zone_outside
-2024-08-15 19:01:26,719 State		off			zone_outside
-2024-08-15 19:01:26,950 Daymod		Day			zone_inside
-2024-08-15 19:01:26,950 State		off			zone_inside
-2024-08-15 19:02:26,164 State		dark		room_olli
-2024-08-15 19:02:26,164 Brightness		11392
-2024-08-15 19:02:26,164 State		on			room_olli
-2024-08-15 19:03:01,545 State		bright		room_olli
-2024-08-15 19:03:01,545 Brightness		19098
-2024-08-15 19:03:01,545 State		off			room_olli
+2024-08-21 20:36:02,877 | Daymod		Day		room_olli
+2024-08-21 20:36:02,877 | State		off			room_olli
+2024-08-21 20:36:03,160 | room_olli, motion, detected
+2024-08-21 20:36:03,160 | State		on			room_olli
+2024-08-21 20:38:05,899 | 
+This program is running
+
+2024-08-21 20:38:05,948 | Daymod		Day		room_olli
+2024-08-21 20:38:05,948 | State		off			room_olli
+2024-08-21 20:40:26,435 | 
+This program is running
+
+2024-08-21 20:40:26,484 | Daymod		Day		room_olli
+2024-08-21 20:40:26,484 | State		off			room_olli
+2024-08-21 20:41:53,629 | 
+This program is running
+
+2024-08-21 20:41:53,678 | Daymod		Day		room_olli
+2024-08-21 20:41:53,678 | State		off			room_olli
+2024-08-21 20:42:39,153 | 
+This program is running
+
+2024-08-21 20:42:39,204 | Daymod		Day		room_olli
+2024-08-21 20:42:39,204 | State		off			room_olli
+2024-08-21 20:42:39,353 | room_olli, current_brightness, dark
+2024-08-21 20:42:39,353 | room_olli, current_brightness, 8485
+2024-08-21 20:42:39,353 | State		on			room_olli
+2024-08-21 20:42:39,983 | Daymod		Day		zone_outside
+2024-08-21 20:42:39,983 | State		off			zone_outside
+2024-08-21 20:42:40,251 | Daymod		Day		zone_inside
+2024-08-21 20:42:40,251 | State		off			zone_inside
+2024-08-21 20:43:02,802 | room_olli, current_brightness, bright
+2024-08-21 20:43:02,802 | room_olli, current_brightness, 15864
+2024-08-21 20:43:02,802 | State		off			room_olli
+2024-08-21 20:43:09,204 | room_olli, current_brightness, dark
+2024-08-21 20:43:09,204 | room_olli, current_brightness, 10061
+2024-08-21 20:43:09,204 | State		on			room_olli
