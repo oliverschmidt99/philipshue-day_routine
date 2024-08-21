@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 daily_time =Daily_time(5, 0, 21,0),
                 morning    =SectionRoutine(bri_check=False,min_light_level=0,motion_check=False,wait_time=10,scene=off,x_scene=off),
                 day        =SectionRoutine(bri_check=True,min_light_level=14000,motion_check=False,wait_time=5,scene=off,x_scene=warm_max),
-                afternoon  =SectionRoutine(bri_check=True,min_light_level=14000,motion_check=False,wait_time=120,scene=off,x_scene=warm_max),
+                afternoon  =SectionRoutine(bri_check=False,min_light_level=14000,motion_check=False,wait_time=120,scene=off,x_scene=warm_max),
                 night      =SectionRoutine(bri_check=False,min_light_level=0,motion_check=True,wait_time=45,scene=off,x_scene=warm_very_low),
                 )
                 
