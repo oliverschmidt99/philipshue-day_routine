@@ -100,8 +100,8 @@ class Daily_time(Time_format):
             #print("Day")
             return 1
         else:
-            if start_time < current_time <= sunrise_time:  # Mornig
-                #print("Mornig")
+            if start_time < current_time <= sunrise_time:  # Morning
+                #print("Morning")
                 return 2
             elif sunset_time <= current_time < end_time:  # Afternoon
                 #print("Afternoon")
