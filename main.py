@@ -20,27 +20,27 @@ logging.basicConfig(
 # Const
 BRI_OFF = 0
 BRI_LOW = 75
-BRI_MID = 150
-BRI_MAX = 240
+BRI_MID = 120
+BRI_MAX = 250
 
 
 if __name__ == "__main__":
     print("This program is running")
-    logging.info("\nThis program is running\n")
+    logging.info("\n\nThis program is running\n")
 
 
     # define Scenes
-    warm_max    = Scene(status=True, bri=BRI_MAX, sat=0, ct=500, t_time=50)
-    warm_mid    = Scene(status=True, bri=BRI_MID, sat=0, ct=500, t_time=50)
-    warm_low    = Scene(status=True, bri=BRI_LOW, sat=0, ct=500, t_time=50)
-    warm_very_low    = Scene(status=True, bri=30, sat=0, ct=500, t_time=10)
+    warm_max    = Scene(status=True, bri=BRI_MAX, sat=150, ct=350, t_time=50)
+    warm_mid    = Scene(status=True, bri=BRI_MID, sat=150, ct=350, t_time=50)
+    warm_low    = Scene(status=True, bri=BRI_LOW, sat=150, ct=350, t_time=50)
+    warm_very_low    = Scene(status=True, bri=30, sat=150, ct=500, t_time=20)
 
 
     cold_max    = Scene(status=True, bri=BRI_MAX, sat=0, ct=154, t_time=100)
     cold_mid    = Scene(status=True, bri=BRI_MID, sat=0, ct=154, t_time=100)
     cold_low    = Scene(status=True, bri=BRI_LOW, sat=0, ct=154, t_time=100)
     
-    off         = Scene(status=False, bri=BRI_OFF, sat=0, ct=0, t_time=0)
+    off         = Scene(status=False, bri=BRI_OFF, sat=0, ct=0, t_time=100)
   
     # define Rooms
     room_olli   = Room(group_ids=[1], switch_ids=[5, 99], sensor_id=2, name_room="room_olli")
@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 daily_time =Daily_time(4, 0, 21,0),
                 morning    =SectionRoutine(bri_check=False,min_light_level=0,motion_check=False,wait_time=10,scene=off,x_scene=off),
                 day        =SectionRoutine(bri_check=True,min_light_level=14000,motion_check=False,wait_time=5,scene=off,x_scene=warm_max),
-                afternoon  =SectionRoutine(bri_check=False,min_light_level=14000,motion_check=False,wait_time=120,scene=off,x_scene=warm_max),
+                afternoon  =SectionRoutine(bri_check=False,min_light_level=14000,motion_check=False,wait_time=120,scene=off,x_scene=warm_mid),
                 night      =SectionRoutine(bri_check=False,min_light_level=0,motion_check=True,wait_time=45,scene=off,x_scene=warm_very_low),
                 )
                 
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     while True:
 
         rt_olli.run_routine()
-        rt_outside.run_routine()
-        rt_inside.run_routine()
+        #rt_outside.run_routine()
+        #rt_inside.run_routine()
 
 
         time.sleep(2)
