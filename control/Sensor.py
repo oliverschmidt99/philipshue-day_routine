@@ -100,6 +100,7 @@ class Sensor():  # Sensor erbt jetzt von Scene
     def turn_on_low_light(self, scene, x_scene, min_light_level: int, check: bool):
         try:
             current_brightness = self.get_brightness()
+            print(current_brightness)
             logging.debug(f"Current brightness: {current_brightness}, check: {check}")
 
             if current_brightness is None:

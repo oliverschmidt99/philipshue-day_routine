@@ -1,0 +1,15 @@
+2024-08-24 19:24:58,829 | 
+
+This program is running
+
+2024-08-24 19:24:58,879 | Daymod		Day		room_olli
+2024-08-24 19:24:58,879 | State		off			room_olli
+2024-08-24 19:24:59,209 | room_olli, current_brightness, dark
+2024-08-24 19:24:59,210 | room_olli, current_brightness, 11495
+2024-08-24 19:24:59,210 | State		on			room_olli
+2024-08-24 19:25:31,697 | 
+
+This program is running
+
+2024-08-24 19:25:31,752 | Daymod		Day		zone_outside
+2024-08-24 19:25:31,752 | State		off			zone_outside

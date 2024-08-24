@@ -70,8 +70,8 @@ if __name__ == "__main__":
                 room       =zone_inside,
                 daily_time =Daily_time(5, 0, 22,30),
                 morning    =SectionRoutine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
-                day        =SectionRoutine(bri_check=True,min_light_level=14000,motion_check=False,wait_time=0,scene=off,x_scene=warm_mid),
-                afternoon  =SectionRoutine(bri_check=True,min_light_level=14000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
+                day        =SectionRoutine(bri_check=True,min_light_level=16000,motion_check=False,wait_time=0,scene=off,x_scene=warm_mid),
+                afternoon  =SectionRoutine(bri_check=True,min_light_level=16000,motion_check=False,wait_time=240,scene=warm_mid,x_scene=warm_max),
                 night      =SectionRoutine(bri_check=False,min_light_level=20000,motion_check=False,wait_time=120,scene=warm_low,x_scene=warm_mid),
                 )
    
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     while True:
 
         rt_olli.run_routine()
-        #rt_outside.run_routine()
-        #rt_inside.run_routine()
+        rt_outside.run_routine()
+        rt_inside.run_routine()
 
 
-        time.sleep(2)
+        time.sleep(1)
