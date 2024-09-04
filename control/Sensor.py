@@ -107,7 +107,7 @@ class Sensor():  # Sensor erbt jetzt von Scene
                 logging.error(f"Error: Unable to retrieve brightness for {self.name_room}")
                 return check
             
-            if current_brightness <= min_light_level + 2000:
+            if current_brightness <= min_light_level + 3500:
                 if not check:
                     logging.info(f"{self.name_room}, current_brightness, dark")
                     logging.info(f"{self.name_room}, current_brightness, {current_brightness}")

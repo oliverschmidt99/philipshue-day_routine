@@ -13,3 +13,16 @@ This program is running
 
 2024-08-24 19:25:31,752 | Daymod		Day		zone_outside
 2024-08-24 19:25:31,752 | State		off			zone_outside
+2024-09-04 18:37:21,491 | 
+
+This program is running
+
+2024-09-04 18:37:21,540 | Daymod		Day		room_olli
+2024-09-04 18:37:21,541 | State		off			room_olli
+2024-09-04 18:37:21,977 | room_olli, current_brightness, dark
+2024-09-04 18:37:21,977 | room_olli, current_brightness, 9717
+2024-09-04 18:37:21,977 | State		on			room_olli
+2024-09-04 18:37:23,135 | Daymod		Day		zone_outside
+2024-09-04 18:37:23,136 | State		off			zone_outside
+2024-09-04 18:37:23,760 | Daymod		Day		zone_inside
+2024-09-04 18:37:23,760 | State		off			zone_inside
