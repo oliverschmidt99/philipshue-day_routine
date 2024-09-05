@@ -83,7 +83,4 @@ if __name__ == "__main__":
         rt_outside.run_routine()
         rt_inside.run_routine()
 
-        a= rt_inside.room.sensor.sensor_id_brightness()
-        
-
         time.sleep(1)
