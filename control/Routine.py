@@ -20,7 +20,7 @@ class SectionRoutine:
     def __init__(
             self,
             bri_check: bool,
-            min_light_level: float,
+            max_light_level: float,
             motion_check: bool,
             wait_time: int,
             scene: Scene,
@@ -29,7 +29,7 @@ class SectionRoutine:
             check_b: bool = False
     ) -> None:
         self.bri_check = bri_check
-        self.min_light_level = min_light_level
+        self.max_light_level = max_light_level
         self.motion_check = motion_check
         self.wait_time = wait_time
         self.scene = scene
@@ -86,9 +86,9 @@ class Routine:
             self.room.turn_groups(status=None, scene=section.scene)
 
         if section.bri_check:
-            section.check_a = self.room.sensor.turn_on_low_light(
+            section.check_a = self.room.sensor.turn_fade_on_light(
             scene=section.scene, x_scene=section.x_scene,
-            min_light_level=section.min_light_level, check=section.check_a
+            max_light_level=section.max_light_level, check=section.check_a
         )
 
         if section.motion_check:

@@ -124,3 +124,43 @@ class Sensor():  # Sensor erbt jetzt von Scene
         except Exception as e:
             logging.error(f"Error in turn_on_low_light: {e}")
             return check
+
+
+
+    def turn_fade_on_light(self, scene, x_scene, max_light_level: int, check: bool):
+        try:
+            min_light_level: int = 5000 
+            current_brightness = self.get_brightness()
+            print(current_brightness)
+            logging.debug(f"Current brightness: {current_brightness}, check: {check}")
+
+            if current_brightness is None:
+                logging.error(f"Error: Unable to retrieve brightness for {self.name_room}")
+                return check
+
+            # Check if the current brightness is within the range where fading should occur
+            if min_light_level < current_brightness < max_light_level:
+                # Calculate the fade factor (0.0 to 1.0) based on current brightness relative to the range
+                fade_factor = (current_brightness - min_light_level) / (max_light_level - min_light_level)
+                adjusted_brightness = int(fade_factor * 254)  # Scale to a value between 0 and 100
+                x_scene.bri = adjusted_brightness 
+
+                # Set the light to the calculated brightness (fading)
+                logging.info(f"Fading {self.name_room}, adjusted brightness: {adjusted_brightness}%")
+                self.room_instance.turn_groups(x_scene, True)
+                check = True
+            elif current_brightness <= min_light_level:
+                if not check:
+                    logging.info(f"{self.name_room}, current_brightness, dark")
+                    self.room_instance.turn_groups(x_scene, True)
+                    check = True
+            elif current_brightness >= max_light_level:
+                if check:
+                    logging.info(f"{self.name_room}, current_brightness, bright")
+                    self.room_instance.turn_groups(scene, None)
+                    check = False
+            return check
+
+        except Exception as e:
+            logging.error(f"Error in turn_fade_on_light: {e}")
+            return check

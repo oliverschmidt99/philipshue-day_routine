@@ -1,38 +1,88 @@
-2024-08-24 19:24:58,829 | 
-
-This program is running
-
-2024-08-24 19:24:58,879 | Daymod		Day		room_olli
-2024-08-24 19:24:58,879 | State		off			room_olli
-2024-08-24 19:24:59,209 | room_olli, current_brightness, dark
-2024-08-24 19:24:59,210 | room_olli, current_brightness, 11495
-2024-08-24 19:24:59,210 | State		on			room_olli
-2024-08-24 19:25:31,697 | 
-
-This program is running
-
-2024-08-24 19:25:31,752 | Daymod		Day		zone_outside
-2024-08-24 19:25:31,752 | State		off			zone_outside
-2024-09-04 18:37:21,491 | 
-
-This program is running
-
-2024-09-04 18:37:21,540 | Daymod		Day		room_olli
-2024-09-04 18:37:21,541 | State		off			room_olli
-2024-09-04 18:37:21,977 | room_olli, current_brightness, dark
-2024-09-04 18:37:21,977 | room_olli, current_brightness, 9717
-2024-09-04 18:37:21,977 | State		on			room_olli
-2024-09-04 18:37:23,135 | Daymod		Day		zone_outside
-2024-09-04 18:37:23,136 | State		off			zone_outside
-2024-09-04 18:37:23,760 | Daymod		Day		zone_inside
-2024-09-04 18:37:23,760 | State		off			zone_inside
-2024-09-05 08:59:18,555 | 
-
-This program is running
-
-2024-09-05 08:59:18,606 | Daymod		Day		room_olli
-2024-09-05 08:59:18,606 | State		off			room_olli
-2024-09-05 08:59:18,759 | Daymod		Day		zone_outside
-2024-09-05 08:59:18,759 | State		off			zone_outside
-2024-09-05 08:59:18,910 | Daymod		Day		zone_inside
-2024-09-05 08:59:18,910 | State		off			zone_inside
+2024-09-19 19:03:31,097 | Fading room_olli, adjusted brightness: 47%
+2024-09-19 19:03:31,097 | State		on			room_olli
+2024-09-19 19:03:32,551 | Fading room_olli, adjusted brightness: 47%
+2024-09-19 19:03:32,551 | State		on			room_olli
+2024-09-19 19:03:33,994 | Fading room_olli, adjusted brightness: 47%
+2024-09-19 19:03:33,994 | State		on			room_olli
+2024-09-19 19:03:35,433 | Fading room_olli, adjusted brightness: 47%
+2024-09-19 19:03:35,433 | State		on			room_olli
+2024-09-19 19:03:36,861 | Fading room_olli, adjusted brightness: 47%
+2024-09-19 19:03:36,861 | State		on			room_olli
+2024-09-19 19:03:38,405 | Fading room_olli, adjusted brightness: 182%
+2024-09-19 19:03:38,405 | State		on			room_olli
+2024-09-19 19:03:40,072 | Fading room_olli, adjusted brightness: 182%
+2024-09-19 19:03:40,072 | State		on			room_olli
+2024-09-19 19:03:41,655 | Fading room_olli, adjusted brightness: 182%
+2024-09-19 19:03:41,655 | State		on			room_olli
+2024-09-19 19:03:43,155 | room_olli, current_brightness, bright
+2024-09-19 19:03:43,156 | State		off			room_olli
+2024-09-19 19:03:47,569 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:47,570 | State		on			room_olli
+2024-09-19 19:03:49,352 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:49,352 | State		on			room_olli
+2024-09-19 19:03:50,807 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:50,807 | State		on			room_olli
+2024-09-19 19:03:52,263 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:52,263 | State		on			room_olli
+2024-09-19 19:03:53,716 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:53,716 | State		on			room_olli
+2024-09-19 19:03:55,149 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:55,149 | State		on			room_olli
+2024-09-19 19:03:56,586 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:56,586 | State		on			room_olli
+2024-09-19 19:03:58,042 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:58,042 | State		on			room_olli
+2024-09-19 19:03:59,477 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:03:59,477 | State		on			room_olli
+2024-09-19 19:04:00,914 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:04:00,914 | State		on			room_olli
+2024-09-19 19:04:02,346 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:04:02,346 | State		on			room_olli
+2024-09-19 19:04:03,813 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:04:03,813 | State		on			room_olli
+2024-09-19 19:04:05,242 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:04:05,242 | State		on			room_olli
+2024-09-19 19:04:06,676 | Fading room_olli, adjusted brightness: 63%
+2024-09-19 19:04:06,676 | State		on			room_olli
+2024-09-19 19:04:08,106 | Fading room_olli, adjusted brightness: 205%
+2024-09-19 19:04:08,106 | State		on			room_olli
+2024-09-19 19:04:09,725 | Fading room_olli, adjusted brightness: 205%
+2024-09-19 19:04:09,725 | State		on			room_olli
+2024-09-19 19:04:11,188 | Fading room_olli, adjusted brightness: 205%
+2024-09-19 19:04:11,188 | State		on			room_olli
+2024-09-19 19:04:12,623 | Fading room_olli, adjusted brightness: 205%
+2024-09-19 19:04:12,623 | State		on			room_olli
+2024-09-19 19:04:14,142 | room_olli, current_brightness, bright
+2024-09-19 19:04:14,142 | State		off			room_olli
+2024-09-19 19:04:18,578 | Fading room_olli, adjusted brightness: 52%
+2024-09-19 19:04:18,578 | State		on			room_olli
+2024-09-19 19:04:20,318 | Fading room_olli, adjusted brightness: 52%
+2024-09-19 19:04:20,318 | State		on			room_olli
+2024-09-19 19:04:21,928 | Fading room_olli, adjusted brightness: 52%
+2024-09-19 19:04:21,928 | State		on			room_olli
+2024-09-19 19:04:23,482 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:23,482 | State		on			room_olli
+2024-09-19 19:04:25,083 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:25,083 | State		on			room_olli
+2024-09-19 19:04:26,528 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:26,528 | State		on			room_olli
+2024-09-19 19:04:27,987 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:27,987 | State		on			room_olli
+2024-09-19 19:04:29,412 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:29,412 | State		on			room_olli
+2024-09-19 19:04:30,869 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:30,869 | State		on			room_olli
+2024-09-19 19:04:32,301 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:32,302 | State		on			room_olli
+2024-09-19 19:04:33,762 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:33,762 | State		on			room_olli
+2024-09-19 19:04:35,211 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:35,211 | State		on			room_olli
+2024-09-19 19:04:36,660 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:36,660 | State		on			room_olli
+2024-09-19 19:04:38,107 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:38,108 | State		on			room_olli
+2024-09-19 19:04:39,532 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:39,533 | State		on			room_olli
+2024-09-19 19:04:40,969 | Fading room_olli, adjusted brightness: 169%
+2024-09-19 19:04:40,969 | State		on			room_olli
