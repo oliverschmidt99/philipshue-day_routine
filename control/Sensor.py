@@ -130,7 +130,7 @@ class Sensor:  # Sensor erbt jetzt von Scene
 
     def turn_fade_on_light(self, scene, x_scene, max_light_level: int, check: bool):
         try:
-            min_light_level: int = 5000
+            min_light_level: int = 0
             current_brightness = self.get_brightness()
             print(current_brightness)
             logging.debug(f"Current brightness: {current_brightness}, check: {check}")
