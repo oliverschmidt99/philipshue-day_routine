@@ -18,15 +18,15 @@ class InvalidTimeSpanException(Exception):
 
 class SectionRoutine:
     def __init__(
-            self,
-            bri_check: bool,
-            max_light_level: float,
-            motion_check: bool,
-            wait_time: int,
-            scene: Scene,
-            x_scene: Scene,
-            check_a: bool = False,
-            check_b: bool = False
+        self,
+        bri_check: bool,
+        max_light_level: float,
+        motion_check: bool,
+        wait_time: int,
+        scene: Scene,
+        x_scene: Scene,
+        check_a: bool = False,
+        check_b: bool = False,
     ) -> None:
         self.bri_check = bri_check
         self.max_light_level = max_light_level
@@ -40,17 +40,17 @@ class SectionRoutine:
 
 class Routine:
     def __init__(
-            self,
-            room: Room,
-            daily_time: Daily_time,
-            morning: SectionRoutine,
-            day: SectionRoutine,
-            afternoon: SectionRoutine,
-            night: SectionRoutine,
-            mod_morning: int = 0,
-            mod_day: int = 0,
-            mod_afternoon: int = 0,
-            mod_night: int = 0,
+        self,
+        room: Room,
+        daily_time: Daily_time,
+        morning: SectionRoutine,
+        day: SectionRoutine,
+        afternoon: SectionRoutine,
+        night: SectionRoutine,
+        mod_morning: int = 0,
+        mod_day: int = 0,
+        mod_afternoon: int = 0,
+        mod_night: int = 0,
     ) -> None:
         self.room = room
         self.daily_time = daily_time
@@ -70,15 +70,36 @@ class Routine:
             self._run_section(self.day, "Day", self.mod_day, "mod_day", "mod_night")
         elif time_span == 2:
             if self.morning:
-                self._run_section(self.morning, "Morning", self.mod_morning, "mod_morning", "mod_afternoon")
+                self._run_section(
+                    self.morning,
+                    "Morning",
+                    self.mod_morning,
+                    "mod_morning",
+                    "mod_afternoon",
+                )
         elif time_span == 3:
-            self._run_section(self.afternoon, "Afternoon", self.mod_afternoon, "mod_afternoon", "mod_day")
+            self._run_section(
+                self.afternoon,
+                "Afternoon",
+                self.mod_afternoon,
+                "mod_afternoon",
+                "mod_day",
+            )
         elif time_span == 4:
-            self._run_section(self.night, "Night", self.mod_night, "mod_night", "mod_morning")
+            self._run_section(
+                self.night, "Night", self.mod_night, "mod_night", "mod_morning"
+            )
         else:
             raise InvalidTimeSpanException(time_span)
 
-    def _run_section(self, section: SectionRoutine, period_name: str, mod_val: int, mod_attr: str, reset_attr: str) -> None:
+    def _run_section(
+        self,
+        section: SectionRoutine,
+        period_name: str,
+        mod_val: int,
+        mod_attr: str,
+        reset_attr: str,
+    ) -> None:
         if mod_val != 1:
             setattr(self, mod_attr, 1)
             setattr(self, reset_attr, 0)
@@ -87,12 +108,16 @@ class Routine:
 
         if section.bri_check:
             section.check_a = self.room.sensor.turn_fade_on_light(
-            scene=section.scene, x_scene=section.x_scene,
-            max_light_level=section.max_light_level, check=section.check_a
-        )
+                scene=section.scene,
+                x_scene=section.x_scene,
+                max_light_level=section.max_light_level,
+                check=section.check_a,
+            )
 
         if section.motion_check:
             section.check_b = self.room.sensor.turn_off_after_motion(
-                scene=section.scene, x_scene=section.x_scene,
-                wait_time=section.wait_time, check=section.check_b
+                scene=section.scene,
+                x_scene=section.x_scene,
+                wait_time=section.wait_time,
+                check=section.check_b,
             )

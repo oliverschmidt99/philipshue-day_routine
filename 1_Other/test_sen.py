@@ -48,9 +48,9 @@ class Temperature(Sensor):
 # Beispiel für die Verwendung:
 if __name__ == "__main__":
     BRIDGE_IP = "192.168.178.42"  # Ersetze dies mit der IP-Adresse deiner Hue Bridge
-    MOTION_SENSOR_ID = 2  # Ersetze dies mit der ID deines Bewegungssensors
-    BRIGHTNESS_SENSOR_ID = 3  # Ersetze dies mit der ID deines Helligkeitssensors
-    TEMPERATURE_SENSOR_ID = 4  # Ersetze dies mit der ID deines Temperatursensors
+    MOTION_SENSOR_ID = 190  # Ersetze dies mit der ID deines Bewegungssensors
+    BRIGHTNESS_SENSOR_ID = 191  # Ersetze dies mit der ID deines Helligkeitssensors
+    TEMPERATURE_SENSOR_ID = 192  # Ersetze dies mit der ID deines Temperatursensors
 
     motion_sensor = Motion(BRIDGE_IP, MOTION_SENSOR_ID)
     brightness_sensor = Brightness(BRIDGE_IP, BRIGHTNESS_SENSOR_ID)
