@@ -170,4 +170,4 @@ if __name__ == "__main__":
         rt_outside_runway.run_routine()
         rt_inside.run_routine()
 
-        time.sleep(0.5)
+        time.sleep(3)

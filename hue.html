@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Light Control</title>
+    <script>
+        async function updateValues(endpoint) {
+            const formData = new FormData(document.getElementById(endpoint));
+            const data = Object.fromEntries(formData);
+            const response = await fetch(`/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Smart Light Control</h1>
+
+    <section>
+        <h2>Room Settings</h2>
+        <form id="update-room" onsubmit="event.preventDefault(); updateValues('update-room')">
+            <label for="room_name">Room Name:</label>
+            <input type="text" name="room_name" id="room_name" required><br>
+
+            <label for="group_ids">Group IDs (comma-separated):</label>
+            <input type="text" name="group_ids" id="group_ids"><br>
+
+            <label for="sensor_id">Sensor ID:</label>
+            <input type="number" name="sensor_id" id="sensor_id"><br>
+
+            <button type="submit">Update Room</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Scene Settings</h2>
+        <form id="update-scene" onsubmit="event.preventDefault(); updateValues('update-scene')">
+            <label for="bri">Brightness:</label>
+            <input type="number" name="bri" id="bri" required><br>
+
+            <label for="sat">Saturation:</label>
+            <input type="number" name="sat" id="sat"><br>
+
+            <label for="ct">Color Temperature:</label>
+            <input type="number" name="ct" id="ct"><br>
+
+            <label for="t_time">Transition Time:</label>
+            <input type="number" name="t_time" id="t_time"><br>
+
+            <button type="submit">Update Scene</button>
+        </form>
+    </section>
+</body>
+
+</html>

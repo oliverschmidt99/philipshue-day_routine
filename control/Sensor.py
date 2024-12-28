@@ -144,9 +144,12 @@ class Sensor:  # Sensor erbt jetzt von Scene
             # Check if the current brightness is within the range where fading should occur
             if min_light_level < current_brightness < max_light_level:
                 # Calculate the fade factor (0.0 to 1.0) based on current brightness relative to the range
-                fade_factor = (current_brightness - min_light_level) / (
-                    max_light_level - min_light_level
-                )
+                if current_brightness == max_light_level:
+                    fade_factor = 0
+                else:
+                    fade_factor = (current_brightness) / (
+                        max_light_level - current_brightness
+                    )
                 adjusted_brightness = int(
                     fade_factor * 254
                 )  # Scale to a value between 0 and 100
