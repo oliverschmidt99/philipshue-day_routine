@@ -95,7 +95,7 @@ if __name__ == "__main__":
         daily_time=Daily_time(6, 30, 22, 0),
         morning=SectionRoutine(
             bri_check=False,
-            max_light_level=20000,
+            max_light_level=16000,
             motion_check=True,
             wait_time=240,
             scene=warm_mid,
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         ),
         day=SectionRoutine(
             bri_check=True,
-            max_light_level=14000,
+            max_light_level=16000,
             motion_check=False,
             wait_time=0,
             scene=off,
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         ),
         afternoon=SectionRoutine(
             bri_check=True,
-            max_light_level=14000,
+            max_light_level=16000,
             motion_check=True,
             wait_time=240,
             scene=warm_mid,
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         ),
         night=SectionRoutine(
             bri_check=False,
-            max_light_level=20000,
+            max_light_level=16000,
             motion_check=True,
             wait_time=120,
             scene=off,
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         ),
         day=SectionRoutine(
             bri_check=True,
-            max_light_level=18000,
+            max_light_level=20000,
             motion_check=False,
             wait_time=0,
             scene=off,
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         ),
         afternoon=SectionRoutine(
             bri_check=True,
-            max_light_level=18000,
+            max_light_level=20000,
             motion_check=False,
             wait_time=240,
             scene=warm_mid,
