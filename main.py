@@ -21,7 +21,7 @@ logging.basicConfig(
 # Const
 BRI_OFF = 0
 BRI_LOW = 75
-BRI_MID = 120
+BRI_MID = 150
 BRI_MAX = 250
 
 
@@ -45,8 +45,11 @@ if __name__ == "__main__":
     room_olli = Room(
         group_ids=[89], switch_ids=[5, 99], sensor_id=2, name_room="room_olli"
     )
-    zone_outside = Room(
-        group_ids=[24], switch_ids=[5, 99], sensor_id=190, name_room="zone_outside"
+    zone_outside_runway = Room(
+        group_ids=[83], switch_ids=[5, 99], sensor_id=190, name_room="zone_outside"
+    )
+    zone_outside_backyard = Room(
+        group_ids=[91], switch_ids=[5, 99], sensor_id=193, name_room="zone_outside"
     )
     zone_inside = Room(
         group_ids=[87], switch_ids=[5, 99], sensor_id=190, name_room="zone_inside"
@@ -91,7 +94,44 @@ if __name__ == "__main__":
     )
 
     rt_outside_runway = Routine(
-        room=zone_outside,
+        room=zone_outside_runway,
+        daily_time=Daily_time(6, 30, 22, 0),
+        morning=SectionRoutine(
+            bri_check=False,
+            max_light_level=16000,
+            motion_check=True,
+            wait_time=240,
+            scene=warm_mid,
+            x_scene=warm_max,
+        ),
+        day=SectionRoutine(
+            bri_check=True,
+            max_light_level=16000,
+            motion_check=False,
+            wait_time=0,
+            scene=off,
+            x_scene=warm_mid,
+        ),
+        afternoon=SectionRoutine(
+            bri_check=True,
+            max_light_level=16000,
+            motion_check=True,
+            wait_time=240,
+            scene=warm_mid,
+            x_scene=warm_max,
+        ),
+        night=SectionRoutine(
+            bri_check=False,
+            max_light_level=16000,
+            motion_check=True,
+            wait_time=120,
+            scene=off,
+            x_scene=warm_low,
+        ),
+    )
+
+    rt_outside_backyard = Routine(
+        room=zone_outside_backyard,
         daily_time=Daily_time(6, 30, 22, 0),
         morning=SectionRoutine(
             bri_check=False,
