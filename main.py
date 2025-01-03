@@ -46,10 +46,16 @@ if __name__ == "__main__":
         group_ids=[89], switch_ids=[5, 99], sensor_id=2, name_room="room_olli"
     )
     zone_outside_runway = Room(
-        group_ids=[83], switch_ids=[5, 99], sensor_id=190, name_room="zone_outside"
+        group_ids=[83],
+        switch_ids=[5, 99],
+        sensor_id=190,
+        name_room="zone_outside_runway",
     )
     zone_outside_backyard = Room(
-        group_ids=[91], switch_ids=[5, 99], sensor_id=193, name_room="zone_outside"
+        group_ids=[91],
+        switch_ids=[5, 99],
+        sensor_id=193,
+        name_room="zone_outside_backyard",
     )
     zone_inside = Room(
         group_ids=[87], switch_ids=[5, 99], sensor_id=190, name_room="zone_inside"
@@ -159,11 +165,11 @@ if __name__ == "__main__":
         ),
         night=SectionRoutine(
             bri_check=False,
-            max_light_level=16000,
+            max_light_level=20000,
             motion_check=True,
             wait_time=60,
             scene=off,
-            x_scene=warm_low,
+            x_scene=warm_very_low,
         ),
     )
 
@@ -208,6 +214,7 @@ if __name__ == "__main__":
 
         rt_olli.run_routine()
         rt_outside_runway.run_routine()
+        rt_outside_backyard.run_routine()
         rt_inside.run_routine()
 
         time.sleep(3)
