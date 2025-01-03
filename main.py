@@ -30,16 +30,16 @@ if __name__ == "__main__":
     logging.info("\n\nThis program is running\n")
 
     # define Scenes
-    warm_max = Scene(status=True, bri=BRI_MAX, sat=150, ct=350, t_time=50)
+    warm_max = Scene(status=True, bri=BRI_MAX, sat=150, ct=350, t_time=10)
     warm_mid = Scene(status=True, bri=BRI_MID, sat=150, ct=350, t_time=50)
     warm_low = Scene(status=True, bri=BRI_LOW, sat=150, ct=350, t_time=50)
     warm_very_low = Scene(status=True, bri=30, sat=150, ct=500, t_time=20)
 
-    cold_max = Scene(status=True, bri=BRI_MAX, sat=0, ct=154, t_time=100)
+    cold_max = Scene(status=True, bri=BRI_MAX, sat=0, ct=154, t_time=10)
     cold_mid = Scene(status=True, bri=BRI_MID, sat=0, ct=154, t_time=100)
     cold_low = Scene(status=True, bri=BRI_LOW, sat=0, ct=154, t_time=100)
 
-    off = Scene(status=False, bri=BRI_OFF, sat=0, ct=0, t_time=100)
+    off = Scene(status=False, bri=BRI_OFF, sat=0, ct=0, t_time=10)
 
     # define Rooms
     room_olli = Room(
@@ -124,7 +124,7 @@ if __name__ == "__main__":
             bri_check=False,
             max_light_level=16000,
             motion_check=True,
-            wait_time=120,
+            wait_time=180,
             scene=off,
             x_scene=warm_low,
         ),
@@ -161,7 +161,7 @@ if __name__ == "__main__":
             bri_check=False,
             max_light_level=16000,
             motion_check=True,
-            wait_time=120,
+            wait_time=60,
             scene=off,
             x_scene=warm_low,
         ),
