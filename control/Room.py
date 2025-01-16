@@ -1,5 +1,8 @@
+from control.Sensor import Sensor
+from control.Room import Scene
 from control.huebridge import *
-from control.Sensor import *
+
+# from control.Sensor import *
 
 import logging
 
@@ -9,7 +12,7 @@ lights = b.lights
 
 
 class Scene:
-    def __init__(self, status , bri, sat, ct, t_time) -> None:
+    def __init__(self, status, bri, sat, ct, t_time) -> None:
         """:parameters:  'bri' : 0-254, 'sat' : 0-254, 'ct': 154-500"""
         self.status = status
         self.bri = bri
@@ -18,7 +21,7 @@ class Scene:
         self.t_time = t_time
 
 
-class Room():
+class Room:
 
     def __init__(self, group_ids, switch_ids, sensor_id, name_room) -> None:
         self.group_ids = group_ids
@@ -33,11 +36,9 @@ class Room():
                 room_instance=self,
             )
 
-        
     def turn_groups(self, scene: Scene, status):
-        
-        
-        if status is True :
+
+        if status is True:
             __status__ = status
         elif status is False:
             __status__ = status
@@ -46,7 +47,7 @@ class Room():
 
         if __status__ is True:
             for group_id in self.group_ids:
-                
+
                 logging.info(f"State\t\ton\t\t\t{self.name_room}")
                 b.set_group(group_id, "on", True)
                 b.set_group(group_id, "bri", scene.bri, transitiontime=scene.t_time)
@@ -61,3 +62,21 @@ class Room():
             for group_id in self.group_ids:
                 logging.info(f"State\t\toff\t\t\t{self.name_room}")
                 b.set_group(group_id, "on", None)
+
+    def set_bri(self, bri):
+        self.bri = bri
+
+    def get_bri(self):
+        return self.bri
+
+    def set_sat(self, sat):
+        self.sat = sat
+
+    def get_sat(self):
+        return self.sat
+
+    def set_ct(self, ct):
+        self.ct = ct
+
+    def get_ct(self):
+        return self.ct

@@ -1,2 +1,48 @@
-2025-01-03 23:25:08,511 | room_olli, motion, detected
-2025-01-03 23:25:08,511 | State		on			room_olli
+2025-01-15 18:13:31,480 | 
+
+This program is running
+
+2025-01-15 18:13:31,545 | Daymod		Afternoon		room_olli
+2025-01-15 18:13:31,545 | State		off			room_olli
+2025-01-15 18:13:31,949 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:13:31,949 | Daymod		Afternoon		zone_outside_runway
+2025-01-15 18:13:31,949 | State		on			zone_outside_runway
+2025-01-15 18:13:32,798 | Daymod		Afternoon		zone_outside_backyard
+2025-01-15 18:13:32,798 | State		on			zone_outside_backyard
+2025-01-15 18:13:33,292 | Daymod		Afternoon		zone_inside
+2025-01-15 18:13:33,292 | State		on			zone_inside
+2025-01-15 18:13:36,724 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:13:39,814 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:14:22,791 | 
+
+This program is running
+
+2025-01-15 18:14:22,882 | Daymod		Afternoon		room_olli
+2025-01-15 18:14:22,882 | State		off			room_olli
+2025-01-15 18:14:23,222 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:14:23,223 | Daymod		Afternoon		zone_outside_runway
+2025-01-15 18:14:23,223 | State		on			zone_outside_runway
+2025-01-15 18:14:23,491 | Daymod		Afternoon		zone_outside_backyard
+2025-01-15 18:14:23,491 | State		on			zone_outside_backyard
+2025-01-15 18:14:23,701 | Daymod		Afternoon		zone_inside
+2025-01-15 18:14:23,701 | State		on			zone_inside
+2025-01-15 18:25:11,726 | 
+
+This program is running
+
+2025-01-15 18:25:11,792 | Daymod		Afternoon		room_olli
+2025-01-15 18:25:11,792 | State		off			room_olli
+2025-01-15 18:25:12,114 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:25:12,114 | Daymod		Afternoon		zone_outside_runway
+2025-01-15 18:25:12,114 | State		on			zone_outside_runway
+2025-01-15 18:25:12,395 | Daymod		Afternoon		zone_outside_backyard
+2025-01-15 18:25:12,395 | State		on			zone_outside_backyard
+2025-01-15 18:25:12,619 | Daymod		Afternoon		zone_inside
+2025-01-15 18:25:12,619 | State		on			zone_inside
+2025-01-15 18:25:15,950 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:25:19,034 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:25:22,116 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:25:25,199 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:25:28,282 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:25:31,371 | Error in turn_fade_on_light: name 'Scene' is not defined
+2025-01-15 18:25:34,455 | Error in turn_fade_on_light: name 'Scene' is not defined

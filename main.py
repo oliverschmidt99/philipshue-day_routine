@@ -21,7 +21,7 @@ logging.basicConfig(
 # Const
 BRI_OFF = 0
 BRI_LOW = 75
-BRI_MID = 150
+BRI_MID = 170
 BRI_MAX = 250
 
 
@@ -78,11 +78,11 @@ if __name__ == "__main__":
             max_light_level=20000,
             motion_check=False,
             wait_time=5,
-            scene=off,
+            scene=warm_mid,
             x_scene=warm_max,
         ),
         afternoon=SectionRoutine(
-            bri_check=False,
+            bri_check=True,
             max_light_level=18000,
             motion_check=False,
             wait_time=120,
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
     rt_inside = Routine(
         room=zone_inside,
-        daily_time=Daily_time(6, 0, 22, 30),
+        daily_time=Daily_time(7, 0, 22, 30),
         morning=SectionRoutine(
             bri_check=False,
             max_light_level=20000,

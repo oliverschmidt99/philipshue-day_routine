@@ -2,11 +2,12 @@ from control.huebridge import *
 from control.Room import *
 from control.Daily_time_span import *
 
+
 import logging
 import time
 
 
-class Sensor:  # Sensor erbt jetzt von Scene
+class Sensor:
     __last_active_time__ = 0
 
     def __init__(self, sensor_id, name_room, room_instance):
@@ -130,10 +131,10 @@ class Sensor:  # Sensor erbt jetzt von Scene
 
     def turn_fade_on_light(self, scene, x_scene, max_light_level: int, check: bool):
         try:
+            from control.Room import Scene  # Import inside the function
+
             min_light_level: int = 0
             current_brightness = self.get_brightness()
-            print(current_brightness)
-            logging.debug(f"Current brightness: {current_brightness}, check: {check}")
 
             if current_brightness is None:
                 logging.error(
@@ -141,38 +142,30 @@ class Sensor:  # Sensor erbt jetzt von Scene
                 )
                 return check
 
-            # Check if the current brightness is within the range where fading should occur
             if min_light_level < current_brightness < max_light_level:
-                # Calculate the fade factor (0.0 to 1.0) based on current brightness relative to the range
-                if current_brightness == max_light_level:
-                    fade_factor = 0
-                else:
-                    fade_factor = (current_brightness) / (
-                        max_light_level - current_brightness
-                    )
-                adjusted_brightness = int(
-                    fade_factor * 254
-                )  # Scale to a value between 0 and 100
-                x_scene.bri = adjusted_brightness
 
-                # Set the light to the calculated brightness (fading)
-                logging.info(
-                    f"Fading {self.name_room}, adjusted brightness: {adjusted_brightness}%"
+                adjusted_brightness = 250 * (
+                    (current_brightness) / (max_light_level - min_light_level)
                 )
-                self.room_instance.turn_groups(x_scene, True)
-                check = True
-            elif current_brightness <= min_light_level:
-                if not check:
-                    logging.info(f"{self.name_room}, current_brightness, dark")
-                    self.room_instance.turn_groups(x_scene, True)
-                    check = True
-            elif current_brightness >= max_light_level:
-                if check:
-                    logging.info(f"{self.name_room}, current_brightness, bright")
-                    self.room_instance.turn_groups(scene, None)
-                    check = False
-            return check
+                print("Fading", int(adjusted_brightness))
 
+                adjusted_scene = Scene(
+                    status=True,
+                    bri=int(adjusted_brightness),
+                    sat=scene.sat,
+                    ct=scene.ct,
+                    t_time=scene.t_time,
+                )
+                # Schalte das Licht mit der neuen Scene ein
+                self.room_instance.turn_groups(adjusted_scene, True)
+                check = True
+
+            elif current_brightness >= max_light_level:
+                logging.info(f"{self.name_room}, current_brightness, bright")
+                check = False
+                self.room_instance.turn_groups(scene, True)
+
+            return check
         except Exception as e:
             logging.error(f"Error in turn_fade_on_light: {e}")
             return check
