@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 import yaml
 import os
 import subprocess
+import json # Importiere die json-Bibliothek
 
 app = Flask(__name__)
 CONFIG_FILE = 'config.yaml'
@@ -11,15 +12,18 @@ MAIN_SCRIPT = 'main.py'
 main_process = None
 
 def restart_main_script():
-    """Stoppt den laufenden main.py Prozess und startet ihn neu."""
+    """Stoppt den laufenden main.py Prozess (falls er läuft) und startet ihn neu."""
     global main_process
-    if main_process:
+    if main_process and main_process.poll() is None:
         print("Beende laufendes Hauptskript...")
         main_process.terminate()
-        main_process.wait() # Warten, bis der Prozess wirklich beendet ist
+        try:
+            main_process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            print("Warnung: Hauptskript konnte nicht rechtzeitig beendet werden. Erzwinge Beendigung (kill).")
+            main_process.kill()
     
     print("Starte Hauptskript neu...")
-    # 'subprocess.Popen' startet das Skript in einem neuen Prozess
     main_process = subprocess.Popen(['python', MAIN_SCRIPT])
     return "Hauptskript wurde neu gestartet."
 
@@ -35,36 +39,45 @@ def get_config():
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
-        return jsonify(config)
+        
+        # Manuelle Umwandlung zu JSON, um den TypeError zu umgehen.
+        # Wir erstellen eine Response direkt mit dem JSON-String.
+        json_output = json.dumps(config, indent=2) # indent für bessere Lesbarkeit beim Debuggen
+        return Response(json_output, mimetype='application/json')
+        
     except FileNotFoundError:
+        app.logger.error(f"API-Fehler: Konfigurationsdatei {CONFIG_FILE} nicht gefunden.")
         return jsonify({"error": f"Konfigurationsdatei {CONFIG_FILE} nicht gefunden."}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"Ein Fehler ist beim Laden der Konfiguration für die API aufgetreten:", exc_info=True)
+        return jsonify({"error": "Server-Fehler beim Laden der Konfiguration."}), 500
 
 @app.route('/api/config', methods=['POST'])
 def set_config():
-    """Empfängt JSON-Daten vom Frontend und speichert sie in der YAML-Datei."""
+    """Empfängt JSON-Daten vom Frontend, speichert sie und startet das Hauptskript neu."""
     try:
         data = request.json
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
         
-        # Nachdem die Konfiguration gespeichert wurde, starte das Hauptskript neu
         restart_message = restart_main_script()
         
         return jsonify({"message": f"Konfiguration erfolgreich gespeichert. {restart_message}"})
     except Exception as e:
+        app.logger.error(f"Fehler beim Speichern der Konfiguration:", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/restart', methods=['POST'])
-def restart_script():
+def restart_script_endpoint():
     """Ermöglicht einen manuellen Neustart des Hauptskripts über die API."""
     message = restart_main_script()
     return jsonify({"message": message})
 
 
 if __name__ == '__main__':
-    # Starte das Hauptskript einmal beim Start des Webservers
-    restart_main_script()
-    # Starte den Flask-Server, erreichbar im gesamten Netzwerk
+    # Diese robustere Bedingung verhindert den Doppelstart des Hauptskripts im Debug-Modus.
+    if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN'):
+        restart_main_script()
+    
+    # Starte den Flask-Server.
     app.run(debug=True, host='0.0.0.0', port=5000)

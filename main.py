@@ -1,14 +1,14 @@
 import time
 import yaml
 from datetime import datetime
+from phue import Bridge
 
-from control.huebridge import HueBridge
 from control.scene import Scene
 from control.Room import Room
 from control.Sensor import Sensor
 from control.Routine import Routine
 from control.Daily_time_span import Daily_time_span
-from control.Log import Log
+from control.logger import Logger
 
 CONFIG_FILE = 'config.yaml'
 
@@ -24,9 +24,22 @@ def load_config():
         print(f"Fehler beim Laden der Konfiguration: {e}")
         exit()
 
+def connect_bridge(ip, log):
+    """Stellt die Verbindung zur Hue Bridge her."""
+    log.info(f"Versuche, eine Verbindung zur Bridge unter {ip} herzustellen...")
+    try:
+        b = Bridge(ip)
+        b.connect()
+        log.info("Verbindung zur Hue Bridge erfolgreich hergestellt.")
+        return b
+    except Exception as e:
+        log.error(f"Konnte keine Verbindung zur Bridge herstellen: {e}")
+        log.error("Bitte stelle sicher, dass die IP-Adresse korrekt ist und drücke beim ersten Start den Link-Button auf der Bridge.")
+        exit()
+
 def main():
     """Initialisiert und startet die Lichtsteuerung."""
-    log = Log("info.log")
+    log = Logger("info.log")
     log.info("Starte Philips Hue Routine...")
 
     config = load_config()
@@ -34,19 +47,20 @@ def main():
         return
 
     try:
-        bridge = HueBridge(config['bridge_ip'], log)
+        bridge = connect_bridge(config['bridge_ip'], log)
         
-        # 1. Szenen erstellen
         scenes = {name: Scene(**params) for name, params in config.get('scenes', {}).items()}
-
-        # 2. Räume und Sensoren erstellen
-        rooms = {room_conf['name']: Room(bridge, log, **room_conf) for room_conf in config.get('rooms', [])}
+        
+        rooms = {
+            room_conf['name']: Room(bridge, log, **room_conf) 
+            for room_conf in config.get('rooms', [])
+        }
+        
         sensors = {
-            room_conf['name']: Sensor(bridge, room_conf['sensor_id']) 
+            room_conf['name']: Sensor(bridge, room_conf['sensor_id'], log) 
             for room_conf in config.get('rooms', [])
         }
 
-        # 3. Routinen erstellen
         routines = []
         for routine_conf in config.get('routines', []):
             room_name = routine_conf.get('room_name')
@@ -57,14 +71,12 @@ def main():
                 log.error(f"Raum oder Sensor für Routine '{routine_conf['name']}' nicht gefunden. Überspringe.")
                 continue
 
-            # Erstelle das Daily_time_span Objekt
             time_span_conf = routine_conf.get('daily_time', {})
             daily_time_span = Daily_time_span(
                 time_span_conf.get('H1', 0), time_span_conf.get('M1', 0),
                 time_span_conf.get('H2', 23), time_span_conf.get('M2', 59)
             )
 
-            # Erstelle die Routine
             routine = Routine(
                 name=routine_conf['name'],
                 room=room,
@@ -81,7 +93,6 @@ def main():
             log.warning("Keine Routinen zum Ausführen gefunden. Beende.")
             return
 
-        # 4. Hauptschleife
         log.info("Initialisierung abgeschlossen. Starte Hauptschleife.")
         while True:
             now = datetime.now()
@@ -89,6 +100,8 @@ def main():
                 routine.run(now)
             time.sleep(1)
 
+    except (KeyboardInterrupt, SystemExit):
+        log.info("Programm wird beendet.")
     except Exception as e:
         log.error(f"Ein kritischer Fehler ist aufgetreten: {e}", exc_info=True)
         print(f"Ein kritischer Fehler ist aufgetreten. Details siehe 'info.log'.")
