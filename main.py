@@ -1,220 +1,97 @@
-from control.huebridge import *
-from control.Daily_time_span import *
-from control.Room import *
-from control.Routine import *
-
-
-import numpy as np
 import time
-import logging
-import os
+import yaml
+from datetime import datetime
 
+from control.huebridge import HueBridge
+from control.scene import Scene
+from control.Room import Room
+from control.Sensor import Sensor
+from control.Routine import Routine
+from control.Daily_time_span import Daily_time_span
+from control.Log import Log
 
-aktueller_pfad = os.path.dirname(__file__)
-datei_log = "info.log"
-pfad_log = os.path.join(aktueller_pfad, datei_log)
-logging.basicConfig(
-    filename=pfad_log, level=logging.INFO, format="%(asctime)s | %(message)-10s"
-)
+CONFIG_FILE = 'config.yaml'
 
+def load_config():
+    """Lädt die Konfiguration aus der YAML-Datei."""
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"Fehler: Die Konfigurationsdatei '{CONFIG_FILE}' wurde nicht gefunden.")
+        exit()
+    except Exception as e:
+        print(f"Fehler beim Laden der Konfiguration: {e}")
+        exit()
 
-# Const
-BRI_OFF = 0
-BRI_LOW = 75
-BRI_MID = 170
-BRI_MAX = 250
+def main():
+    """Initialisiert und startet die Lichtsteuerung."""
+    log = Log("info.log")
+    log.info("Starte Philips Hue Routine...")
 
+    config = load_config()
+    if not config:
+        return
+
+    try:
+        bridge = HueBridge(config['bridge_ip'], log)
+        
+        # 1. Szenen erstellen
+        scenes = {name: Scene(**params) for name, params in config.get('scenes', {}).items()}
+
+        # 2. Räume und Sensoren erstellen
+        rooms = {room_conf['name']: Room(bridge, log, **room_conf) for room_conf in config.get('rooms', [])}
+        sensors = {
+            room_conf['name']: Sensor(bridge, room_conf['sensor_id']) 
+            for room_conf in config.get('rooms', [])
+        }
+
+        # 3. Routinen erstellen
+        routines = []
+        for routine_conf in config.get('routines', []):
+            room_name = routine_conf.get('room_name')
+            room = rooms.get(room_name)
+            sensor = sensors.get(room_name)
+            
+            if not room or not sensor:
+                log.error(f"Raum oder Sensor für Routine '{routine_conf['name']}' nicht gefunden. Überspringe.")
+                continue
+
+            # Erstelle das Daily_time_span Objekt
+            time_span_conf = routine_conf.get('daily_time', {})
+            daily_time_span = Daily_time_span(
+                time_span_conf.get('H1', 0), time_span_conf.get('M1', 0),
+                time_span_conf.get('H2', 23), time_span_conf.get('M2', 59)
+            )
+
+            # Erstelle die Routine
+            routine = Routine(
+                name=routine_conf['name'],
+                room=room,
+                sensor=sensor,
+                daily_time_span=daily_time_span,
+                sections_config=routine_conf.get('sections', {}),
+                scenes=scenes,
+                log=log
+            )
+            routines.append(routine)
+            log.info(f"Routine '{routine.name}' für Raum '{room.name}' erfolgreich geladen.")
+
+        if not routines:
+            log.warning("Keine Routinen zum Ausführen gefunden. Beende.")
+            return
+
+        # 4. Hauptschleife
+        log.info("Initialisierung abgeschlossen. Starte Hauptschleife.")
+        while True:
+            now = datetime.now()
+            for routine in routines:
+                routine.run(now)
+            time.sleep(1)
+
+    except Exception as e:
+        log.error(f"Ein kritischer Fehler ist aufgetreten: {e}", exc_info=True)
+        print(f"Ein kritischer Fehler ist aufgetreten. Details siehe 'info.log'.")
 
 if __name__ == "__main__":
-    print("This program is running")
-    logging.info("\n\nThis program is running\n")
-
-    # define Scenes
-    warm_max = Scene(status=True, bri=BRI_MAX, sat=150, ct=350, t_time=10)
-    warm_mid = Scene(status=True, bri=BRI_MID, sat=150, ct=350, t_time=50)
-    warm_low = Scene(status=True, bri=BRI_LOW, sat=150, ct=350, t_time=50)
-    warm_very_low = Scene(status=True, bri=30, sat=150, ct=500, t_time=20)
-
-    cold_max = Scene(status=True, bri=BRI_MAX, sat=0, ct=154, t_time=10)
-    cold_mid = Scene(status=True, bri=BRI_MID, sat=0, ct=154, t_time=100)
-    cold_low = Scene(status=True, bri=BRI_LOW, sat=0, ct=154, t_time=100)
-
-    off = Scene(status=False, bri=BRI_OFF, sat=0, ct=0, t_time=10)
-
-    # define Rooms
-    room_olli = Room(
-        group_ids=[89], switch_ids=[5, 99], sensor_id=2, name_room="room_olli"
-    )
-    zone_outside_runway = Room(
-        group_ids=[83],
-        switch_ids=[5, 99],
-        sensor_id=190,
-        name_room="zone_outside_runway",
-    )
-    zone_outside_backyard = Room(
-        group_ids=[91],
-        switch_ids=[5, 99],
-        sensor_id=193,
-        name_room="zone_outside_backyard",
-    )
-    zone_inside = Room(
-        group_ids=[87], switch_ids=[5, 99], sensor_id=190, name_room="zone_inside"
-    )
-
-    # define Routines
-    rt_olli = Routine(
-        room=room_olli,
-        daily_time=Daily_time(7, 0, 23, 0),
-        morning=SectionRoutine(
-            bri_check=False,
-            max_light_level=0,
-            motion_check=False,
-            wait_time=10,
-            scene=off,
-            x_scene=off,
-        ),
-        day=SectionRoutine(
-            bri_check=True,
-            max_light_level=20000,
-            motion_check=False,
-            wait_time=5,
-            scene=warm_mid,
-            x_scene=warm_max,
-        ),
-        afternoon=SectionRoutine(
-            bri_check=True,
-            max_light_level=18000,
-            motion_check=False,
-            wait_time=120,
-            scene=off,
-            x_scene=warm_mid,
-        ),
-        night=SectionRoutine(
-            bri_check=False,
-            max_light_level=0,
-            motion_check=True,
-            wait_time=45,
-            scene=off,
-            x_scene=warm_very_low,
-        ),
-    )
-
-    rt_outside_runway = Routine(
-        room=zone_outside_runway,
-        daily_time=Daily_time(6, 30, 22, 0),
-        morning=SectionRoutine(
-            bri_check=False,
-            max_light_level=16000,
-            motion_check=True,
-            wait_time=240,
-            scene=warm_mid,
-            x_scene=warm_max,
-        ),
-        day=SectionRoutine(
-            bri_check=True,
-            max_light_level=16000,
-            motion_check=False,
-            wait_time=0,
-            scene=off,
-            x_scene=warm_mid,
-        ),
-        afternoon=SectionRoutine(
-            bri_check=True,
-            max_light_level=16000,
-            motion_check=True,
-            wait_time=240,
-            scene=warm_mid,
-            x_scene=warm_max,
-        ),
-        night=SectionRoutine(
-            bri_check=False,
-            max_light_level=16000,
-            motion_check=True,
-            wait_time=180,
-            scene=off,
-            x_scene=warm_low,
-        ),
-    )
-
-    rt_outside_backyard = Routine(
-        room=zone_outside_backyard,
-        daily_time=Daily_time(6, 30, 22, 0),
-        morning=SectionRoutine(
-            bri_check=False,
-            max_light_level=16000,
-            motion_check=True,
-            wait_time=240,
-            scene=warm_mid,
-            x_scene=warm_max,
-        ),
-        day=SectionRoutine(
-            bri_check=True,
-            max_light_level=16000,
-            motion_check=False,
-            wait_time=0,
-            scene=off,
-            x_scene=warm_mid,
-        ),
-        afternoon=SectionRoutine(
-            bri_check=True,
-            max_light_level=16000,
-            motion_check=True,
-            wait_time=240,
-            scene=warm_mid,
-            x_scene=warm_max,
-        ),
-        night=SectionRoutine(
-            bri_check=False,
-            max_light_level=20000,
-            motion_check=True,
-            wait_time=60,
-            scene=off,
-            x_scene=warm_very_low,
-        ),
-    )
-
-    rt_inside = Routine(
-        room=zone_inside,
-        daily_time=Daily_time(7, 0, 22, 30),
-        morning=SectionRoutine(
-            bri_check=False,
-            max_light_level=20000,
-            motion_check=False,
-            wait_time=240,
-            scene=warm_mid,
-            x_scene=warm_max,
-        ),
-        day=SectionRoutine(
-            bri_check=True,
-            max_light_level=20000,
-            motion_check=False,
-            wait_time=0,
-            scene=off,
-            x_scene=warm_mid,
-        ),
-        afternoon=SectionRoutine(
-            bri_check=True,
-            max_light_level=20000,
-            motion_check=False,
-            wait_time=240,
-            scene=warm_mid,
-            x_scene=warm_max,
-        ),
-        night=SectionRoutine(
-            bri_check=False,
-            max_light_level=20000,
-            motion_check=False,
-            wait_time=120,
-            scene=warm_low,
-            x_scene=warm_mid,
-        ),
-    )
-
-    while True:
-
-        rt_olli.run_routine()
-        rt_outside_runway.run_routine()
-        rt_outside_backyard.run_routine()
-        rt_inside.run_routine()
-
-        time.sleep(3)
+    main()

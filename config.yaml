@@ -1,0 +1,80 @@
+# ==================================================================================
+# Philips Hue - Konfiguration
+# ==================================================================================
+# Hier werden alle Einstellungen für die Lichtsteuerung zentral verwaltet.
+# bridge_ip: Die lokale IP-Adresse deiner Philips Hue Bridge.
+#
+# scenes: Definiert die verschiedenen Lichtstimmungen.
+#   - status: true (an) oder false (aus)
+#   - bri: Helligkeit (0-254)
+#   - sat: Sättigung (0-254)
+#   - ct: Farbtemperatur (153-500, kühler zu wärmer)
+#   - t_time: Übergangszeit in 1/10 Sekunden (z.B. 10 = 1 Sekunde)
+#
+# rooms: Definiert die physischen Räume oder Zonen.
+#   - name: Ein eindeutiger Name für den Raum.
+#   - group_ids: Liste der Gruppen-IDs in der Hue App, die zu diesem Raum gehören.
+#   - switch_ids: Liste der Schalter-IDs (optional, für zukünftige Nutzung).
+#   - sensor_id: Die ID des Bewegungsmelders für diesen Raum.
+#
+# routines: Verbindet Räume mit Szenen über den Tagesverlauf.
+#   - name: Ein eindeutiger Name für die Routine.
+#   - room_name: Der Name des Raumes, auf den sich die Routine bezieht.
+#   - daily_time: Der gesamte aktive Zeitraum der Routine.
+#   - sections: Die verschiedenen Tagesabschnitte (morning, day, evening, night).
+#     - time: Startzeit des Abschnitts (HH:MM).
+#     - scene_name: Die Standard-Szene für diesen Abschnitt.
+#     - bri_check: (true/false) Ob die Umgebungshelligkeit geprüft werden soll.
+#     - max_light_level: Wenn bri_check true ist, der Schwellenwert für die Helligkeit.
+#     - x_scene_name: Die alternative Szene, wenn es zu hell ist (z.B. Licht aus).
+# ==================================================================================
+
+bridge_ip: "192.168.178.42" # <-- BITTE DEINE BRIDGE-IP EINTRAGEN
+
+scenes:
+  off: { status: false, bri: 0, sat: 0, ct: 0, t_time: 10 }
+  night: { status: true, bri: 1, sat: 254, ct: 447, t_time: 30 }
+  warm_min: { status: true, bri: 80, sat: 150, ct: 350, t_time: 50 }
+  warm_mid: { status: true, bri: 170, sat: 150, ct: 350, t_time: 50 }
+  warm_max: { status: true, bri: 254, sat: 150, ct: 350, t_time: 10 }
+  cold_max: { status: true, bri: 254, sat: 0, ct: 250, t_time: 10 }
+
+rooms:
+  - name: "Wohnzimmer"
+    group_ids: [89] # <-- DEINE GRUPPEN-ID EINTRAGEN
+    switch_ids: [5, 99]
+    sensor_id: 2 # <-- DEINE SENSOR-ID EINTRAGEN
+  - name: "Flur"
+    group_ids: [83]
+    switch_ids: [5, 99]
+    sensor_id: 190
+
+routines:
+  - name: "Wohnzimmer Routine"
+    room_name: "Wohnzimmer"
+    daily_time: { H1: 7, M1: 0, H2: 23, M2: 59 }
+    sections:
+      morning:
+        time: "07:00"
+        scene_name: "warm_min"
+        bri_check: false
+        max_light_level: 0
+        x_scene_name: "off"
+      day:
+        time: "09:00"
+        scene_name: "warm_mid"
+        bri_check: true
+        max_light_level: 18000 # Schaltet das Licht nur an, wenn es dunkler als dieser Wert ist
+        x_scene_name: "off"
+      evening:
+        time: "19:00"
+        scene_name: "warm_max"
+        bri_check: false
+        max_light_level: 0
+        x_scene_name: "off"
+      night:
+        time: "22:30"
+        scene_name: "night"
+        bri_check: false
+        max_light_level: 0
+        x_scene_name: "off"

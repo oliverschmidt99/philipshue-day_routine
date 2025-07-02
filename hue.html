@@ -1,63 +1,272 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Light Control</title>
-    <script>
-        async function updateValues(endpoint) {
-            const formData = new FormData(document.getElementById(endpoint));
-            const data = Object.fromEntries(formData);
-            const response = await fetch(`/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-            alert(result.message);
+    <title>Philips Hue Routine Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
         }
-    </script>
+
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            transition: visibility 0s, opacity 0.5s linear;
+            opacity: 0;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
 </head>
 
-<body>
-    <h1>Smart Light Control</h1>
+<body class="bg-gray-100 text-gray-800">
 
-    <section>
-        <h2>Room Settings</h2>
-        <form id="update-room" onsubmit="event.preventDefault(); updateValues('update-room')">
-            <label for="room_name">Room Name:</label>
-            <input type="text" name="room_name" id="room_name" required><br>
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Hue Routine Editor</h1>
+            <p class="text-lg text-gray-600">Passe deine Licht-Routinen an und speichere die Änderungen.</p>
+        </header>
 
-            <label for="group_ids">Group IDs (comma-separated):</label>
-            <input type="text" name="group_ids" id="group_ids"><br>
+        <main id="config-container" class="space-y-8">
+            <!-- Konfigurations-Formulare werden hier dynamisch eingefügt -->
+            <div class="text-center p-8">
+                <p class="text-gray-500">Lade Konfiguration...</p>
+            </div>
+        </main>
 
-            <label for="sensor_id">Sensor ID:</label>
-            <input type="number" name="sensor_id" id="sensor_id"><br>
+        <footer class="mt-12 text-center">
+            <button id="save-button" type="button"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                Speichern und Routinen neu starten
+            </button>
+        </footer>
+    </div>
 
-            <button type="submit">Update Room</button>
-        </form>
-    </section>
+    <div id="toast" class="toast"></div>
 
-    <section>
-        <h2>Scene Settings</h2>
-        <form id="update-scene" onsubmit="event.preventDefault(); updateValues('update-scene')">
-            <label for="bri">Brightness:</label>
-            <input type="number" name="bri" id="bri" required><br>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('config-container');
+            const saveButton = document.getElementById('save-button');
+            let scenesData = {}; // Globale Speicherung der Szenen-Namen
 
-            <label for="sat">Saturation:</label>
-            <input type="number" name="sat" id="sat"><br>
+            const showToast = (message, duration = 3000) => {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = "toast show";
+                setTimeout(() => { toast.className = toast.className.replace("show", ""); }, duration);
+            };
 
-            <label for="ct">Color Temperature:</label>
-            <input type="number" name="ct" id="ct"><br>
+            const fetchConfig = async () => {
+                try {
+                    const response = await fetch('/api/config');
+                    if (!response.ok) throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+                    const config = await response.json();
+                    scenesData = config.scenes || {};
+                    renderConfig(config);
+                } catch (error) {
+                    console.error("Fehler beim Laden der Konfiguration:", error);
+                    container.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
+                        <strong class="font-bold">Fehler!</strong>
+                        <span class="block sm:inline">Konfiguration konnte nicht geladen werden. Läuft der Server?</span>
+                    </div>`;
+                }
+            };
 
-            <label for="t_time">Transition Time:</label>
-            <input type="number" name="t_time" id="t_time"><br>
+            const renderConfig = (config) => {
+                container.innerHTML = ''; // Leere den Lade-Text
 
-            <button type="submit">Update Scene</button>
-        </form>
-    </section>
+                // Bridge IP
+                const bridgeHtml = `
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-semibold mb-4">Bridge-Einstellungen</h2>
+                        <label for="bridge_ip" class="block text-sm font-medium text-gray-700">Bridge IP-Adresse</label>
+                        <input type="text" id="bridge_ip" value="${config.bridge_ip || ''}" class="mt-1 block w-full md:w-1/3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', bridgeHtml);
+
+                // Routinen
+                if (config.routines && config.routines.length > 0) {
+                    const routinesHtml = config.routines.map((routine, index) => `
+                        <div class="bg-white p-6 rounded-lg shadow-md" data-routine-index="${index}">
+                            <h2 class="text-2xl font-semibold mb-4">${routine.name}</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Raum</label>
+                                    <input type="text" value="${routine.room_name}" class="mt-1 block w-full bg-gray-200 rounded-md border-gray-300" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Aktiver Zeitraum</label>
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <input type="number" data-path="daily_time.H1" value="${routine.daily_time.H1}" class="w-16 rounded-md border-gray-300 shadow-sm">
+                                        <span>:</span>
+                                        <input type="number" data-path="daily_time.M1" value="${routine.daily_time.M1}" class="w-16 rounded-md border-gray-300 shadow-sm">
+                                        <span>-</span>
+                                        <input type="number" data-path="daily_time.H2" value="${routine.daily_time.H2}" class="w-16 rounded-md border-gray-300 shadow-sm">
+                                        <span>:</span>
+                                        <input type="number" data-path="daily_time.M2" value="${routine.daily_time.M2}" class="w-16 rounded-md border-gray-300 shadow-sm">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6">
+                                <h3 class="text-xl font-medium mb-3">Tagesabschnitte</h3>
+                                <div class="space-y-4">
+                                    ${Object.entries(routine.sections).map(([sectionName, section]) => renderSection(sectionName, section)).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    container.insertAdjacentHTML('beforeend', routinesHtml);
+                }
+            };
+
+            const renderSection = (name, section) => {
+                const sceneOptions = Object.keys(scenesData).map(sceneName =>
+                    `<option value="${sceneName}" ${section.scene_name === sceneName ? 'selected' : ''}>${sceneName}</option>`
+                ).join('');
+                const xSceneOptions = Object.keys(scenesData).map(sceneName =>
+                    `<option value="${sceneName}" ${section.x_scene_name === sceneName ? 'selected' : ''}>${sceneName}</option>`
+                ).join('');
+
+                return `
+                    <div class="p-4 border rounded-md" data-section-name="${name}">
+                        <p class="font-semibold capitalize">${name}</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Startzeit</label>
+                                <input type="time" data-path="time" value="${section.time}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Szene</label>
+                                <select data-path="scene_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${sceneOptions}</select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Alternative Szene</label>
+                                <select data-path="x_scene_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${xSceneOptions}</select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Max. Helligkeit</label>
+                                <input type="number" data-path="max_light_level" value="${section.max_light_level}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div class="flex items-center col-span-2 md:col-span-1">
+                                <input type="checkbox" data-path="bri_check" ${section.bri_check ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <label class="ml-2 block text-sm text-gray-900">Helligkeit prüfen</label>
+                            </div>
+                        </div>
+                    </div>`;
+            };
+
+            const collectConfig = () => {
+                const newConfig = {
+                    bridge_ip: document.getElementById('bridge_ip').value,
+                    scenes: scenesData, // Szenen bleiben unverändert
+                    rooms: [], // Räume werden aus Routinen abgeleitet (vereinfacht)
+                    routines: []
+                };
+
+                const roomsMap = new Map();
+
+                document.querySelectorAll('[data-routine-index]').forEach(routineEl => {
+                    const routineIndex = parseInt(routineEl.dataset.routineIndex);
+                    const routine = {
+                        name: routineEl.querySelector('h2').textContent,
+                        room_name: routineEl.querySelector('input[type="text"]').value,
+                        daily_time: {},
+                        sections: {}
+                    };
+
+                    routineEl.querySelectorAll('[data-path]').forEach(inputEl => {
+                        const path = inputEl.dataset.path;
+                        const keys = path.split('.');
+                        let current = routine;
+                        keys.slice(0, -1).forEach(key => {
+                            if (!current[key]) current[key] = {};
+                            current = current[key];
+                        });
+                        const finalKey = keys[keys.length - 1];
+                        if (inputEl.type === 'checkbox') {
+                            current[finalKey] = inputEl.checked;
+                        } else if (inputEl.type === 'number') {
+                            current[finalKey] = parseInt(inputEl.value, 10);
+                        } else {
+                            current[finalKey] = inputEl.value;
+                        }
+                    });
+
+                    routineEl.querySelectorAll('[data-section-name]').forEach(sectionEl => {
+                        const sectionName = sectionEl.dataset.sectionName;
+                        const section = {
+                            time: sectionEl.querySelector('[data-path="time"]').value,
+                            scene_name: sectionEl.querySelector('[data-path="scene_name"]').value,
+                            bri_check: sectionEl.querySelector('[data-path="bri_check"]').checked,
+                            max_light_level: parseInt(sectionEl.querySelector('[data-path="max_light_level"]').value, 10),
+                            x_scene_name: sectionEl.querySelector('[data-path="x_scene_name"]').value,
+                        };
+                        routine.sections[sectionName] = section;
+                    });
+
+                    newConfig.routines.push(routine);
+
+                    if (!roomsMap.has(routine.room_name)) {
+                        roomsMap.set(routine.room_name, { name: routine.room_name, group_ids: [], switch_ids: [], sensor_id: 0 });
+                    }
+                });
+
+                // Dummy-Daten für Räume, da diese nicht editierbar sind
+                // In einer vollwertigen App würde man die Originaldaten behalten
+                newConfig.rooms = Array.from(roomsMap.values());
+
+
+                return newConfig;
+            };
+
+            saveButton.addEventListener('click', async () => {
+                saveButton.disabled = true;
+                saveButton.textContent = 'Speichere...';
+
+                const newConfig = collectConfig();
+
+                try {
+                    const response = await fetch('/api/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newConfig)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Unbekannter Fehler');
+
+                    showToast(result.message);
+                } catch (error) {
+                    console.error("Fehler beim Speichern:", error);
+                    showToast(`Fehler: ${error.message}`);
+                } finally {
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Speichern und Routinen neu starten';
+                }
+            });
+
+            fetchConfig();
+        });
+    </script>
 </body>
 
 </html>
