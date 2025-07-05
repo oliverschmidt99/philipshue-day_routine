@@ -4,36 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Philips Hue Routine Editor</title>
+    <title>Hue Routine &amp; Scene Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
 
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1;
-            left: 50%;
-            bottom: 30px;
-            transition: visibility 0s, opacity 0.5s linear;
-            opacity: 0;
+        .tab-active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
         }
 
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -41,230 +31,538 @@
 <body class="bg-gray-100 text-gray-800">
 
     <div class="container mx-auto p-4 md:p-8">
-        <header class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">Hue Routine Editor</h1>
-            <p class="text-lg text-gray-600">Passe deine Licht-Routinen an und speichere die Änderungen.</p>
+        <header class="mb-6">
+            <h1 class="text-4xl font-bold text-gray-900">Hue Editor</h1>
+            <p class="text-lg text-gray-600">Verwalte deine Routinen und Lichtszenen.</p>
         </header>
 
-        <main id="config-container" class="space-y-8">
-            <!-- Konfigurations-Formulare werden hier dynamisch eingefügt -->
-            <div class="text-center p-8">
-                <p class="text-gray-500">Lade Konfiguration...</p>
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button type="button" id="tab-routines"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Routinen</button>
+                <button type="button" id="tab-scenes"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
+            </nav>
+        </div>
+
+        <!-- Tab-Inhalte -->
+        <main>
+            <div id="content-routines">
+                <div class="flex justify-end mb-4">
+                    <button type="button" id="btn-new-routine"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        + Neue Routine
+                    </button>
+                </div>
+                <div id="routines-container" class="space-y-6"></div>
+            </div>
+            <div id="content-scenes" class="hidden">
+                <div class="flex justify-end mb-4">
+                    <button type="button" id="btn-new-scene"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        + Neue Szene
+                    </button>
+                </div>
+                <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
         </main>
 
         <footer class="mt-12 text-center">
-            <button id="save-button" type="button"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                Speichern und Routinen neu starten
+            <button type="button" id="save-button"
+                class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                Speichern &amp; Alle Routinen neu starten
             </button>
         </footer>
     </div>
 
-    <div id="toast" class="toast"></div>
+    <!-- Modals (Pop-ups) -->
+    <div id="modal-scene"
+        class="hidden fixed inset-0 z-50 overflow-auto flex items-center justify-center modal-backdrop"></div>
+    <div id="modal-routine"
+        class="hidden fixed inset-0 z-50 overflow-auto flex items-center justify-center modal-backdrop"></div>
+
+    <!-- Toast-Nachricht -->
+    <div id="toast"
+        class="hidden fixed bottom-5 right-5 bg-gray-900 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300">
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('config-container');
+            let config = {};
+            let bridgeData = { groups: [], sensors: [] };
+
+            const routinesContainer = document.getElementById('routines-container');
+            const scenesContainer = document.getElementById('scenes-container');
             const saveButton = document.getElementById('save-button');
-            let scenesData = {}; // Globale Speicherung der Szenen-Namen
+            const toastElement = document.getElementById('toast');
 
-            const showToast = (message, duration = 3000) => {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.className = "toast show";
-                setTimeout(() => { toast.className = toast.className.replace("show", ""); }, duration);
-            };
-
-            const fetchConfig = async () => {
+            const init = async () => {
+                showLoading();
                 try {
-                    const response = await fetch('/api/config');
-                    if (!response.ok) throw new Error(`HTTP-Fehler! Status: ${response.status}`);
-                    const config = await response.json();
-                    scenesData = config.scenes || {};
-                    renderConfig(config);
+                    const [configRes, groupsRes, sensorsRes] = await Promise.all([
+                        fetch('/api/config'),
+                        fetch('/api/bridge/groups'),
+                        fetch('/api/bridge/sensors')
+                    ]);
+                    config = await configRes.json();
+                    bridgeData.groups = await groupsRes.json();
+                    bridgeData.sensors = await sensorsRes.json();
+                    renderAll();
                 } catch (error) {
-                    console.error("Fehler beim Laden der Konfiguration:", error);
-                    container.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
-                        <strong class="font-bold">Fehler!</strong>
-                        <span class="block sm:inline">Konfiguration konnte nicht geladen werden. Läuft der Server?</span>
-                    </div>`;
+                    console.error("Initialisierungsfehler:", error);
+                    showToast("Fehler beim Laden der Daten. Läuft der Server?", true);
+                } finally {
+                    hideLoading();
                 }
             };
 
-            const renderConfig = (config) => {
-                container.innerHTML = ''; // Leere den Lade-Text
+            const renderAll = () => {
+                renderRoutines();
+                renderScenes();
+            };
 
-                // Bridge IP
-                const bridgeHtml = `
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h2 class="text-2xl font-semibold mb-4">Bridge-Einstellungen</h2>
-                        <label for="bridge_ip" class="block text-sm font-medium text-gray-700">Bridge IP-Adresse</label>
-                        <input type="text" id="bridge_ip" value="${config.bridge_ip || ''}" class="mt-1 block w-full md:w-1/3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>`;
-                container.insertAdjacentHTML('beforeend', bridgeHtml);
-
-                // Routinen
-                if (config.routines && config.routines.length > 0) {
-                    const routinesHtml = config.routines.map((routine, index) => `
-                        <div class="bg-white p-6 rounded-lg shadow-md" data-routine-index="${index}">
-                            <h2 class="text-2xl font-semibold mb-4">${routine.name}</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Raum</label>
-                                    <input type="text" value="${routine.room_name}" class="mt-1 block w-full bg-gray-200 rounded-md border-gray-300" readonly>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Aktiver Zeitraum</label>
-                                    <div class="flex items-center space-x-2 mt-1">
-                                        <input type="number" data-path="daily_time.H1" value="${routine.daily_time.H1}" class="w-16 rounded-md border-gray-300 shadow-sm">
-                                        <span>:</span>
-                                        <input type="number" data-path="daily_time.M1" value="${routine.daily_time.M1}" class="w-16 rounded-md border-gray-300 shadow-sm">
-                                        <span>-</span>
-                                        <input type="number" data-path="daily_time.H2" value="${routine.daily_time.H2}" class="w-16 rounded-md border-gray-300 shadow-sm">
-                                        <span>:</span>
-                                        <input type="number" data-path="daily_time.M2" value="${routine.daily_time.M2}" class="w-16 rounded-md border-gray-300 shadow-sm">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-6">
-                                <h3 class="text-xl font-medium mb-3">Tagesabschnitte</h3>
-                                <div class="space-y-4">
-                                    ${Object.entries(routine.sections).map(([sectionName, section]) => renderSection(sectionName, section)).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
-                    container.insertAdjacentHTML('beforeend', routinesHtml);
+            const renderRoutines = () => {
+                routinesContainer.innerHTML = '';
+                if (!config.routines || config.routines.length === 0) {
+                    routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Noch keine Routinen erstellt.</p>`;
+                    return;
                 }
-            };
+                config.routines.forEach((routine, index) => {
+                    const routineEl = document.createElement('div');
+                    routineEl.className = 'bg-white p-6 rounded-lg shadow-md';
+                    const sortedSections = Object.entries(routine.sections).sort(([, a], [, b]) => {
+                        const timeA = typeof a.time === 'object' ? a.time.type : a.time;
+                        const timeB = typeof b.time === 'object' ? b.time.type : b.time;
+                        return timeA.localeCompare(timeB);
+                    });
 
-            const renderSection = (name, section) => {
-                const sceneOptions = Object.keys(scenesData).map(sceneName =>
-                    `<option value="${sceneName}" ${section.scene_name === sceneName ? 'selected' : ''}>${sceneName}</option>`
-                ).join('');
-                const xSceneOptions = Object.keys(scenesData).map(sceneName =>
-                    `<option value="${sceneName}" ${section.x_scene_name === sceneName ? 'selected' : ''}>${sceneName}</option>`
-                ).join('');
-
-                return `
-                    <div class="p-4 border rounded-md" data-section-name="${name}">
-                        <p class="font-semibold capitalize">${name}</p>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600">Startzeit</label>
-                                <input type="time" data-path="time" value="${section.time}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600">Szene</label>
-                                <select data-path="scene_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${sceneOptions}</select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600">Alternative Szene</label>
-                                <select data-path="x_scene_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${xSceneOptions}</select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600">Max. Helligkeit</label>
-                                <input type="number" data-path="max_light_level" value="${section.max_light_level}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
-                            <div class="flex items-center col-span-2 md:col-span-1">
-                                <input type="checkbox" data-path="bri_check" ${section.bri_check ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <label class="ml-2 block text-sm text-gray-900">Helligkeit prüfen</label>
-                            </div>
-                        </div>
-                    </div>`;
-            };
-
-            const collectConfig = () => {
-                const newConfig = {
-                    bridge_ip: document.getElementById('bridge_ip').value,
-                    scenes: scenesData, // Szenen bleiben unverändert
-                    rooms: [], // Räume werden aus Routinen abgeleitet (vereinfacht)
-                    routines: []
-                };
-
-                const roomsMap = new Map();
-
-                document.querySelectorAll('[data-routine-index]').forEach(routineEl => {
-                    const routineIndex = parseInt(routineEl.dataset.routineIndex);
-                    const routine = {
-                        name: routineEl.querySelector('h2').textContent,
-                        room_name: routineEl.querySelector('input[type="text"]').value,
-                        daily_time: {},
-                        sections: {}
-                    };
-
-                    routineEl.querySelectorAll('[data-path]').forEach(inputEl => {
-                        const path = inputEl.dataset.path;
-                        const keys = path.split('.');
-                        let current = routine;
-                        keys.slice(0, -1).forEach(key => {
-                            if (!current[key]) current[key] = {};
-                            current = current[key];
-                        });
-                        const finalKey = keys[keys.length - 1];
-                        if (inputEl.type === 'checkbox') {
-                            current[finalKey] = inputEl.checked;
-                        } else if (inputEl.type === 'number') {
-                            current[finalKey] = parseInt(inputEl.value, 10);
+                    const sectionsHtml = sortedSections.map(([name, section]) => {
+                        let timeString = '';
+                        if (typeof section.time === 'object') {
+                            const offset = section.time.offset || 0;
+                            const offsetStr = offset !== 0 ? ` (${offset > 0 ? '+' : ''}${offset} min)` : '';
+                            let typeStr = section.time.type.charAt(0).toUpperCase() + section.time.type.slice(1);
+                            if (typeStr === 'Sunrise') typeStr = 'Sonnenaufgang';
+                            if (typeStr === 'Sunset') typeStr = 'Sonnenuntergang';
+                            timeString = `${typeStr}${offsetStr}`;
                         } else {
-                            current[finalKey] = inputEl.value;
+                            timeString = section.time;
                         }
-                    });
 
-                    routineEl.querySelectorAll('[data-section-name]').forEach(sectionEl => {
-                        const sectionName = sectionEl.dataset.sectionName;
-                        const section = {
-                            time: sectionEl.querySelector('[data-path="time"]').value,
-                            scene_name: sectionEl.querySelector('[data-path="scene_name"]').value,
-                            bri_check: sectionEl.querySelector('[data-path="bri_check"]').checked,
-                            max_light_level: parseInt(sectionEl.querySelector('[data-path="max_light_level"]').value, 10),
-                            x_scene_name: sectionEl.querySelector('[data-path="x_scene_name"]').value,
+                        return `
+                    <div class="py-2 px-3 bg-gray-50 rounded-md">
+                        <p class="font-semibold capitalize">${name}</p>
+                        <div class="text-sm text-gray-700 grid grid-cols-2 gap-x-4">
+                            <span><strong class="font-medium">Start:</strong> ${timeString}</span>
+                            <span><strong class="font-medium">Szene:</strong> ${section.scene_name}</span>
+                            <span><strong class="font-medium">Helligkeits-Check:</strong> ${section.bri_check ? 'Ja' : 'Nein'}</span>
+                            ${section.bri_check ? `<span><strong class="font-medium">Max. Helligkeit:</strong> ${section.max_light_level}</span>` : ''}
+                        </div>
+                    </div>
+                `}).join('');
+
+                    routineEl.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-2xl font-semibold">${routine.name}</h3>
+                            <p class="text-gray-600">Raum: ${routine.room_name}</p>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button type="button" data-action="edit-routine" data-index="${index}" class="text-blue-500 hover:text-blue-700 font-semibold">Bearbeiten</button>
+                            <button type="button" data-action="delete-routine" data-index="${index}" class="text-red-500 hover:text-red-700 font-semibold">Löschen</button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="text-lg font-medium border-t pt-4 mt-4">Ablauf</h4>
+                        ${sectionsHtml}
+                    </div>
+                `;
+                    routinesContainer.appendChild(routineEl);
+                });
+            };
+
+            const renderScenes = () => {
+                scenesContainer.innerHTML = '';
+                if (!config.scenes || Object.keys(config.scenes).length === 0) {
+                    scenesContainer.innerHTML = `<p class="text-gray-500 text-center">Noch keine Szenen erstellt.</p>`;
+                    return;
+                }
+                for (const [name, scene] of Object.entries(config.scenes)) {
+                    const sceneEl = document.createElement('div');
+                    sceneEl.className = 'bg-white p-4 rounded-lg shadow-md flex flex-col justify-between';
+                    sceneEl.innerHTML = `
+                    <div>
+                        <h4 class="text-xl font-semibold capitalize">${name.replace(/_/g, ' ')}</h4>
+                        <div class="mt-2 text-sm text-gray-600 space-y-1">
+                            <p>Status: <span class="font-medium ${scene.status ? 'text-green-600' : 'text-red-600'}">${scene.status ? 'An' : 'Aus'}</span></p>
+                            <p>Helligkeit: <span class="font-medium">${scene.bri}</span></p>
+                            <p>Sättigung: <span class="font-medium">${scene.sat}</span></p>
+                            <p>Farbtemp.: <span class="font-medium">${scene.ct}</span></p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end space-x-2">
+                         <button type="button" data-action="edit-scene" data-name="${name}" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">Bearbeiten</button>
+                         <button type="button" data-action="delete-scene" data-name="${name}" class="text-red-500 hover:text-red-700 text-sm font-semibold">Löschen</button>
+                    </div>
+                `;
+                    scenesContainer.appendChild(sceneEl);
+                }
+            };
+
+            const openSceneModal = (sceneName = null) => {
+                const isEditing = sceneName !== null;
+                const scene = isEditing ? config.scenes[sceneName] : { status: true, bri: 128, sat: 128, ct: 300, t_time: 10 };
+                const modal = document.getElementById('modal-scene');
+
+                modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-4">${isEditing ? 'Szene bearbeiten' : 'Neue Szene erstellen'}</h3>
+                        <form id="form-scene" class="space-y-4">
+                            <input type="hidden" id="scene-original-name" value="${sceneName || ''}">
+                            <div>
+                                <label for="scene-name" class="block text-sm font-medium text-gray-700">Szenen-Name</label>
+                                <input type="text" id="scene-name" value="${isEditing ? sceneName : ''}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" ${isEditing ? 'readonly' : ''}>
+                            </div>
+                            <div>
+                                <label for="scene-bri" class="block text-sm font-medium text-gray-700">Helligkeit (0-254)</label>
+                                <input type="range" id="scene-bri" min="0" max="254" value="${scene.bri}" class="w-full">
+                            </div>
+                            <div>
+                                <label for="scene-sat" class="block text-sm font-medium text-gray-700">Sättigung (0-254)</label>
+                                <input type="range" id="scene-sat" min="0" max="254" value="${scene.sat}" class="w-full">
+                            </div>
+                             <div>
+                                <label for="scene-ct" class="block text-sm font-medium text-gray-700">Farbtemperatur (153-500)</label>
+                                <input type="range" id="scene-ct" min="153" max="500" value="${scene.ct}" class="w-full">
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="scene-status" ${scene.status ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300">
+                                <label for="scene-status" class="ml-2 block text-sm text-gray-900">Licht an</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
+                        <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium hover:bg-gray-50">Abbrechen</button>
+                        <button type="button" data-action="save-scene" class="bg-blue-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium hover:bg-blue-700">Speichern</button>
+                    </div>
+                </div>
+            `;
+                modal.classList.remove('hidden');
+            };
+
+            const openEditRoutineModal = (routineIndex) => {
+                const routine = config.routines[routineIndex];
+                const modal = document.getElementById('modal-routine');
+
+                const sceneOptions = Object.keys(config.scenes).map(name => `<option value="${name}">${name}</option>`).join('');
+                const sectionNameOptions = ['morning', 'day', 'evening', 'night'];
+
+                const sectionsHtml = Object.entries(routine.sections).map(([name, section]) => {
+                    const time = typeof section.time === 'object' ? section.time : { type: 'fixed', value: section.time, offset: 0 };
+                    const nameOptionsHtml = sectionNameOptions.map(opt => `<option value="${opt}" ${name === opt ? 'selected' : ''}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join('');
+
+                    return `
+                <div class="p-3 border rounded-md" data-section-name="${name}">
+                    <div class="flex justify-between items-center mb-2">
+                        <select class="font-semibold bg-gray-100 rounded-md p-1 w-1/3 section-name-select">${nameOptionsHtml}</select>
+                        <button type="button" data-action="delete-section" class="text-red-500 text-xs font-bold">X</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <label class="block">Start-Typ</label>
+                            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-type">
+                                <option value="fixed" ${time.type === 'fixed' ? 'selected' : ''}>Feste Zeit</option>
+                                <option value="sunrise" ${time.type === 'sunrise' ? 'selected' : ''}>Sonnenaufgang</option>
+                                <option value="sunset" ${time.type === 'sunset' ? 'selected' : ''}>Sonnenuntergang</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block">Zeit / Versatz (min)</label>
+                            <input type="time" value="${time.type === 'fixed' ? time.value : ''}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-value" style="${time.type === 'fixed' ? 'display:block;' : 'display:none;'}">
+                            <input type="number" value="${time.offset || 0}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-offset" style="${time.type !== 'fixed' ? 'display:block;' : 'display:none;'}">
+                        </div>
+                        <div><label class="block">Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-scene-name">${sceneOptions.replace(`value="${section.scene_name}"`, `value="${section.scene_name}" selected`)}</select></div>
+                        <div><label class="block">Alt. Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-x-scene-name">${sceneOptions.replace(`value="${section.x_scene_name}"`, `value="${section.x_scene_name}" selected`)}</select></div>
+                        <div><label class="block">Max. Helligkeit</label><input type="number" value="${section.max_light_level}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-max-light-level"></div>
+                        <div class="flex items-center"><input type="checkbox" ${section.bri_check ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 section-bri-check"><label class="ml-2">Helligkeit prüfen</label></div>
+                    </div>
+                </div>
+            `}).join('');
+
+                modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-4">Routine bearbeiten</h3>
+                        <form id="form-routine" class="space-y-4">
+                            <input type="hidden" id="routine-index" value="${routineIndex}">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Routine-Name</label>
+                                <input type="text" id="routine-name" value="${routine.name}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div class="border-t pt-4 mt-4">
+                                <h4 class="text-lg font-medium mb-2">Ablauf bearbeiten</h4>
+                                <div id="sections-editor" class="space-y-3 modal-body">${sectionsHtml}</div>
+                                <button type="button" data-action="add-section" class="mt-3 text-sm text-blue-600 hover:text-blue-800 font-semibold">+ Abschnitt hinzufügen</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
+                        <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium hover:bg-gray-50">Abbrechen</button>
+                        <button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium hover:bg-blue-700">Routine speichern</button>
+                    </div>
+                </div>
+            `;
+                modal.classList.remove('hidden');
+            };
+
+            const openCreateRoutineModal = () => {
+                const modal = document.getElementById('modal-routine');
+                const groupOptions = bridgeData.groups.map(g => `<option value="${g.id}|${g.name}">${g.name}</option>`).join('');
+                const sensorOptions = bridgeData.sensors.map(s => `<option value="${s.id}">${s.name} (ID: ${s.id})</option>`).join('');
+
+                modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-4">Neue Routine erstellen</h3>
+                        <form id="form-create-routine" class="space-y-4">
+                             <div>
+                                <label for="new-routine-name" class="block text-sm font-medium text-gray-700">Routine-Name</label>
+                                <input type="text" id="new-routine-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label for="new-routine-group" class="block text-sm font-medium text-gray-700">Raum / Zone</label>
+                                <select id="new-routine-group" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${groupOptions}</select>
+                            </div>
+                             <div>
+                                <label for="new-routine-sensor" class="block text-sm font-medium text-gray-700">Bewegungsmelder</label>
+                                <select id="new-routine-sensor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${sensorOptions}</select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
+                        <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium hover:bg-gray-50">Abbrechen</button>
+                        <button type="button" data-action="create-routine" class="bg-blue-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium hover:bg-blue-700">Routine erstellen</button>
+                    </div>
+                </div>
+             `;
+                modal.classList.remove('hidden');
+            };
+
+            const closeModal = () => {
+                document.getElementById('modal-scene').classList.add('hidden');
+                document.getElementById('modal-routine').classList.add('hidden');
+            };
+
+            const handleSaveScene = () => {
+                const originalName = document.getElementById('scene-original-name').value;
+                const newName = document.getElementById('scene-name').value.trim().replace(/\s+/g, '_').toLowerCase();
+                if (!newName) { showToast("Szenen-Name darf nicht leer sein.", true); return; }
+                const newScene = { status: document.getElementById('scene-status').checked, bri: parseInt(document.getElementById('scene-bri').value), sat: parseInt(document.getElementById('scene-sat').value), ct: parseInt(document.getElementById('scene-ct').value), t_time: 10 };
+                if (originalName && originalName !== newName) { delete config.scenes[originalName]; }
+                config.scenes[newName] = newScene;
+                renderAll();
+                closeModal();
+                showToast("Szene gespeichert. Globale Speicherung nicht vergessen!");
+            };
+
+            const handleSaveEditedRoutine = () => {
+                const routineIndex = document.getElementById('routine-index').value;
+                if (routineIndex === '') return;
+
+                const updatedRoutine = config.routines[routineIndex];
+                updatedRoutine.name = document.getElementById('routine-name').value;
+
+                const newSections = {};
+                document.querySelectorAll('#sections-editor > div').forEach(sectionEl => {
+                    const name = sectionEl.querySelector('.section-name-select').value;
+                    if (name) {
+                        const timeType = sectionEl.querySelector('.section-time-type').value;
+                        let timeValue;
+                        if (timeType === 'fixed') {
+                            timeValue = { type: 'fixed', value: sectionEl.querySelector('.section-time-value').value };
+                        } else {
+                            timeValue = { type: timeType, offset: parseInt(sectionEl.querySelector('.section-time-offset').value) || 0 };
+                        }
+
+                        newSections[name] = {
+                            time: timeValue,
+                            scene_name: sectionEl.querySelector('.section-scene-name').value,
+                            x_scene_name: sectionEl.querySelector('.section-x-scene-name').value,
+                            bri_check: sectionEl.querySelector('.section-bri-check').checked,
+                            max_light_level: parseInt(sectionEl.querySelector('.section-max-light-level').value)
                         };
-                        routine.sections[sectionName] = section;
-                    });
-
-                    newConfig.routines.push(routine);
-
-                    if (!roomsMap.has(routine.room_name)) {
-                        roomsMap.set(routine.room_name, { name: routine.room_name, group_ids: [], switch_ids: [], sensor_id: 0 });
                     }
                 });
+                updatedRoutine.sections = newSections;
 
-                // Dummy-Daten für Räume, da diese nicht editierbar sind
-                // In einer vollwertigen App würde man die Originaldaten behalten
-                newConfig.rooms = Array.from(roomsMap.values());
-
-
-                return newConfig;
+                renderAll();
+                closeModal();
+                showToast("Routine aktualisiert. Globale Speicherung nicht vergessen!");
             };
 
-            saveButton.addEventListener('click', async () => {
+            const handleCreateNewRoutine = () => {
+                const name = document.getElementById('new-routine-name').value;
+                const [groupId, groupName] = document.getElementById('new-routine-group').value.split('|');
+                const sensorId = document.getElementById('new-routine-sensor').value;
+
+                if (!name || !groupId || !sensorId) {
+                    showToast("Bitte alle Felder ausfüllen.", true);
+                    return;
+                }
+
+                if (!config.rooms) config.rooms = [];
+                if (!config.routines) config.routines = [];
+
+                if (!config.rooms.some(r => r.name === groupName)) {
+                    config.rooms.push({
+                        name: groupName,
+                        group_ids: [parseInt(groupId)],
+                        switch_ids: [],
+                        sensor_id: parseInt(sensorId)
+                    });
+                }
+
+                const newRoutine = {
+                    name: name,
+                    room_name: groupName,
+                    sections: {
+                        day: { time: { type: "fixed", value: "08:00" }, scene_name: "warm_mid", bri_check: true, max_light_level: 18000, x_scene_name: "off" },
+                        night: { time: { type: "fixed", value: "22:00" }, scene_name: "night", bri_check: false, max_light_level: 0, x_scene_name: "off" }
+                    }
+                };
+                config.routines.push(newRoutine);
+
+                renderAll();
+                closeModal();
+                showToast("Routine erstellt. Globale Speicherung nicht vergessen!");
+            };
+
+            const handleAddNewSection = (editor) => {
+                const sceneOptions = Object.keys(config.scenes).map(name => `<option value="${name}">${name}</option>`).join('');
+                const nameOptions = ['morning', 'day', 'evening', 'night'].map(opt => `<option value="${opt}">${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join('');
+                const newSectionEl = document.createElement('div');
+                newSectionEl.className = 'p-3 border rounded-md';
+                newSectionEl.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <select class="font-semibold bg-gray-100 rounded-md p-1 w-1/3 section-name-select">${nameOptions}</select>
+                    <button type="button" data-action="delete-section" class="text-red-500 text-xs font-bold">X</button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <label class="block">Start-Typ</label>
+                        <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-type">
+                            <option value="fixed" selected>Feste Zeit</option>
+                            <option value="sunrise">Sonnenaufgang</option>
+                            <option value="sunset">Sonnenuntergang</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block">Zeit / Versatz (min)</label>
+                        <input type="time" value="12:00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-value">
+                        <input type="number" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-offset" style="display:none;">
+                    </div>
+                    <div><label class="block">Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-scene-name">${sceneOptions}</select></div>
+                    <div><label class="block">Alt. Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-x-scene-name">${sceneOptions}</select></div>
+                    <div><label class="block">Max. Helligkeit</label><input type="number" value="18000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-max-light-level"></div>
+                    <div class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 section-bri-check"><label class="ml-2">Helligkeit prüfen</label></div>
+                </div>
+            `;
+                editor.appendChild(newSectionEl);
+            };
+
+            const saveFullConfig = async () => {
                 saveButton.disabled = true;
                 saveButton.textContent = 'Speichere...';
-
-                const newConfig = collectConfig();
-
                 try {
                     const response = await fetch('/api/config', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newConfig)
+                        body: JSON.stringify(config)
                     });
                     const result = await response.json();
-                    if (!response.ok) throw new Error(result.error || 'Unbekannter Fehler');
-
+                    if (!response.ok) throw new Error(result.error);
                     showToast(result.message);
                 } catch (error) {
-                    console.error("Fehler beim Speichern:", error);
-                    showToast(`Fehler: ${error.message}`);
+                    showToast(`Fehler: ${error.message}`, true);
                 } finally {
                     saveButton.disabled = false;
-                    saveButton.textContent = 'Speichern und Routinen neu starten';
+                    saveButton.textContent = 'Speichern &amp; Alle Routinen neu starten';
+                }
+            };
+
+            document.body.addEventListener('change', (e) => {
+                if (e.target.classList.contains('section-time-type')) {
+                    const parent = e.target.closest('.grid');
+                    const timeInput = parent.querySelector('.section-time-value');
+                    const offsetInput = parent.querySelector('.section-time-offset');
+                    if (e.target.value === 'fixed') {
+                        timeInput.style.display = 'block';
+                        offsetInput.style.display = 'none';
+                    } else {
+                        timeInput.style.display = 'none';
+                        offsetInput.style.display = 'block';
+                    }
                 }
             });
 
-            fetchConfig();
+            document.body.addEventListener('click', (e) => {
+                const action = e.target.dataset.action;
+                const target = e.target;
+
+                switch (action) {
+                    case 'delete-scene':
+                        if (confirm(`Möchtest du die Szene "${target.dataset.name}" wirklich löschen?`)) {
+                            delete config.scenes[target.dataset.name];
+                            renderAll();
+                            showToast("Szene gelöscht.");
+                        }
+                        break;
+                    case 'delete-routine':
+                        if (confirm(`Möchtest du die Routine wirklich löschen?`)) {
+                            config.routines.splice(target.dataset.index, 1);
+                            renderAll();
+                            showToast("Routine gelöscht.");
+                        }
+                        break;
+                    case 'edit-scene': openSceneModal(target.dataset.name); break;
+                    case 'edit-routine': openEditRoutineModal(target.dataset.index); break;
+                    case 'save-scene': handleSaveScene(); break;
+                    case 'save-routine': handleSaveEditedRoutine(); break;
+                    case 'create-routine': handleCreateNewRoutine(); break;
+                    case 'cancel-modal': closeModal(); break;
+                    case 'add-section': handleAddNewSection(document.getElementById('sections-editor')); break;
+                    case 'delete-section': target.closest('.border').remove(); break;
+                }
+            });
+
+            document.getElementById('btn-new-scene').addEventListener('click', () => openSceneModal());
+            document.getElementById('btn-new-routine').addEventListener('click', () => openCreateRoutineModal());
+            saveButton.addEventListener('click', saveFullConfig);
+
+            const tabs = [{ btn: 'tab-routines', content: 'content-routines' }, { btn: 'tab-scenes', content: 'content-scenes' }];
+            tabs.forEach(tabInfo => {
+                document.getElementById(tabInfo.btn).addEventListener('click', () => {
+                    tabs.forEach(t => {
+                        document.getElementById(t.btn).classList.remove('tab-active');
+                        document.getElementById(t.content).classList.add('hidden');
+                    });
+                    document.getElementById(tabInfo.btn).classList.add('tab-active');
+                    document.getElementById(tabInfo.content).classList.remove('hidden');
+                });
+            });
+
+            const showToast = (message, isError = false) => {
+                toastElement.textContent = message;
+                toastElement.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300 ${isError ? 'bg-red-600' : 'bg-gray-900'}`;
+                toastElement.classList.remove('hidden');
+                setTimeout(() => toastElement.classList.add('hidden'), 4000);
+            };
+            const showLoading = () => routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Lade Daten von der Bridge...</p>`;
+            const hideLoading = () => { };
+
+            init();
         });
     </script>
 </body>
