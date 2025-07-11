@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hue Routine &amp; Scene Editor</title>
+    <title>Hue Routine und Scene Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -25,15 +25,33 @@
             max-height: 60vh;
             overflow-y: auto;
         }
+
+        .log-container {
+            background-color: #1f2937;
+            color: #d1d5db;
+            font-family: monospace;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 
 <body class="bg-gray-100 text-gray-800">
 
     <div class="container mx-auto p-4 md:p-8">
-        <header class="mb-6">
-            <h1 class="text-4xl font-bold text-gray-900">Hue Editor</h1>
-            <p class="text-lg text-gray-600">Verwalte deine Routinen und Lichtszenen.</p>
+        <header class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900">Hue Editor</h1>
+                <p class="text-lg text-gray-600">Verwalte deine Routinen und Lichtszenen.</p>
+            </div>
+            <div id="clock" class="text-2xl font-semibold text-gray-700 bg-white px-4 py-2 rounded-lg shadow">
+                --:--:--
+            </div>
         </header>
 
         <!-- Tab Navigation -->
@@ -43,6 +61,8 @@
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Routinen</button>
                 <button type="button" id="tab-scenes"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
+                <button type="button" id="tab-status"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Status</button>
             </nav>
         </div>
 
@@ -66,12 +86,22 @@
                 </div>
                 <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
+            <div id="content-status" class="hidden space-y-8">
+                <div>
+                    <h2 class="text-2xl font-semibold mb-4">Live-Zustand der Routinen</h2>
+                    <div id="status-container" class="space-y-4"></div>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-semibold mb-4">Log-Datei (info.log)</h2>
+                    <pre id="log-container" class="log-container"></pre>
+                </div>
+            </div>
         </main>
 
         <footer class="mt-12 text-center">
             <button type="button" id="save-button"
                 class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                Speichern &amp; Alle Routinen neu starten
+                Speichern und Alle Routinen neu starten
             </button>
         </footer>
     </div>
@@ -91,13 +121,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             let config = {};
             let bridgeData = { groups: [], sensors: [] };
+            let statusInterval;
 
             const routinesContainer = document.getElementById('routines-container');
             const scenesContainer = document.getElementById('scenes-container');
+            const statusContainer = document.getElementById('status-container');
+            const logContainer = document.getElementById('log-container');
             const saveButton = document.getElementById('save-button');
             const toastElement = document.getElementById('toast');
+            const clockElement = document.getElementById('clock');
 
             const init = async () => {
+                updateClock();
+                setInterval(updateClock, 1000);
                 showLoading();
                 try {
                     const [configRes, groupsRes, sensorsRes] = await Promise.all([
@@ -109,6 +145,7 @@
                     bridgeData.groups = await groupsRes.json();
                     bridgeData.sensors = await sensorsRes.json();
                     renderAll();
+                    startStatusUpdates();
                 } catch (error) {
                     console.error("Initialisierungsfehler:", error);
                     showToast("Fehler beim Laden der Daten. Läuft der Server?", true);
@@ -131,31 +168,20 @@
                 config.routines.forEach((routine, index) => {
                     const routineEl = document.createElement('div');
                     routineEl.className = 'bg-white p-6 rounded-lg shadow-md';
-                    const sortedSections = Object.entries(routine.sections).sort(([, a], [, b]) => {
-                        const timeA = typeof a.time === 'object' ? a.time.type : a.time;
-                        const timeB = typeof b.time === 'object' ? b.time.type : b.time;
-                        return timeA.localeCompare(timeB);
-                    });
+                    const sections = ['morning', 'day', 'evening', 'night'];
 
-                    const sectionsHtml = sortedSections.map(([name, section]) => {
-                        let timeString = '';
-                        if (typeof section.time === 'object') {
-                            const offset = section.time.offset || 0;
-                            const offsetStr = offset !== 0 ? ` (${offset > 0 ? '+' : ''}${offset} min)` : '';
-                            let typeStr = section.time.type.charAt(0).toUpperCase() + section.time.type.slice(1);
-                            if (typeStr === 'Sunrise') typeStr = 'Sonnenaufgang';
-                            if (typeStr === 'Sunset') typeStr = 'Sonnenuntergang';
-                            timeString = `${typeStr}${offsetStr}`;
-                        } else {
-                            timeString = section.time;
-                        }
+                    const sectionsHtml = sections.map(name => {
+                        const section = routine[name];
+                        if (!section) return '';
 
                         return `
                     <div class="py-2 px-3 bg-gray-50 rounded-md">
                         <p class="font-semibold capitalize">${name}</p>
                         <div class="text-sm text-gray-700 grid grid-cols-2 gap-x-4">
-                            <span><strong class="font-medium">Start:</strong> ${timeString}</span>
-                            <span><strong class="font-medium">Szene:</strong> ${section.scene_name}</span>
+                            <span><strong class="font-medium">Normal-Szene:</strong> ${section.scene_name}</span>
+                            <span><strong class="font-medium">Bewegungs-Szene:</strong> ${section.x_scene_name}</span>
+                            <span><strong class="font-medium">Bewegung:</strong> ${section.motion_check ? `Ja (${section.wait_time}min)` : 'Nein'}</span>
+                            <span><strong class="font-medium">Nicht stören:</strong> ${section.do_not_disturb ? 'Ja' : 'Nein'}</span>
                             <span><strong class="font-medium">Helligkeits-Check:</strong> ${section.bri_check ? 'Ja' : 'Nein'}</span>
                             ${section.bri_check ? `<span><strong class="font-medium">Max. Helligkeit:</strong> ${section.max_light_level}</span>` : ''}
                         </div>
@@ -210,6 +236,31 @@
                 }
             };
 
+            const renderStatus = (statuses) => {
+                statusContainer.innerHTML = '';
+                if (!statuses || statuses.length === 0) {
+                    statusContainer.innerHTML = `<p class="text-gray-500">Warte auf Status-Daten...</p>`;
+                    return;
+                }
+                statuses.forEach(status => {
+                    const statusEl = document.createElement('div');
+                    statusEl.className = 'bg-white p-4 rounded-lg shadow';
+                    statusEl.innerHTML = `
+                    <h4 class="font-bold text-lg">${status.name}</h4>
+                    <div class="text-sm grid grid-cols-2 gap-2 mt-2">
+                        <span><strong>Aktueller Zeitraum:</strong> ${status.period || 'Inaktiv'}</span>
+                        <span><strong>Letzte Szene:</strong> ${status.last_scene || 'N/A'}</span>
+                    </div>
+                `;
+                    statusContainer.appendChild(statusEl);
+                });
+            };
+
+            const renderLog = (logText) => {
+                logContainer.textContent = logText;
+                logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll to bottom
+            };
+
             const openSceneModal = (sceneName = null) => {
                 const isEditing = sceneName !== null;
                 const scene = isEditing ? config.scenes[sceneName] : { status: true, bri: 128, sat: 128, ct: 300, t_time: 10 };
@@ -255,38 +306,32 @@
             const openEditRoutineModal = (routineIndex) => {
                 const routine = config.routines[routineIndex];
                 const modal = document.getElementById('modal-routine');
-
                 const sceneOptions = Object.keys(config.scenes).map(name => `<option value="${name}">${name}</option>`).join('');
-                const sectionNameOptions = ['morning', 'day', 'evening', 'night'];
+                const sectionNames = ['morning', 'day', 'evening', 'night'];
 
-                const sectionsHtml = Object.entries(routine.sections).map(([name, section]) => {
-                    const time = typeof section.time === 'object' ? section.time : { type: 'fixed', value: section.time, offset: 0 };
-                    const nameOptionsHtml = sectionNameOptions.map(opt => `<option value="${opt}" ${name === opt ? 'selected' : ''}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join('');
-
+                const sectionsHtml = sectionNames.map(name => {
+                    const section = routine[name] || { scene_name: 'off', x_scene_name: 'off', bri_check: false, max_light_level: 0, motion_check: false, wait_time: 5, do_not_disturb: false };
                     return `
-                <div class="p-3 border rounded-md" data-section-name="${name}">
-                    <div class="flex justify-between items-center mb-2">
-                        <select class="font-semibold bg-gray-100 rounded-md p-1 w-1/3 section-name-select">${nameOptionsHtml}</select>
-                        <button type="button" data-action="delete-section" class="text-red-500 text-xs font-bold">X</button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <label class="block">Start-Typ</label>
-                            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-type">
-                                <option value="fixed" ${time.type === 'fixed' ? 'selected' : ''}>Feste Zeit</option>
-                                <option value="sunrise" ${time.type === 'sunrise' ? 'selected' : ''}>Sonnenaufgang</option>
-                                <option value="sunset" ${time.type === 'sunset' ? 'selected' : ''}>Sonnenuntergang</option>
-                            </select>
+                <div class="p-4 border rounded-lg" data-section-name="${name}">
+                    <h5 class="font-semibold capitalize mb-3 text-lg">${name}</h5>
+                    
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                        <!-- Szenen -->
+                        <div><label class="block font-medium">Normal-Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-scene-name">${sceneOptions.replace(`value="${section.scene_name}"`, `value="${section.scene_name}" selected`)}</select></div>
+                        <div><label class="block font-medium">Szene bei Bewegung</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-x-scene-name">${sceneOptions.replace(`value="${section.x_scene_name}"`, `value="${section.x_scene_name}" selected`)}</select></div>
+                        
+                        <!-- Helligkeit -->
+                        <div class="col-span-2 border-t mt-2 pt-2">
+                            <div class="flex items-center"><input type="checkbox" ${section.bri_check ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 section-bri-check"><label class="ml-2 font-medium">Helligkeit prüfen (für Bewegung)</label></div>
+                            <div class="mt-1"><label class="block">Max. Helligkeit</label><input type="number" value="${section.max_light_level}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-max-light-level"></div>
                         </div>
-                        <div>
-                            <label class="block">Zeit / Versatz (min)</label>
-                            <input type="time" value="${time.type === 'fixed' ? time.value : ''}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-value" style="${time.type === 'fixed' ? 'display:block;' : 'display:none;'}">
-                            <input type="number" value="${time.offset || 0}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-offset" style="${time.type !== 'fixed' ? 'display:block;' : 'display:none;'}">
+
+                        <!-- Bewegung -->
+                        <div class="col-span-2 border-t mt-2 pt-2">
+                            <div class="flex items-center"><input type="checkbox" ${section.motion_check ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 section-motion-check"><label class="ml-2 font-medium">Auf Bewegung reagieren</label></div>
+                            <div class="mt-1"><label class="block">Ausschaltverzögerung (min)</label><input type="number" value="${section.wait_time || 5}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-wait-time"></div>
+                            <div class="flex items-center mt-2"><input type="checkbox" ${section.do_not_disturb ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 section-do-not-disturb"><label class="ml-2">Bitte nicht stören</label></div>
                         </div>
-                        <div><label class="block">Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-scene-name">${sceneOptions.replace(`value="${section.scene_name}"`, `value="${section.scene_name}" selected`)}</select></div>
-                        <div><label class="block">Alt. Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-x-scene-name">${sceneOptions.replace(`value="${section.x_scene_name}"`, `value="${section.x_scene_name}" selected`)}</select></div>
-                        <div><label class="block">Max. Helligkeit</label><input type="number" value="${section.max_light_level}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-max-light-level"></div>
-                        <div class="flex items-center"><input type="checkbox" ${section.bri_check ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 section-bri-check"><label class="ml-2">Helligkeit prüfen</label></div>
                     </div>
                 </div>
             `}).join('');
@@ -301,10 +346,19 @@
                                 <label class="block text-sm font-medium text-gray-700">Routine-Name</label>
                                 <input type="text" id="routine-name" value="${routine.name}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                             </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Startzeit (Gesamt)</label>
+                                    <input type="time" id="routine-start-time" value="${String(routine.daily_time.H1).padStart(2, '0')}:${String(routine.daily_time.M1).padStart(2, '0')}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Endzeit (Gesamt)</label>
+                                    <input type="time" id="routine-end-time" value="${String(routine.daily_time.H2).padStart(2, '0')}:${String(routine.daily_time.M2).padStart(2, '0')}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                            </div>
                             <div class="border-t pt-4 mt-4">
-                                <h4 class="text-lg font-medium mb-2">Ablauf bearbeiten</h4>
+                                <h4 class="text-lg font-medium mb-2">Ablauf-Konfiguration</h4>
                                 <div id="sections-editor" class="space-y-3 modal-body">${sectionsHtml}</div>
-                                <button type="button" data-action="add-section" class="mt-3 text-sm text-blue-600 hover:text-blue-800 font-semibold">+ Abschnitt hinzufügen</button>
                             </div>
                         </form>
                     </div>
@@ -337,7 +391,10 @@
                             </div>
                              <div>
                                 <label for="new-routine-sensor" class="block text-sm font-medium text-gray-700">Bewegungsmelder</label>
-                                <select id="new-routine-sensor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${sensorOptions}</select>
+                                <select id="new-routine-sensor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">Kein Sensor (rein zeitgesteuert)</option>
+                                    ${sensorOptions}
+                                </select>
                             </div>
                         </form>
                     </div>
@@ -374,28 +431,24 @@
                 const updatedRoutine = config.routines[routineIndex];
                 updatedRoutine.name = document.getElementById('routine-name').value;
 
-                const newSections = {};
-                document.querySelectorAll('#sections-editor > div').forEach(sectionEl => {
-                    const name = sectionEl.querySelector('.section-name-select').value;
-                    if (name) {
-                        const timeType = sectionEl.querySelector('.section-time-type').value;
-                        let timeValue;
-                        if (timeType === 'fixed') {
-                            timeValue = { type: 'fixed', value: sectionEl.querySelector('.section-time-value').value };
-                        } else {
-                            timeValue = { type: timeType, offset: parseInt(sectionEl.querySelector('.section-time-offset').value) || 0 };
-                        }
+                const [startH, startM] = document.getElementById('routine-start-time').value.split(':');
+                const [endH, endM] = document.getElementById('routine-end-time').value.split(':');
+                updatedRoutine.daily_time = { H1: parseInt(startH), M1: parseInt(startM), H2: parseInt(endH), M2: parseInt(endM) };
 
-                        newSections[name] = {
-                            time: timeValue,
+                document.querySelectorAll('#sections-editor > div').forEach(sectionEl => {
+                    const name = sectionEl.dataset.sectionName;
+                    if (name) {
+                        updatedRoutine[name] = {
                             scene_name: sectionEl.querySelector('.section-scene-name').value,
                             x_scene_name: sectionEl.querySelector('.section-x-scene-name').value,
                             bri_check: sectionEl.querySelector('.section-bri-check').checked,
-                            max_light_level: parseInt(sectionEl.querySelector('.section-max-light-level').value)
+                            max_light_level: parseInt(sectionEl.querySelector('.section-max-light-level').value),
+                            motion_check: sectionEl.querySelector('.section-motion-check').checked,
+                            wait_time: parseInt(sectionEl.querySelector('.section-wait-time').value),
+                            do_not_disturb: sectionEl.querySelector('.section-do-not-disturb').checked
                         };
                     }
                 });
-                updatedRoutine.sections = newSections;
 
                 renderAll();
                 closeModal();
@@ -407,8 +460,8 @@
                 const [groupId, groupName] = document.getElementById('new-routine-group').value.split('|');
                 const sensorId = document.getElementById('new-routine-sensor').value;
 
-                if (!name || !groupId || !sensorId) {
-                    showToast("Bitte alle Felder ausfüllen.", true);
+                if (!name || !groupId) {
+                    showToast("Bitte Routine-Name und Raum ausfüllen.", true);
                     return;
                 }
 
@@ -416,60 +469,31 @@
                 if (!config.routines) config.routines = [];
 
                 if (!config.rooms.some(r => r.name === groupName)) {
-                    config.rooms.push({
+                    const newRoom = {
                         name: groupName,
                         group_ids: [parseInt(groupId)],
-                        switch_ids: [],
-                        sensor_id: parseInt(sensorId)
-                    });
+                        switch_ids: []
+                    };
+                    if (sensorId) {
+                        newRoom.sensor_id = parseInt(sensorId);
+                    }
+                    config.rooms.push(newRoom);
                 }
 
                 const newRoutine = {
                     name: name,
                     room_name: groupName,
-                    sections: {
-                        day: { time: { type: "fixed", value: "08:00" }, scene_name: "warm_mid", bri_check: true, max_light_level: 18000, x_scene_name: "off" },
-                        night: { time: { type: "fixed", value: "22:00" }, scene_name: "night", bri_check: false, max_light_level: 0, x_scene_name: "off" }
-                    }
+                    daily_time: { H1: 7, M1: 0, H2: 23, M2: 0 },
+                    morning: { scene_name: "warm_min", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: 2, do_not_disturb: true },
+                    day: { scene_name: "warm_mid", x_scene_name: "off", bri_check: true, max_light_level: 18000, motion_check: true, wait_time: 5, do_not_disturb: true },
+                    evening: { scene_name: "warm_max", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: 10, do_not_disturb: false },
+                    night: { scene_name: "night", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: 1, do_not_disturb: false }
                 };
                 config.routines.push(newRoutine);
 
                 renderAll();
                 closeModal();
                 showToast("Routine erstellt. Globale Speicherung nicht vergessen!");
-            };
-
-            const handleAddNewSection = (editor) => {
-                const sceneOptions = Object.keys(config.scenes).map(name => `<option value="${name}">${name}</option>`).join('');
-                const nameOptions = ['morning', 'day', 'evening', 'night'].map(opt => `<option value="${opt}">${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join('');
-                const newSectionEl = document.createElement('div');
-                newSectionEl.className = 'p-3 border rounded-md';
-                newSectionEl.innerHTML = `
-                <div class="flex justify-between items-center mb-2">
-                    <select class="font-semibold bg-gray-100 rounded-md p-1 w-1/3 section-name-select">${nameOptions}</select>
-                    <button type="button" data-action="delete-section" class="text-red-500 text-xs font-bold">X</button>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <label class="block">Start-Typ</label>
-                        <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-type">
-                            <option value="fixed" selected>Feste Zeit</option>
-                            <option value="sunrise">Sonnenaufgang</option>
-                            <option value="sunset">Sonnenuntergang</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block">Zeit / Versatz (min)</label>
-                        <input type="time" value="12:00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-value">
-                        <input type="number" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-time-offset" style="display:none;">
-                    </div>
-                    <div><label class="block">Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-scene-name">${sceneOptions}</select></div>
-                    <div><label class="block">Alt. Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-x-scene-name">${sceneOptions}</select></div>
-                    <div><label class="block">Max. Helligkeit</label><input type="number" value="18000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-max-light-level"></div>
-                    <div class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 section-bri-check"><label class="ml-2">Helligkeit prüfen</label></div>
-                </div>
-            `;
-                editor.appendChild(newSectionEl);
             };
 
             const saveFullConfig = async () => {
@@ -488,24 +512,35 @@
                     showToast(`Fehler: ${error.message}`, true);
                 } finally {
                     saveButton.disabled = false;
-                    saveButton.textContent = 'Speichern &amp; Alle Routinen neu starten';
+                    saveButton.textContent = 'Speichern und Alle Routinen neu starten';
                 }
             };
 
-            document.body.addEventListener('change', (e) => {
-                if (e.target.classList.contains('section-time-type')) {
-                    const parent = e.target.closest('.grid');
-                    const timeInput = parent.querySelector('.section-time-value');
-                    const offsetInput = parent.querySelector('.section-time-offset');
-                    if (e.target.value === 'fixed') {
-                        timeInput.style.display = 'block';
-                        offsetInput.style.display = 'none';
-                    } else {
-                        timeInput.style.display = 'none';
-                        offsetInput.style.display = 'block';
-                    }
+            const updateStatus = async () => {
+                try {
+                    const [statusRes, logRes] = await Promise.all([
+                        fetch('/api/status'),
+                        fetch('/api/log')
+                    ]);
+                    const statuses = await statusRes.json();
+                    const logText = await logRes.text();
+                    renderStatus(statuses);
+                    renderLog(logText);
+                } catch (error) {
+                    console.error("Fehler beim Abrufen des Status:", error);
                 }
-            });
+            };
+
+            const startStatusUpdates = () => {
+                if (statusInterval) clearInterval(statusInterval);
+                updateStatus(); // Sofortiger erster Aufruf
+                statusInterval = setInterval(updateStatus, 10000); // Alle 10 Sekunden
+            };
+
+            const updateClock = () => {
+                const now = new Date();
+                clockElement.textContent = now.toLocaleTimeString('de-DE');
+            };
 
             document.body.addEventListener('click', (e) => {
                 const action = e.target.dataset.action;
@@ -520,7 +555,7 @@
                         }
                         break;
                     case 'delete-routine':
-                        if (confirm(`Möchtest du die Routine wirklich löschen?`)) {
+                        if (confirm(`Möchtest du die Routine "${config.routines[target.dataset.index].name}" wirklich löschen?`)) {
                             config.routines.splice(target.dataset.index, 1);
                             renderAll();
                             showToast("Routine gelöscht.");
@@ -532,8 +567,6 @@
                     case 'save-routine': handleSaveEditedRoutine(); break;
                     case 'create-routine': handleCreateNewRoutine(); break;
                     case 'cancel-modal': closeModal(); break;
-                    case 'add-section': handleAddNewSection(document.getElementById('sections-editor')); break;
-                    case 'delete-section': target.closest('.border').remove(); break;
                 }
             });
 
@@ -541,7 +574,7 @@
             document.getElementById('btn-new-routine').addEventListener('click', () => openCreateRoutineModal());
             saveButton.addEventListener('click', saveFullConfig);
 
-            const tabs = [{ btn: 'tab-routines', content: 'content-routines' }, { btn: 'tab-scenes', content: 'content-scenes' }];
+            const tabs = [{ btn: 'tab-routines', content: 'content-routines' }, { btn: 'tab-scenes', content: 'content-scenes' }, { btn: 'tab-status', content: 'content-status' }];
             tabs.forEach(tabInfo => {
                 document.getElementById(tabInfo.btn).addEventListener('click', () => {
                     tabs.forEach(t => {
@@ -550,6 +583,11 @@
                     });
                     document.getElementById(tabInfo.btn).classList.add('tab-active');
                     document.getElementById(tabInfo.content).classList.remove('hidden');
+                    if (tabInfo.btn === 'tab-status') {
+                        startStatusUpdates();
+                    } else {
+                        if (statusInterval) clearInterval(statusInterval);
+                    }
                 });
             });
 

@@ -60,4 +60,43 @@ rooms:
   - 1
   switch_ids: []
   sensor_id: 2
-routines: []
+routines:
+- name: TEST
+  room_name: Zimmer_Olli
+  daily_time:
+    H1: 8
+    M1: 0
+    H2: 23
+    M2: 0
+  morning:
+    scene_name: warm_mid
+    x_scene_name: 'false'
+    bri_check: false
+    max_light_level: 0
+    motion_check: false
+    wait_time: 5
+    do_not_disturb: false
+  day:
+    scene_name: warm_mid
+    x_scene_name: 'false'
+    bri_check: true
+    max_light_level: 18000
+    motion_check: false
+    wait_time: 5
+    do_not_disturb: false
+  evening:
+    scene_name: 'false'
+    x_scene_name: warm_mid
+    bri_check: false
+    max_light_level: 1000
+    motion_check: true
+    wait_time: 1
+    do_not_disturb: true
+  night:
+    scene_name: warm_mid
+    x_scene_name: 'false'
+    bri_check: false
+    max_light_level: 0
+    motion_check: false
+    wait_time: 5
+    do_not_disturb: false
