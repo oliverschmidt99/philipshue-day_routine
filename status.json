@@ -1,0 +1,9 @@
+[
+  {
+    "name": "TEST",
+    "period": "evening",
+    "last_scene": "warm_min",
+    "motion_status": "Keine Bewegung",
+    "motion_active": false
+  }
+]

@@ -19,9 +19,9 @@ scenes:
   warm_min:
     status: true
     bri: 80
-    sat: 150
-    ct: 350
-    t_time: 50
+    t_time: 10
+    ct: 443
+    sat: 0
   warm_mid:
     status: true
     bri: 170
