@@ -119,8 +119,13 @@ def main():
 
     except (KeyboardInterrupt, SystemExit):
         log.info("Programm wird beendet.")
+        # KORRIGIERT: Prüft, ob die Datei existiert, bevor sie gelöscht wird.
         if os.path.exists(STATUS_FILE):
-            os.remove(STATUS_FILE)
+            try:
+                os.remove(STATUS_FILE)
+                log.info(f"Status-Datei '{STATUS_FILE}' wurde aufgeräumt.")
+            except OSError as e:
+                log.error(f"Fehler beim Löschen der Status-Datei: {e}")
     except Exception as e:
         log.error(f"Ein kritischer Fehler ist aufgetreten: {e}", exc_info=True)
 

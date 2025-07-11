@@ -23,9 +23,10 @@ class Routine:
         self.evening_conf = routine_config.get('evening')
         self.night_conf = routine_config.get('night')
 
-        self.last_triggered_period = None
+        self.current_period = None
         self.last_triggered_scene_name = None
         self.last_motion_time = None
+        self.is_in_motion_state = False
 
     def get_current_period(self, now: datetime):
         """
@@ -46,19 +47,38 @@ class Routine:
         return "night"
 
     def get_status(self):
-        """Gibt den aktuellen Zustand der Routine als Dictionary zurück."""
+        """Gibt den aktuellen Zustand der Routine als Dictionary für die UI zurück."""
+        current_period_for_status = self.get_current_period(datetime.now().astimezone())
+        
+        motion_status_text = "Nicht relevant"
+        is_motion_active_now = False
+        if self.sensor:
+            is_motion_active_now = self.sensor.get_motion()
+            if is_motion_active_now:
+                if self.last_motion_time:
+                     motion_status_text = f"Aktiv seit {self.last_motion_time.strftime('%H:%M:%S')}"
+                else:
+                     motion_status_text = "Aktiv"
+            elif self.is_in_motion_state and self.last_motion_time:
+                 motion_status_text = f"Letzte Bewegung um {self.last_motion_time.strftime('%H:%M:%S')}"
+            else:
+                motion_status_text = "Keine Bewegung"
+
         return {
             "name": self.name,
-            "period": self.last_triggered_period,
-            "last_scene": self.last_triggered_scene_name
+            "period": current_period_for_status,
+            "last_scene": self.last_triggered_scene_name,
+            "motion_status": motion_status_text,
+            "motion_active": is_motion_active_now
         }
 
     def run(self, now: datetime):
         period = self.get_current_period(now)
+        
         if not period:
-            if self.last_triggered_period is not None:
+            if self.current_period is not None:
                 self.log.info(f"[{self.name}] Routine jetzt inaktiv.")
-                self.last_triggered_period = None
+            self.current_period = None
             return
 
         section_config = getattr(self, f"{period}_conf", None)
@@ -68,31 +88,39 @@ class Routine:
         normal_scene_name = section_config.get('scene_name')
         motion_scene_name = section_config.get('x_scene_name')
 
-        if period != self.last_triggered_period:
+        if period != self.current_period:
             scene_obj = self.scenes.get(normal_scene_name)
             if scene_obj:
                 self.log.info(f"[{self.name}] Neuer Zeitraum: '{period}'. Setze Normal-Szene: '{normal_scene_name}'.")
                 self.room.turn_groups(scene_obj)
                 self.last_triggered_scene_name = normal_scene_name
-            self.last_triggered_period = period
+            self.current_period = period
             self.last_motion_time = None
+            self.is_in_motion_state = False
 
         if not self.sensor or not section_config.get('motion_check', False):
             return
 
+        has_motion = self.sensor.get_motion()
+        self.log.debug(f"[{self.name}] Sensor-Status: Bewegung={has_motion}")
+
         if section_config.get('do_not_disturb', False) and self.room.is_any_light_on():
-            if self.sensor.get_motion():
+            if has_motion:
                 self.last_motion_time = now
             self.log.debug(f"[{self.name}] 'Nicht stören' aktiv und Licht ist an. Ignoriere Trigger.")
             return
 
-        if self.sensor.get_motion():
-            self.last_motion_time = now
+        if has_motion:
+            if not self.is_in_motion_state:
+                self.last_motion_time = now
             
             scene_to_trigger = motion_scene_name
             
             if section_config.get('bri_check', False):
-                if self.sensor.get_brightness() > section_config.get('max_light_level', 0):
+                brightness = self.sensor.get_brightness()
+                max_light = section_config.get('max_light_level', 0)
+                self.log.debug(f"[{self.name}] Helligkeits-Check: Aktuell={brightness}, Max={max_light}")
+                if brightness > max_light:
                     self.log.debug(f"[{self.name}] Zu hell für Bewegungs-Szene. Keine Aktion.")
                     return
 
@@ -102,16 +130,30 @@ class Routine:
                     self.log.info(f"[{self.name}] Bewegung erkannt. Aktiviere Bewegungs-Szene: '{scene_to_trigger}'.")
                     self.room.turn_groups(scene_obj)
                     self.last_triggered_scene_name = scene_to_trigger
+            self.is_in_motion_state = True
         
-        else:
-            wait_time_minutes = section_config.get('wait_time', 5)
-            if self.last_motion_time and (now > self.last_motion_time + timedelta(minutes=wait_time_minutes)):
-                
-                if self.last_triggered_scene_name != normal_scene_name:
+        else: # Keine Bewegung
+            if self.is_in_motion_state:
+                # KORRIGIERT: Robuste Behandlung für verschiedene 'wait_time'-Formate
+                wait_time_conf = section_config.get('wait_time', {'min': 5, 'sec': 0})
+                wait_time_delta = None
+
+                if isinstance(wait_time_conf, dict):
+                    # Neues Format: {min: 5, sec: 0}
+                    wait_time_delta = timedelta(minutes=wait_time_conf.get('min', 0), seconds=wait_time_conf.get('sec', 0))
+                elif isinstance(wait_time_conf, (int, float)):
+                    # Altes Format: 5 (wird als Minuten interpretiert)
+                    self.log.warning(f"[{self.name}] Veraltetes 'wait_time'-Format erkannt. Bitte Routine neu speichern, um auf min/sek umzustellen.")
+                    wait_time_delta = timedelta(minutes=int(wait_time_conf))
+                else:
+                    # Fallback
+                    wait_time_delta = timedelta(minutes=5)
+
+                if self.last_motion_time and (now > self.last_motion_time + wait_time_delta):
                     scene_obj = self.scenes.get(normal_scene_name)
                     if scene_obj:
-                        self.log.info(f"[{self.name}] Keine Bewegung für {wait_time_minutes} min. Kehre zu Normal-Szene '{normal_scene_name}' zurück.")
+                        self.log.info(f"[{self.name}] Keine Bewegung für {wait_time_delta}. Kehre zu Normal-Szene '{normal_scene_name}' zurück.")
                         self.room.turn_groups(scene_obj)
                         self.last_triggered_scene_name = normal_scene_name
-                
-                self.last_motion_time = None
+                    
+                    self.is_in_motion_state = False
