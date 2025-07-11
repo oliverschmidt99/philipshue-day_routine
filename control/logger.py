@@ -13,28 +13,24 @@ class Logger:
 
         # Verhindern, dass Handler mehrfach hinzugefügt werden
         if not self.logger.handlers:
-            # Handler für das Schreiben in eine Datei
+            # Handler für das Schreiben in eine Datei (inkl. Debug-Meldungen)
             file_handler = logging.FileHandler(file_name, mode='w', encoding='utf-8')
-            
-            # KORRIGIERT: Setze das Level für die Datei auf INFO.
-            # Nur Nachrichten ab INFO (also INFO, WARNING, ERROR) werden in die Datei geschrieben.
-            file_handler.setLevel(logging.INFO) 
-            
-            # Formatter für eine saubere Log-Datei
-            file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            file_handler.setLevel(logging.DEBUG)
+            # Detaillierterer Formatter für die Datei, um die Herkunft der Nachricht zu sehen
+            file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
             file_handler.setFormatter(file_formatter)
             self.logger.addHandler(file_handler)
 
             # Handler für die Ausgabe auf der Konsole
             stream_handler = logging.StreamHandler(sys.stdout)
-            # Das Level für die Konsole bleibt INFO, das ist gut so.
+            # Zeigt nur INFO und höhere Level auf der Konsole an, um sie nicht zu überfluten
             stream_handler.setLevel(logging.INFO) 
             stream_formatter = logging.Formatter('%(asctime)s - %(message)s')
             stream_handler.setFormatter(stream_formatter)
             self.logger.addHandler(stream_handler)
 
     def debug(self, message):
-        """Loggt eine Debug-Nachricht (wird jetzt nicht mehr in der Datei erscheinen)."""
+        """Loggt eine Debug-Nachricht."""
         self.logger.debug(message)
 
     def info(self, message):

@@ -40,6 +40,47 @@
             overflow-y: auto;
             white-space: pre-wrap;
         }
+
+        /* Farbverlauf für den Farbtemperatur-Slider */
+        .ct-slider {
+            -webkit-appearance: none;
+            /* Für ältere Webkit-Browser */
+            appearance: none;
+            /* Standard-Eigenschaft, behebt die Warnung */
+            width: 100%;
+            height: 15px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #a1c4fd, #e1e1e1, #ffaf4b);
+            /* Kalt zu Warm */
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+
+        .ct-slider:hover {
+            opacity: 1;
+        }
+
+        .ct-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: 2px solid #3b82f6;
+        }
+
+        .ct-slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: 2px solid #3b82f6;
+        }
     </style>
 </head>
 
@@ -225,12 +266,10 @@
 
                     let colorPreviewStyle = 'background-color: #f3f4f6;'; // Default grau
                     if (scene.hue !== undefined && scene.sat !== undefined) {
-                        // Erzeuge eine HSL-Farbe für die Vorschau
                         const hue = scene.hue / 65535 * 360;
                         const sat = scene.sat / 254 * 100;
                         colorPreviewStyle = `background-color: hsl(${hue}, ${sat}%, 50%);`;
                     } else if (scene.ct !== undefined) {
-                        // Annäherung für Farbtemperatur (sehr vereinfacht)
                         const tempPercent = (scene.ct - 153) / (500 - 153);
                         const blue = 255 * tempPercent;
                         const red = 255 * (1 - tempPercent);
@@ -312,8 +351,8 @@
                             </div>
 
                             <div id="ct-controls" class="${isColorMode ? 'hidden' : ''}">
-                                <label for="scene-ct" class="block text-sm font-medium text-gray-700">Farbtemperatur (153-500)</label>
-                                <input type="range" id="scene-ct" min="153" max="500" value="${scene.ct || 300}" class="w-full">
+                                <label for="scene-ct" class="block text-sm font-medium text-gray-700">Farbtemperatur (Kalt ⟷ Warm)</label>
+                                <input type="range" id="scene-ct" min="153" max="500" value="${scene.ct || 300}" class="w-full ct-slider">
                             </div>
 
                             <div id="color-controls" class="${!isColorMode ? 'hidden' : ''}">

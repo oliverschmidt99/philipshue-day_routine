@@ -18,9 +18,9 @@ scenes:
     t_time: 30
   warm_min:
     status: true
-    bri: 80
+    bri: 29
     t_time: 10
-    ct: 443
+    ct: 221
     sat: 0
   warm_mid:
     status: true
@@ -67,7 +67,7 @@ routines:
     H1: 8
     M1: 0
     H2: 23
-    M2: 59
+    M2: 2
   morning:
     scene_name: 'false'
     x_scene_name: 'false'

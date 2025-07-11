@@ -23,28 +23,35 @@ class Routine:
         self.evening_conf = routine_config.get('evening')
         self.night_conf = routine_config.get('night')
 
-        self.current_period = None
+        self.current_period = self.get_current_period(datetime.now().astimezone())
         self.last_triggered_scene_name = None
         self.last_motion_time = None
         self.is_in_motion_state = False
+        self.motion_logged = False # Neuer Flag für das Logging
 
     def get_current_period(self, now: datetime):
         """
         Ermittelt den aktuellen Tageszeitraum ('morning', 'day', 'evening', 'night')
-        oder None, wenn die Routine inaktiv ist.
+        basierend auf der festen Logik.
         """
         current_time = now.time()
-        is_active = (self.start_time <= current_time < self.end_time) if self.start_time <= self.end_time else (current_time >= self.start_time or current_time < self.end_time)
-        if not is_active:
-            return None
-
-        sunrise_time = self.sun_times['sunrise'].time() if self.sun_times else time(6, 30)
-        sunset_time = self.sun_times['sunset'].time() if self.sun_times else time(20, 0)
-
-        if sunrise_time <= current_time < sunset_time: return "day"
-        if self.start_time <= current_time < sunrise_time: return "morning"
-        if sunset_time <= current_time < self.end_time: return "evening"
+        
+        start = self.start_time
+        end = self.end_time
+        sunrise = self.sun_times['sunrise'].time() if self.sun_times else time(6, 30)
+        sunset = self.sun_times['sunset'].time() if self.sun_times else time(20, 0)
+        
+        # Prüft die Zeiträume in einer logischen Reihenfolge
+        if start <= current_time < sunrise:
+            return "morning"
+        if sunrise <= current_time < sunset:
+            return "day"
+        if sunset <= current_time < end:
+            return "evening"
+        
+        # Alle anderen Zeiten werden als "Nacht" behandelt.
         return "night"
+
 
     def get_status(self):
         """Gibt den aktuellen Zustand der Routine als Dictionary für die UI zurück."""
@@ -75,12 +82,6 @@ class Routine:
     def run(self, now: datetime):
         period = self.get_current_period(now)
         
-        if not period:
-            if self.current_period is not None:
-                self.log.info(f"[{self.name}] Routine jetzt inaktiv.")
-            self.current_period = None
-            return
-
         section_config = getattr(self, f"{period}_conf", None)
         if not section_config:
             return
@@ -102,7 +103,14 @@ class Routine:
             return
 
         has_motion = self.sensor.get_motion()
-        self.log.debug(f"[{self.name}] Sensor-Status: Bewegung={has_motion}")
+        
+        if has_motion:
+            if not self.motion_logged:
+                self.log.info(f"[{self.name}] Bewegung erkannt.")
+                self.motion_logged = True
+        else:
+            self.motion_logged = False
+
 
         if section_config.get('do_not_disturb', False) and self.room.is_any_light_on():
             if has_motion:
@@ -127,27 +135,15 @@ class Routine:
             if self.last_triggered_scene_name != scene_to_trigger:
                 scene_obj = self.scenes.get(scene_to_trigger)
                 if scene_obj:
-                    self.log.info(f"[{self.name}] Bewegung erkannt. Aktiviere Bewegungs-Szene: '{scene_to_trigger}'.")
+                    self.log.info(f"[{self.name}] Aktiviere Bewegungs-Szene: '{scene_to_trigger}'.")
                     self.room.turn_groups(scene_obj)
                     self.last_triggered_scene_name = scene_to_trigger
             self.is_in_motion_state = True
         
         else: # Keine Bewegung
             if self.is_in_motion_state:
-                # KORRIGIERT: Robuste Behandlung für verschiedene 'wait_time'-Formate
                 wait_time_conf = section_config.get('wait_time', {'min': 5, 'sec': 0})
-                wait_time_delta = None
-
-                if isinstance(wait_time_conf, dict):
-                    # Neues Format: {min: 5, sec: 0}
-                    wait_time_delta = timedelta(minutes=wait_time_conf.get('min', 0), seconds=wait_time_conf.get('sec', 0))
-                elif isinstance(wait_time_conf, (int, float)):
-                    # Altes Format: 5 (wird als Minuten interpretiert)
-                    self.log.warning(f"[{self.name}] Veraltetes 'wait_time'-Format erkannt. Bitte Routine neu speichern, um auf min/sek umzustellen.")
-                    wait_time_delta = timedelta(minutes=int(wait_time_conf))
-                else:
-                    # Fallback
-                    wait_time_delta = timedelta(minutes=5)
+                wait_time_delta = timedelta(minutes=wait_time_conf.get('min', 0), seconds=wait_time_conf.get('sec', 0))
 
                 if self.last_motion_time and (now > self.last_motion_time + wait_time_delta):
                     scene_obj = self.scenes.get(normal_scene_name)
