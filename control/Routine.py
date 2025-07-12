@@ -13,6 +13,7 @@ class Routine:
         self.log = log
         self.scenes = scenes
         self.sun_times = sun_times
+        self.enabled = routine_config.get('enabled', True)
 
         dt_conf = routine_config.get('daily_time', {})
         self.start_time = time(dt_conf.get('H1', 0), dt_conf.get('M1', 0))
@@ -23,35 +24,44 @@ class Routine:
         self.evening_conf = routine_config.get('evening')
         self.night_conf = routine_config.get('night')
 
-        self.current_period = self.get_current_period(datetime.now().astimezone())
+        self.current_period = None # Wird beim ersten Lauf initialisiert
         self.last_triggered_scene_name = None
         self.last_motion_time = None
         self.is_in_motion_state = False
-        self.motion_logged = False # Neuer Flag für das Logging
+        self.motion_logged = False
 
     def get_current_period(self, now: datetime):
         """
         Ermittelt den aktuellen Tageszeitraum ('morning', 'day', 'evening', 'night')
-        basierend auf der festen Logik.
+        basierend auf der festen, hierarchischen Logik.
         """
         current_time = now.time()
-        
         start = self.start_time
         end = self.end_time
+
+        # 1. Zuerst prüfen, ob die Routine überhaupt aktiv ist.
+        is_active = (start <= end and start <= current_time < end) or \
+                    (start > end and (current_time >= start or current_time < end))
+        
+        if not is_active:
+            return None
+
+        # 2. Wenn aktiv, den spezifischen Zeitraum bestimmen.
         sunrise = self.sun_times['sunrise'].time() if self.sun_times else time(6, 30)
         sunset = self.sun_times['sunset'].time() if self.sun_times else time(20, 0)
-        
-        # Prüft die Zeiträume in einer logischen Reihenfolge
-        if start <= current_time < sunrise:
-            return "morning"
-        if sunrise <= current_time < sunset:
-            return "day"
-        if sunset <= current_time < end:
-            return "evening"
-        
-        # Alle anderen Zeiten werden als "Nacht" behandelt.
-        return "night"
 
+        # Hierarchische Prüfung, wie von dir vorgeschlagen
+        if start <= current_time < sunrise:
+            # Gilt nur, wenn der Start vor Sonnenaufgang liegt
+            return "morning"
+        elif sunrise <= current_time < sunset:
+            return "day"
+        elif sunset <= current_time < end:
+            return "evening"
+        else:
+            # Alle anderen Fälle innerhalb des aktiven Zeitraums sind "Nacht".
+            # Das deckt die Zeit von 00:00 bis zum Morgen und vom Abend bis zum Ende ab.
+            return "night"
 
     def get_status(self):
         """Gibt den aktuellen Zustand der Routine als Dictionary für die UI zurück."""
@@ -73,6 +83,7 @@ class Routine:
 
         return {
             "name": self.name,
+            "enabled": self.enabled,
             "period": current_period_for_status,
             "last_scene": self.last_triggered_scene_name,
             "motion_status": motion_status_text,
@@ -80,8 +91,20 @@ class Routine:
         }
 
     def run(self, now: datetime):
+        if not self.enabled:
+            if self.current_period is not None:
+                self.log.info(f"[{self.name}] Routine ist deaktiviert, wird übersprungen.")
+                self.current_period = None
+            return
+
         period = self.get_current_period(now)
         
+        if not period:
+            if self.current_period is not None:
+                self.log.info(f"[{self.name}] Routine jetzt inaktiv.")
+            self.current_period = None
+            return
+
         section_config = getattr(self, f"{period}_conf", None)
         if not section_config:
             return
@@ -90,9 +113,11 @@ class Routine:
         motion_scene_name = section_config.get('x_scene_name')
 
         if period != self.current_period:
+            self.log.info(f"---------- Zustand-Wechsel für Routine '{self.name}' ----------")
+            self.log.info(f"Neuer Zustand: {period.upper()}")
             scene_obj = self.scenes.get(normal_scene_name)
             if scene_obj:
-                self.log.info(f"[{self.name}] Neuer Zeitraum: '{period}'. Setze Normal-Szene: '{normal_scene_name}'.")
+                self.log.info(f"Setze Normal-Szene: '{normal_scene_name}'.")
                 self.room.turn_groups(scene_obj)
                 self.last_triggered_scene_name = normal_scene_name
             self.current_period = period

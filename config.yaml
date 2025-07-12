@@ -4,12 +4,6 @@ location:
   longitude: 8.0755
   elevation: 110
 scenes:
-  'false':
-    status: false
-    bri: 0
-    sat: 0
-    ct: 0
-    t_time: 10
   night:
     status: true
     bri: 1
@@ -31,15 +25,15 @@ scenes:
   warm_max:
     status: true
     bri: 254
-    sat: 150
-    ct: 350
     t_time: 10
+    ct: 500
+    sat: 0
   cold_max:
     status: true
     bri: 254
-    sat: 0
-    ct: 250
     t_time: 10
+    ct: 153
+    sat: 0
 rooms:
 - name: Wohnzimmer
   group_ids:
@@ -79,14 +73,14 @@ routines:
       sec: 0
     do_not_disturb: false
   day:
-    scene_name: 'false'
-    x_scene_name: 'false'
+    scene_name: warm_max
+    x_scene_name: cold_max
     bri_check: false
     max_light_level: 0
-    motion_check: false
+    motion_check: true
     wait_time:
       min: 0
-      sec: 0
+      sec: 10
     do_not_disturb: false
   evening:
     scene_name: warm_min
@@ -108,3 +102,4 @@ routines:
       min: 0
       sec: 0
     do_not_disturb: false
+  enabled: false

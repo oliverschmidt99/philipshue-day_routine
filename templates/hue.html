@@ -1,33 +1,17 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hue Routine und Scene Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- NEU: Einbindung der iro.js Bibliothek für den Farbwähler -->
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .tab-active {
-            border-bottom-color: #3b82f6;
-            color: #3b82f6;
-        }
-
-        .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-body {
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active { border-bottom-color: #3b82f6; color: #3b82f6; }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); }
+        .modal-body { max-height: 60vh; overflow-y: auto; }
         .log-container {
             background-color: #1f2937;
             color: #d1d5db;
@@ -40,28 +24,21 @@
             overflow-y: auto;
             white-space: pre-wrap;
         }
-
-        /* Farbverlauf für den Farbtemperatur-Slider */
         .ct-slider {
             -webkit-appearance: none;
-            /* Für ältere Webkit-Browser */
             appearance: none;
-            /* Standard-Eigenschaft, behebt die Warnung */
             width: 100%;
             height: 15px;
             border-radius: 5px;
             background: linear-gradient(to right, #a1c4fd, #e1e1e1, #ffaf4b);
-            /* Kalt zu Warm */
             outline: none;
             opacity: 0.7;
             -webkit-transition: .2s;
             transition: opacity .2s;
         }
-
         .ct-slider:hover {
             opacity: 1;
         }
-
         .ct-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -72,7 +49,6 @@
             cursor: pointer;
             border: 2px solid #3b82f6;
         }
-
         .ct-slider::-moz-range-thumb {
             width: 25px;
             height: 25px;
@@ -83,7 +59,6 @@
         }
     </style>
 </head>
-
 <body class="bg-gray-100 text-gray-800">
 
     <div class="container mx-auto p-4 md:p-8">
@@ -100,12 +75,9 @@
         <!-- Tab Navigation -->
         <div class="border-b border-gray-200 mb-6">
             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button type="button" id="tab-routines"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Routinen</button>
-                <button type="button" id="tab-scenes"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
-                <button type="button" id="tab-status"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Status</button>
+                <button type="button" id="tab-routines" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Routinen</button>
+                <button type="button" id="tab-scenes" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
+                <button type="button" id="tab-status" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Status</button>
             </nav>
         </div>
 
@@ -113,8 +85,7 @@
         <main>
             <div id="content-routines">
                 <div class="flex justify-end mb-4">
-                    <button type="button" id="btn-new-routine"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    <button type="button" id="btn-new-routine" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
                         + Neue Routine
                     </button>
                 </div>
@@ -122,8 +93,7 @@
             </div>
             <div id="content-scenes" class="hidden">
                 <div class="flex justify-end mb-4">
-                    <button type="button" id="btn-new-scene"
-                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    <button type="button" id="btn-new-scene" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
                         + Neue Szene
                     </button>
                 </div>
@@ -131,98 +101,105 @@
             </div>
             <div id="content-status" class="hidden space-y-8">
                 <div>
-                    <h2 class="text-2xl font-semibold mb-4">Live-Zustand der Routinen</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-semibold">Live-Zustand der Routinen</h2>
+                        <button type="button" id="btn-refresh-status" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm">
+                            Jetzt aktualisieren
+                        </button>
+                    </div>
                     <div id="status-container" class="space-y-4"></div>
                 </div>
                 <div>
                     <h2 class="text-2xl font-semibold mb-4">Log-Datei (info.log)</h2>
-                    <pre id="log-container" class="log-container"></pre>
+                    <div id="log-container" class="log-container"></div>
                 </div>
             </div>
         </main>
 
         <footer class="mt-12 text-center">
-            <button type="button" id="save-button"
-                class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
+            <button type="button" id="save-button" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
                 Speichern und Alle Routinen neu starten
             </button>
         </footer>
     </div>
 
     <!-- Modals (Pop-ups) -->
-    <div id="modal-scene"
-        class="hidden fixed inset-0 z-50 overflow-auto flex items-center justify-center modal-backdrop"></div>
-    <div id="modal-routine"
-        class="hidden fixed inset-0 z-50 overflow-auto flex items-center justify-center modal-backdrop"></div>
+    <div id="modal-scene" class="hidden fixed inset-0 z-50 overflow-auto flex items-center justify-center modal-backdrop"></div>
+    <div id="modal-routine" class="hidden fixed inset-0 z-50 overflow-auto flex items-center justify-center modal-backdrop"></div>
 
     <!-- Toast-Nachricht -->
-    <div id="toast"
-        class="hidden fixed bottom-5 right-5 bg-gray-900 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300">
-    </div>
+    <div id="toast" class="hidden fixed bottom-5 right-5 bg-gray-900 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let config = {};
-            let bridgeData = { groups: [], sensors: [] };
-            let statusInterval;
-            let colorPicker = null; // Globale Variable für die Farbwähler-Instanz
+    document.addEventListener('DOMContentLoaded', () => {
+        let config = {};
+        let bridgeData = { groups: [], sensors: [] };
+        let statusInterval;
+        let colorPicker = null;
 
-            const routinesContainer = document.getElementById('routines-container');
-            const scenesContainer = document.getElementById('scenes-container');
-            const statusContainer = document.getElementById('status-container');
-            const logContainer = document.getElementById('log-container');
-            const saveButton = document.getElementById('save-button');
-            const toastElement = document.getElementById('toast');
-            const clockElement = document.getElementById('clock');
+        const routinesContainer = document.getElementById('routines-container');
+        const scenesContainer = document.getElementById('scenes-container');
+        const statusContainer = document.getElementById('status-container');
+        const logContainer = document.getElementById('log-container');
+        const saveButton = document.getElementById('save-button');
+        const toastElement = document.getElementById('toast');
+        const clockElement = document.getElementById('clock');
+        const refreshButton = document.getElementById('btn-refresh-status');
 
-            const init = async () => {
-                updateClock();
-                setInterval(updateClock, 1000);
-                showLoading();
-                try {
-                    const [configRes, groupsRes, sensorsRes] = await Promise.all([
-                        fetch('/api/config'),
-                        fetch('/api/bridge/groups'),
-                        fetch('/api/bridge/sensors')
-                    ]);
-                    config = await configRes.json();
-                    bridgeData.groups = await groupsRes.json();
-                    bridgeData.sensors = await sensorsRes.json();
-                    renderAll();
-                    startStatusUpdates();
-                } catch (error) {
-                    console.error("Initialisierungsfehler:", error);
-                    showToast("Fehler beim Laden der Daten. Läuft der Server?", true);
-                } finally {
-                    hideLoading();
-                }
-            };
+        const icons = {
+            morning: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm-6.293 8.293a1 1 0 010-1.414l1-1a1 1 0 111.414 1.414l-1 1a1 1 0 01-1.414 0zM15 11a1 1 0 100-2 1 1 0 000 2zm-3.707 5.293a1 1 0 01-1.414 0l-1-1a1 1 0 111.414-1.414l1 1a1 1 0 010 1.414zM3 11a1 1 0 100-2 1 1 0 000 2zm1.707 5.293a1 1 0 010-1.414l1-1a1 1 0 011.414 1.414l-1 1a1 1 0 01-1.414 0zM10 5a1 1 0 011 1v1a1 1 0 11-2 0V6a1 1 0 011-1zM8.293 3.707a1 1 0 011.414 0l1 1a1 1 0 01-1.414 1.414l-1-1a1 1 0 010-1.414zM18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8 3a1 1 0 011-1h.01a1 1 0 110 2H11a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>`,
+            day: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-yellow-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm-6.293 8.293a1 1 0 010-1.414l1-1a1 1 0 111.414 1.414l-1 1a1 1 0 01-1.414 0zM15 11a1 1 0 100-2 1 1 0 000 2zm-3.707 5.293a1 1 0 01-1.414 0l-1-1a1 1 0 111.414-1.414l1 1a1 1 0 010 1.414zM3 11a1 1 0 100-2 1 1 0 000 2zm1.707 5.293a1 1 0 010-1.414l1-1a1 1 0 011.414 1.414l-1 1a1 1 0 01-1.414 0zM10 5a1 1 0 011 1v1a1 1 0 11-2 0V6a1 1 0 011-1zM8.293 3.707a1 1 0 011.414 0l1 1a1 1 0 01-1.414 1.414l-1-1a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>`,
+            evening: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-orange-500" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>`,
+            night: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>`
+        };
 
-            const renderAll = () => {
-                renderRoutines();
-                renderScenes();
-            };
+        const init = async () => {
+            updateClock();
+            setInterval(updateClock, 1000);
+            showLoading();
+            try {
+                const [configRes, groupsRes, sensorsRes] = await Promise.all([
+                    fetch('/api/config'),
+                    fetch('/api/bridge/groups'),
+                    fetch('/api/bridge/sensors')
+                ]);
+                config = await configRes.json();
+                bridgeData.groups = await groupsRes.json();
+                bridgeData.sensors = await sensorsRes.json();
+                renderAll();
+            } catch (error) {
+                console.error("Initialisierungsfehler:", error);
+                showToast("Fehler beim Laden der Daten. Läuft der Server?", true);
+            } finally {
+                hideLoading();
+            }
+        };
 
-            const renderRoutines = () => {
-                routinesContainer.innerHTML = '';
-                if (!config.routines || config.routines.length === 0) {
-                    routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Noch keine Routinen erstellt.</p>`;
-                    return;
-                }
-                config.routines.forEach((routine, index) => {
-                    const routineEl = document.createElement('div');
-                    routineEl.className = 'bg-white p-6 rounded-lg shadow-md';
-                    const sections = ['morning', 'day', 'evening', 'night'];
+        const renderAll = () => {
+            renderRoutines();
+            renderScenes();
+        };
 
-                    const sectionsHtml = sections.map(name => {
-                        const section = routine[name];
-                        if (!section) return '';
-                        const waitTime = section.wait_time || { min: 0, sec: 0 };
-                        const waitTimeString = `${waitTime.min || 0}m ${waitTime.sec || 0}s`;
+        const renderRoutines = () => {
+            routinesContainer.innerHTML = '';
+            if (!config.routines || config.routines.length === 0) {
+                routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Noch keine Routinen erstellt.</p>`;
+                return;
+            }
+            config.routines.forEach((routine, index) => {
+                const routineEl = document.createElement('div');
+                routineEl.className = 'bg-white p-6 rounded-lg shadow-md border-2 border-gray-200';
+                const sections = ['morning', 'day', 'evening', 'night'];
+                
+                const sectionsHtml = sections.map(name => {
+                    const section = routine[name];
+                    if (!section) return '';
+                    const waitTime = section.wait_time || {min: 0, sec: 0};
+                    const waitTimeString = `${waitTime.min || 0}m ${waitTime.sec || 0}s`;
 
-                        return `
+                    return `
                     <div class="py-2 px-3 bg-gray-50 rounded-md">
-                        <p class="font-semibold capitalize">${name}</p>
+                        <p class="font-semibold capitalize flex items-center">${icons[name] || ''} ${name}</p>
                         <div class="text-sm text-gray-700 grid grid-cols-2 gap-x-4">
                             <span><strong class="font-medium">Normal-Szene:</strong> ${section.scene_name}</span>
                             <span><strong class="font-medium">Bewegungs-Szene:</strong> ${section.x_scene_name}</span>
@@ -233,14 +210,26 @@
                         </div>
                     </div>
                 `}).join('');
+                
+                const dailyTime = routine.daily_time || {H1:0,M1:0,H2:23,M2:59};
 
-                    routineEl.innerHTML = `
+                const isEnabled = routine.enabled !== false;
+
+                routineEl.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <h3 class="text-2xl font-semibold">${routine.name}</h3>
-                            <p class="text-gray-600">Raum: ${routine.room_name}</p>
+                            <div class="flex items-center text-gray-500 text-sm">
+                                <p>Raum: ${routine.room_name}</p>
+                                <span class="mx-2">|</span>
+                                <p>Aktiv: ${String(dailyTime.H1).padStart(2,'0')}:${String(dailyTime.M1).padStart(2,'0')} - ${String(dailyTime.H2).padStart(2,'0')}:${String(dailyTime.M2).padStart(2,'0')}</p>
+                            </div>
                         </div>
-                        <div class="flex space-x-4">
+                        <div class="flex items-center space-x-4">
+                            <label class="relative inline-flex items-center cursor-pointer" title="Routine an/aus">
+                                <input type="checkbox" data-action="toggle-routine" data-index="${index}" class="sr-only peer" ${isEnabled ? 'checked' : ''}>
+                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
                             <button type="button" data-action="edit-routine" data-index="${index}" class="text-blue-500 hover:text-blue-700 font-semibold">Bearbeiten</button>
                             <button type="button" data-action="delete-routine" data-index="${index}" class="text-red-500 hover:text-red-700 font-semibold">Löschen</button>
                         </div>
@@ -250,34 +239,33 @@
                         ${sectionsHtml}
                     </div>
                 `;
-                    routinesContainer.appendChild(routineEl);
-                });
-            };
+                routinesContainer.appendChild(routineEl);
+            });
+        };
 
-            const renderScenes = () => {
-                scenesContainer.innerHTML = '';
-                if (!config.scenes || Object.keys(config.scenes).length === 0) {
-                    scenesContainer.innerHTML = `<p class="text-gray-500 text-center">Noch keine Szenen erstellt.</p>`;
-                    return;
+        const renderScenes = () => {
+            scenesContainer.innerHTML = '';
+            if (!config.scenes || Object.keys(config.scenes).length === 0) {
+                scenesContainer.innerHTML = `<p class="text-gray-500 text-center">Noch keine Szenen erstellt.</p>`;
+                return;
+            }
+            for (const [name, scene] of Object.entries(config.scenes)) {
+                const sceneEl = document.createElement('div');
+                sceneEl.className = 'bg-white p-4 rounded-lg shadow-md flex flex-col justify-between border-2 border-gray-200';
+                
+                let colorPreviewStyle = 'background-color: #f3f4f6;';
+                if (scene.hue !== undefined && scene.sat !== undefined) {
+                    const hue = scene.hue / 65535 * 360;
+                    const sat = scene.sat / 254 * 100;
+                    colorPreviewStyle = `background-color: hsl(${hue}, ${sat}%, 50%);`;
+                } else if (scene.ct !== undefined) {
+                    const tempPercent = (scene.ct - 153) / (500 - 153);
+                    const blue = 255 * tempPercent;
+                    const red = 255 * (1 - tempPercent);
+                    colorPreviewStyle = `background-color: rgb(${red}, ${red * 0.8 + blue * 0.2}, ${blue});`;
                 }
-                for (const [name, scene] of Object.entries(config.scenes)) {
-                    const sceneEl = document.createElement('div');
-                    sceneEl.className = 'bg-white p-4 rounded-lg shadow-md flex flex-col justify-between';
 
-                    let colorPreviewStyle = 'background-color: #f3f4f6;'; // Default grau
-                    if (scene.hue !== undefined && scene.sat !== undefined) {
-                        const hue = scene.hue / 65535 * 360;
-                        const sat = scene.sat / 254 * 100;
-                        colorPreviewStyle = `background-color: hsl(${hue}, ${sat}%, 50%);`;
-                    } else if (scene.ct !== undefined) {
-                        const tempPercent = (scene.ct - 153) / (500 - 153);
-                        const blue = 255 * tempPercent;
-                        const red = 255 * (1 - tempPercent);
-                        colorPreviewStyle = `background-color: rgb(${red}, ${red * 0.8 + blue * 0.2}, ${blue});`;
-                    }
-
-
-                    sceneEl.innerHTML = `
+                sceneEl.innerHTML = `
                     <div>
                         <div class="flex items-center mb-2">
                              <div class="w-6 h-6 rounded-full mr-3 border border-gray-300" style="${colorPreviewStyle}"></div>
@@ -296,45 +284,62 @@
                          <button type="button" data-action="delete-scene" data-name="${name}" class="text-red-500 hover:text-red-700 text-sm font-semibold">Löschen</button>
                     </div>
                 `;
-                    scenesContainer.appendChild(sceneEl);
-                }
-            };
+                scenesContainer.appendChild(sceneEl);
+            }
+        };
 
-            const renderStatus = (statuses) => {
-                statusContainer.innerHTML = '';
-                if (!statuses || statuses.length === 0) {
-                    statusContainer.innerHTML = `<p class="text-gray-500">Warte auf Status-Daten...</p>`;
-                    return;
-                }
-                statuses.forEach(status => {
-                    const motionColor = status.motion_active ? 'text-green-500' : 'text-gray-500';
-                    const statusEl = document.createElement('div');
-                    statusEl.className = 'bg-white p-4 rounded-lg shadow';
-                    statusEl.innerHTML = `
+        const renderStatus = (statuses) => {
+            statusContainer.innerHTML = '';
+            if (!statuses || statuses.length === 0) {
+                statusContainer.innerHTML = `<p class="text-gray-500">Warte auf Status-Daten...</p>`;
+                return;
+            }
+            statuses.forEach(status => {
+                const motionColor = status.motion_active ? 'text-green-500' : 'text-gray-500';
+                const enabledColor = status.enabled ? 'text-green-500' : 'text-red-500';
+                const statusEl = document.createElement('div');
+                statusEl.className = 'bg-white p-4 rounded-lg shadow border-2 border-gray-200';
+                statusEl.innerHTML = `
                     <h4 class="font-bold text-lg">${status.name}</h4>
                     <div class="text-sm grid grid-cols-3 gap-2 mt-2">
+                        <span><strong>Routine-Status:</strong> <span class="${enabledColor}">${status.enabled ? 'Aktiviert' : 'Deaktiviert'}</span></span>
                         <span><strong>Aktueller Zeitraum:</strong> ${status.period || 'Inaktiv'}</span>
                         <span><strong>Letzte Szene:</strong> ${status.last_scene || 'N/A'}</span>
-                        <span class="${motionColor}"><strong>Bewegung:</strong> ${status.motion_status || 'N/A'}</span>
+                        <span class="${motionColor} col-span-3"><strong>Bewegung:</strong> ${status.motion_status || 'N/A'}</span>
                     </div>
                 `;
-                    statusContainer.appendChild(statusEl);
-                });
-            };
+                statusContainer.appendChild(statusEl);
+            });
+        };
 
-            const renderLog = (logText) => {
-                logContainer.textContent = logText;
-                logContainer.scrollTop = logContainer.scrollHeight;
-            };
+        const renderLog = (logText) => {
+            logContainer.innerHTML = ''; // Clear previous content
+            const lines = logText.split('\n');
+            lines.forEach(line => {
+                const span = document.createElement('span');
+                if (line.includes('ERROR')) {
+                    span.className = 'text-red-400';
+                } else if (line.includes('WARNING')) {
+                    span.className = 'text-yellow-400';
+                } else if (line.includes('DEBUG')) {
+                    span.className = 'text-blue-400';
+                } else {
+                    span.className = 'text-gray-300';
+                }
+                span.textContent = line + '\n';
+                logContainer.appendChild(span);
+            });
+            logContainer.scrollTop = logContainer.scrollHeight;
+        };
 
-            const openSceneModal = (sceneName = null) => {
-                const isEditing = sceneName !== null;
-                const scene = isEditing ? config.scenes[sceneName] : { status: true, bri: 128, sat: 254, ct: 300, t_time: 10 };
-                const modal = document.getElementById('modal-scene');
+        const openSceneModal = (sceneName = null) => {
+            const isEditing = sceneName !== null;
+            const scene = isEditing ? config.scenes[sceneName] : { status: true, bri: 128, sat: 254, ct: 300, t_time: 10 };
+            const modal = document.getElementById('modal-scene');
+            
+            const isColorMode = scene.hue !== undefined;
 
-                const isColorMode = scene.hue !== undefined;
-
-                modal.innerHTML = `
+            modal.innerHTML = `
                 <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4">
                     <div class="p-6">
                         <h3 class="text-2xl font-bold mb-4">${isEditing ? 'Szene bearbeiten' : 'Neue Szene erstellen'}</h3>
@@ -377,36 +382,36 @@
                     </div>
                 </div>
             `;
-                modal.classList.remove('hidden');
+            modal.classList.remove('hidden');
 
-                colorPicker = new iro.ColorPicker('#color-picker-container', {
-                    width: 250,
-                    color: isColorMode ? { h: (scene.hue || 0) / 65535 * 360, s: (scene.sat || 0) / 2.54, v: 100 } : '#fff',
-                    borderWidth: 1,
-                    borderColor: '#ccc',
-                    layout: [{ component: iro.ui.Wheel }, { component: iro.ui.Slider, options: { sliderType: 'saturation' } }]
+            colorPicker = new iro.ColorPicker('#color-picker-container', {
+                width: 250,
+                color: isColorMode ? { h: (scene.hue || 0) / 65535 * 360, s: (scene.sat || 0) / 2.54, v: 100 } : '#fff',
+                borderWidth: 1,
+                borderColor: '#ccc',
+                layout: [ { component: iro.ui.Wheel }, { component: iro.ui.Slider, options: { sliderType: 'saturation' } } ]
+            });
+
+            document.querySelectorAll('input[name="color-mode"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    document.getElementById('ct-controls').classList.toggle('hidden', e.target.value !== 'ct');
+                    document.getElementById('color-controls').classList.toggle('hidden', e.target.value !== 'color');
                 });
+            });
+        };
 
-                document.querySelectorAll('input[name="color-mode"]').forEach(radio => {
-                    radio.addEventListener('change', (e) => {
-                        document.getElementById('ct-controls').classList.toggle('hidden', e.target.value !== 'ct');
-                        document.getElementById('color-controls').classList.toggle('hidden', e.target.value !== 'color');
-                    });
-                });
-            };
-
-            const openEditRoutineModal = (routineIndex) => {
-                const routine = config.routines[routineIndex];
-                const modal = document.getElementById('modal-routine');
-                const sceneOptions = Object.keys(config.scenes).map(name => `<option value="${name}">${name}</option>`).join('');
-                const sectionNames = ['morning', 'day', 'evening', 'night'];
-
-                const sectionsHtml = sectionNames.map(name => {
-                    const section = routine[name] || { scene_name: 'off', x_scene_name: 'off', bri_check: false, max_light_level: 0, motion_check: false, wait_time: { min: 5, sec: 0 }, do_not_disturb: false };
-                    const waitTime = section.wait_time || { min: 5, sec: 0 };
-                    return `
+        const openEditRoutineModal = (routineIndex) => {
+            const routine = config.routines[routineIndex];
+            const modal = document.getElementById('modal-routine');
+            const sceneOptions = Object.keys(config.scenes).map(name => `<option value="${name}">${name}</option>`).join('');
+            const sectionNames = ['morning', 'day', 'evening', 'night'];
+            
+            const sectionsHtml = sectionNames.map(name => {
+                const section = routine[name] || { scene_name: 'off', x_scene_name: 'off', bri_check: false, max_light_level: 0, motion_check: false, wait_time: {min: 5, sec: 0}, do_not_disturb: false };
+                const waitTime = section.wait_time || {min: 5, sec: 0};
+                return `
                 <div class="p-4 border rounded-lg" data-section-name="${name}">
-                    <h5 class="font-semibold capitalize mb-3 text-lg">${name}</h5>
+                    <h5 class="font-semibold capitalize mb-3 text-lg flex items-center">${icons[name] || ''} ${name}</h5>
                     
                     <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                         <!-- Szenen -->
@@ -435,7 +440,7 @@
                 </div>
             `}).join('');
 
-                modal.innerHTML = `
+            modal.innerHTML = `
                 <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4">
                     <div class="p-6">
                         <h3 class="text-2xl font-bold mb-4">Routine bearbeiten</h3>
@@ -448,11 +453,11 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Startzeit (Gesamt)</label>
-                                    <input type="time" id="routine-start-time" value="${String(routine.daily_time.H1).padStart(2, '0')}:${String(routine.daily_time.M1).padStart(2, '0')}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <input type="time" id="routine-start-time" value="${String(routine.daily_time.H1).padStart(2,'0')}:${String(routine.daily_time.M1).padStart(2,'0')}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Endzeit (Gesamt)</label>
-                                    <input type="time" id="routine-end-time" value="${String(routine.daily_time.H2).padStart(2, '0')}:${String(routine.daily_time.M2).padStart(2, '0')}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <input type="time" id="routine-end-time" value="${String(routine.daily_time.H2).padStart(2,'0')}:${String(routine.daily_time.M2).padStart(2,'0')}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                                 </div>
                             </div>
                             <div class="border-t pt-4 mt-4">
@@ -467,15 +472,15 @@
                     </div>
                 </div>
             `;
-                modal.classList.remove('hidden');
-            };
+            modal.classList.remove('hidden');
+        };
+        
+        const openCreateRoutineModal = () => {
+             const modal = document.getElementById('modal-routine');
+             const groupOptions = bridgeData.groups.map(g => `<option value="${g.id}|${g.name}">${g.name}</option>`).join('');
+             const sensorOptions = bridgeData.sensors.map(s => `<option value="${s.id}">${s.name} (ID: ${s.id})</option>`).join('');
 
-            const openCreateRoutineModal = () => {
-                const modal = document.getElementById('modal-routine');
-                const groupOptions = bridgeData.groups.map(g => `<option value="${g.id}|${g.name}">${g.name}</option>`).join('');
-                const sensorOptions = bridgeData.sensors.map(s => `<option value="${s.id}">${s.name} (ID: ${s.id})</option>`).join('');
-
-                modal.innerHTML = `
+             modal.innerHTML = `
                 <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4">
                     <div class="p-6">
                         <h3 class="text-2xl font-bold mb-4">Neue Routine erstellen</h3>
@@ -503,228 +508,235 @@
                     </div>
                 </div>
              `;
-                modal.classList.remove('hidden');
+             modal.classList.remove('hidden');
+        };
+
+        const closeModal = () => {
+            document.getElementById('modal-scene').classList.add('hidden');
+            document.getElementById('modal-routine').classList.add('hidden');
+        };
+
+        const handleSaveScene = () => {
+            const originalName = document.getElementById('scene-original-name').value;
+            const newName = document.getElementById('scene-name').value.trim().replace(/\s+/g, '_').toLowerCase();
+            if (!newName) { showToast("Szenen-Name darf nicht leer sein.", true); return; }
+
+            const newScene = {
+                status: document.getElementById('scene-status').checked,
+                bri: parseInt(document.getElementById('scene-bri').value),
+                t_time: 10
             };
 
-            const closeModal = () => {
-                document.getElementById('modal-scene').classList.add('hidden');
-                document.getElementById('modal-routine').classList.add('hidden');
-            };
-
-            const handleSaveScene = () => {
-                const originalName = document.getElementById('scene-original-name').value;
-                const newName = document.getElementById('scene-name').value.trim().replace(/\s+/g, '_').toLowerCase();
-                if (!newName) { showToast("Szenen-Name darf nicht leer sein.", true); return; }
-
-                const newScene = {
-                    status: document.getElementById('scene-status').checked,
-                    bri: parseInt(document.getElementById('scene-bri').value),
-                    t_time: 10
-                };
-
-                const mode = document.querySelector('input[name="color-mode"]:checked').value;
-                if (mode === 'color') {
-                    if (colorPicker) {
-                        const hsv = colorPicker.color.hsv;
-                        newScene.hue = Math.round(hsv.h / 360 * 65535);
-                        newScene.sat = Math.round(hsv.s * 2.54);
-                        delete newScene.ct;
-                    }
-                } else {
-                    newScene.ct = parseInt(document.getElementById('scene-ct').value);
-                    newScene.sat = 0;
-                    delete newScene.hue;
+            const mode = document.querySelector('input[name="color-mode"]:checked').value;
+            if (mode === 'color') {
+                if(colorPicker) {
+                    const hsv = colorPicker.color.hsv;
+                    newScene.hue = Math.round(hsv.h / 360 * 65535);
+                    newScene.sat = Math.round(hsv.s * 2.54);
+                    delete newScene.ct;
                 }
+            } else {
+                newScene.ct = parseInt(document.getElementById('scene-ct').value);
+                newScene.sat = 0;
+                delete newScene.hue;
+            }
 
-                if (originalName && originalName !== newName) { delete config.scenes[originalName]; }
-                config.scenes[newName] = newScene;
-                renderAll();
-                closeModal();
-                showToast("Szene gespeichert. Globale Speicherung nicht vergessen!");
-            };
+            if (originalName && originalName !== newName) { delete config.scenes[originalName]; }
+            config.scenes[newName] = newScene;
+            renderAll();
+            closeModal();
+            showToast("Szene gespeichert. Globale Speicherung nicht vergessen!");
+        };
 
-            const handleSaveEditedRoutine = () => {
-                const routineIndex = document.getElementById('routine-index').value;
-                if (routineIndex === '') return;
+        const handleSaveEditedRoutine = () => {
+            const routineIndex = document.getElementById('routine-index').value;
+            if (routineIndex === '') return;
 
-                const updatedRoutine = config.routines[routineIndex];
-                updatedRoutine.name = document.getElementById('routine-name').value;
+            const updatedRoutine = config.routines[routineIndex];
+            updatedRoutine.name = document.getElementById('routine-name').value;
+            
+            const [startH, startM] = document.getElementById('routine-start-time').value.split(':');
+            const [endH, endM] = document.getElementById('routine-end-time').value.split(':');
+            updatedRoutine.daily_time = { H1: parseInt(startH), M1: parseInt(startM), H2: parseInt(endH), M2: parseInt(endM) };
 
-                const [startH, startM] = document.getElementById('routine-start-time').value.split(':');
-                const [endH, endM] = document.getElementById('routine-end-time').value.split(':');
-                updatedRoutine.daily_time = { H1: parseInt(startH), M1: parseInt(startM), H2: parseInt(endH), M2: parseInt(endM) };
-
-                document.querySelectorAll('#sections-editor > div').forEach(sectionEl => {
-                    const name = sectionEl.dataset.sectionName;
-                    if (name) {
-                        updatedRoutine[name] = {
-                            scene_name: sectionEl.querySelector('.section-scene-name').value,
-                            x_scene_name: sectionEl.querySelector('.section-x-scene-name').value,
-                            bri_check: sectionEl.querySelector('.section-bri-check').checked,
-                            max_light_level: parseInt(sectionEl.querySelector('.section-max-light-level').value),
-                            motion_check: sectionEl.querySelector('.section-motion-check').checked,
-                            wait_time: {
-                                min: parseInt(sectionEl.querySelector('.section-wait-time-min').value) || 0,
-                                sec: parseInt(sectionEl.querySelector('.section-wait-time-sec').value) || 0
-                            },
-                            do_not_disturb: sectionEl.querySelector('.section-do-not-disturb').checked
-                        };
-                    }
-                });
-
-                renderAll();
-                closeModal();
-                showToast("Routine aktualisiert. Globale Speicherung nicht vergessen!");
-            };
-
-            const handleCreateNewRoutine = () => {
-                const name = document.getElementById('new-routine-name').value;
-                const [groupId, groupName] = document.getElementById('new-routine-group').value.split('|');
-                const sensorId = document.getElementById('new-routine-sensor').value;
-
-                if (!name || !groupId) {
-                    showToast("Bitte Routine-Name und Raum ausfüllen.", true);
-                    return;
-                }
-
-                if (!config.rooms) config.rooms = [];
-                if (!config.routines) config.routines = [];
-
-                if (!config.rooms.some(r => r.name === groupName)) {
-                    const newRoom = {
-                        name: groupName,
-                        group_ids: [parseInt(groupId)],
-                        switch_ids: []
+            document.querySelectorAll('#sections-editor > div').forEach(sectionEl => {
+                const name = sectionEl.dataset.sectionName;
+                if(name) {
+                    updatedRoutine[name] = {
+                        scene_name: sectionEl.querySelector('.section-scene-name').value,
+                        x_scene_name: sectionEl.querySelector('.section-x-scene-name').value,
+                        bri_check: sectionEl.querySelector('.section-bri-check').checked,
+                        max_light_level: parseInt(sectionEl.querySelector('.section-max-light-level').value),
+                        motion_check: sectionEl.querySelector('.section-motion-check').checked,
+                        wait_time: {
+                            min: parseInt(sectionEl.querySelector('.section-wait-time-min').value) || 0,
+                            sec: parseInt(sectionEl.querySelector('.section-wait-time-sec').value) || 0
+                        },
+                        do_not_disturb: sectionEl.querySelector('.section-do-not-disturb').checked
                     };
-                    if (sensorId) {
-                        newRoom.sensor_id = parseInt(sensorId);
-                    }
-                    config.rooms.push(newRoom);
                 }
+            });
 
-                const newRoutine = {
-                    name: name,
-                    room_name: groupName,
-                    daily_time: { H1: 7, M1: 0, H2: 23, M2: 0 },
-                    morning: { scene_name: "warm_min", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: { min: 2, sec: 0 }, do_not_disturb: true },
-                    day: { scene_name: "warm_mid", x_scene_name: "off", bri_check: true, max_light_level: 18000, motion_check: true, wait_time: { min: 5, sec: 0 }, do_not_disturb: true },
-                    evening: { scene_name: "warm_max", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: { min: 10, sec: 0 }, do_not_disturb: false },
-                    night: { scene_name: "night", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: { min: 1, sec: 0 }, do_not_disturb: false }
+            renderAll();
+            closeModal();
+            showToast("Routine aktualisiert. Globale Speicherung nicht vergessen!");
+        };
+        
+        const handleCreateNewRoutine = () => {
+            const name = document.getElementById('new-routine-name').value;
+            const [groupId, groupName] = document.getElementById('new-routine-group').value.split('|');
+            const sensorId = document.getElementById('new-routine-sensor').value;
+
+            if (!name || !groupId) {
+                showToast("Bitte Routine-Name und Raum ausfüllen.", true);
+                return;
+            }
+            
+            if (!config.rooms) config.rooms = [];
+            if (!config.routines) config.routines = [];
+
+            if (!config.rooms.some(r => r.name === groupName)) {
+                const newRoom = {
+                    name: groupName,
+                    group_ids: [parseInt(groupId)],
+                    switch_ids: []
                 };
-                config.routines.push(newRoutine);
-
-                renderAll();
-                closeModal();
-                showToast("Routine erstellt. Globale Speicherung nicht vergessen!");
-            };
-
-            const saveFullConfig = async () => {
-                saveButton.disabled = true;
-                saveButton.textContent = 'Speichere...';
-                try {
-                    const response = await fetch('/api/config', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(config)
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.error);
-                    showToast(result.message);
-                } catch (error) {
-                    showToast(`Fehler: ${error.message}`, true);
-                } finally {
-                    saveButton.disabled = false;
-                    saveButton.textContent = 'Speichern und Alle Routinen neu starten';
+                if (sensorId) {
+                    newRoom.sensor_id = parseInt(sensorId);
                 }
+                config.rooms.push(newRoom);
+            }
+
+            const newRoutine = {
+                name: name,
+                room_name: groupName,
+                enabled: true,
+                daily_time: { H1: 7, M1: 0, H2: 23, M2: 0 },
+                morning: { scene_name: "warm_min", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: {min: 2, sec: 0}, do_not_disturb: true },
+                day: { scene_name: "warm_mid", x_scene_name: "off", bri_check: true, max_light_level: 18000, motion_check: true, wait_time: {min: 5, sec: 0}, do_not_disturb: true },
+                evening: { scene_name: "warm_max", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: {min: 10, sec: 0}, do_not_disturb: false },
+                night: { scene_name: "night", x_scene_name: "off", bri_check: false, max_light_level: 0, motion_check: true, wait_time: {min: 1, sec: 0}, do_not_disturb: false }
             };
+            config.routines.push(newRoutine);
 
-            const updateStatus = async () => {
-                try {
-                    const [statusRes, logRes] = await Promise.all([
-                        fetch('/api/status'),
-                        fetch('/api/log')
-                    ]);
-                    const statuses = await statusRes.json();
-                    const logText = await logRes.text();
-                    renderStatus(statuses);
-                    renderLog(logText);
-                } catch (error) {
-                    console.error("Fehler beim Abrufen des Status:", error);
-                }
-            };
-
-            const startStatusUpdates = () => {
-                if (statusInterval) clearInterval(statusInterval);
-                updateStatus();
-                statusInterval = setInterval(updateStatus, 5000);
-            };
-
-            const updateClock = () => {
-                const now = new Date();
-                clockElement.textContent = now.toLocaleTimeString('de-DE');
-            };
-
-            document.body.addEventListener('click', (e) => {
-                const action = e.target.dataset.action;
-                const target = e.target;
-
-                switch (action) {
-                    case 'delete-scene':
-                        if (confirm(`Möchtest du die Szene "${target.dataset.name}" wirklich löschen?`)) {
-                            delete config.scenes[target.dataset.name];
-                            renderAll();
-                            showToast("Szene gelöscht.");
-                        }
-                        break;
-                    case 'delete-routine':
-                        if (confirm(`Möchtest du die Routine "${config.routines[target.dataset.index].name}" wirklich löschen?`)) {
-                            config.routines.splice(target.dataset.index, 1);
-                            renderAll();
-                            showToast("Routine gelöscht.");
-                        }
-                        break;
-                    case 'edit-scene': openSceneModal(target.dataset.name); break;
-                    case 'edit-routine': openEditRoutineModal(target.dataset.index); break;
-                    case 'save-scene': handleSaveScene(); break;
-                    case 'save-routine': handleSaveEditedRoutine(); break;
-                    case 'create-routine': handleCreateNewRoutine(); break;
-                    case 'cancel-modal': closeModal(); break;
-                }
-            });
-
-            document.getElementById('btn-new-scene').addEventListener('click', () => openSceneModal());
-            document.getElementById('btn-new-routine').addEventListener('click', () => openCreateRoutineModal());
-            saveButton.addEventListener('click', saveFullConfig);
-
-            const tabs = [{ btn: 'tab-routines', content: 'content-routines' }, { btn: 'tab-scenes', content: 'content-scenes' }, { btn: 'tab-status', content: 'content-status' }];
-            tabs.forEach(tabInfo => {
-                document.getElementById(tabInfo.btn).addEventListener('click', () => {
-                    tabs.forEach(t => {
-                        document.getElementById(t.btn).classList.remove('tab-active');
-                        document.getElementById(t.content).classList.add('hidden');
-                    });
-                    document.getElementById(tabInfo.btn).classList.add('tab-active');
-                    document.getElementById(tabInfo.content).classList.remove('hidden');
-                    if (tabInfo.btn === 'tab-status') {
-                        startStatusUpdates();
-                    } else {
-                        if (statusInterval) clearInterval(statusInterval);
-                    }
+            renderAll();
+            closeModal();
+            showToast("Routine erstellt. Globale Speicherung nicht vergessen!");
+        };
+        
+        const saveFullConfig = async () => {
+            saveButton.disabled = true;
+            saveButton.textContent = 'Speichere...';
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
                 });
-            });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+                showToast(result.message);
+            } catch (error) {
+                showToast(`Fehler: ${error.message}`, true);
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Speichern und Alle Routinen neu starten';
+            }
+        };
 
-            const showToast = (message, isError = false) => {
-                toastElement.textContent = message;
-                toastElement.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300 ${isError ? 'bg-red-600' : 'bg-gray-900'}`;
-                toastElement.classList.remove('hidden');
-                setTimeout(() => toastElement.classList.add('hidden'), 4000);
-            };
-            const showLoading = () => routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Lade Daten von der Bridge...</p>`;
-            const hideLoading = () => { };
+        const updateStatus = async () => {
+            try {
+                const [statusRes, logRes] = await Promise.all([
+                    fetch('/api/status'),
+                    fetch('/api/log')
+                ]);
+                const statuses = await statusRes.json();
+                const logText = await logRes.text();
+                renderStatus(statuses);
+                renderLog(logText);
+            } catch (error) {
+                console.error("Fehler beim Abrufen des Status:", error);
+            }
+        };
 
-            init();
+        const startStatusUpdates = () => {
+            if (statusInterval) clearInterval(statusInterval);
+            updateStatus();
+            statusInterval = setInterval(updateStatus, 30000); // Reduziert auf 30 Sekunden
+        };
+
+        const updateClock = () => {
+            const now = new Date();
+            clockElement.textContent = now.toLocaleTimeString('de-DE');
+        };
+
+        document.body.addEventListener('click', (e) => {
+            const action = e.target.dataset.action;
+            const target = e.target;
+
+            switch(action) {
+                case 'toggle-routine':
+                    const routineIndex = parseInt(target.dataset.index);
+                    config.routines[routineIndex].enabled = target.checked;
+                    showToast(`Routine '${config.routines[routineIndex].name}' ${target.checked ? 'aktiviert' : 'deaktiviert'}.`);
+                    saveFullConfig();
+                    break;
+                case 'delete-scene':
+                    if (confirm(`Möchtest du die Szene "${target.dataset.name}" wirklich löschen?`)) {
+                        delete config.scenes[target.dataset.name];
+                        renderAll();
+                        showToast("Szene gelöscht.");
+                    }
+                    break;
+                case 'delete-routine':
+                    if (confirm(`Möchtest du die Routine "${config.routines[target.dataset.index].name}" wirklich löschen?`)) {
+                        config.routines.splice(target.dataset.index, 1);
+                        renderAll();
+                        showToast("Routine gelöscht.");
+                    }
+                    break;
+                case 'edit-scene': openSceneModal(target.dataset.name); break;
+                case 'edit-routine': openEditRoutineModal(target.dataset.index); break;
+                case 'save-scene': handleSaveScene(); break;
+                case 'save-routine': handleSaveEditedRoutine(); break;
+                case 'create-routine': handleCreateNewRoutine(); break;
+                case 'cancel-modal': closeModal(); break;
+            }
         });
+
+        document.getElementById('btn-new-scene').addEventListener('click', () => openSceneModal());
+        document.getElementById('btn-new-routine').addEventListener('click', () => openCreateRoutineModal());
+        saveButton.addEventListener('click', saveFullConfig);
+        refreshButton.addEventListener('click', updateStatus);
+        
+        const tabs = [{btn: 'tab-routines', content: 'content-routines'}, {btn: 'tab-scenes', content: 'content-scenes'}, {btn: 'tab-status', content: 'content-status'}];
+        tabs.forEach(tabInfo => {
+            document.getElementById(tabInfo.btn).addEventListener('click', () => {
+                tabs.forEach(t => {
+                    document.getElementById(t.btn).classList.remove('tab-active');
+                    document.getElementById(t.content).classList.add('hidden');
+                });
+                document.getElementById(tabInfo.btn).classList.add('tab-active');
+                document.getElementById(tabInfo.content).classList.remove('hidden');
+                if (tabInfo.btn === 'tab-status') {
+                    startStatusUpdates();
+                } else {
+                    if (statusInterval) clearInterval(statusInterval);
+                }
+            });
+        });
+
+        const showToast = (message, isError = false) => {
+            toastElement.textContent = message;
+            toastElement.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300 ${isError ? 'bg-red-600' : 'bg-gray-900'}`;
+            toastElement.classList.remove('hidden');
+            setTimeout(() => toastElement.classList.add('hidden'), 4000);
+        };
+        const showLoading = () => routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Lade Daten von der Bridge...</p>`;
+        const hideLoading = () => {};
+
+        init();
+    });
     </script>
 </body>
-
 </html>
