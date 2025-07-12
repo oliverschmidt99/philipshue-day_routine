@@ -3,6 +3,7 @@ import yaml
 import os
 import subprocess
 import json
+import logging
 from phue import Bridge
 
 app = Flask(__name__)
@@ -11,10 +12,15 @@ STATUS_FILE = 'status.json'
 LOG_FILE = 'info.log'
 MAIN_SCRIPT = 'main.py'
 
+# Deaktiviere die standardmäßigen Flask-Zugriffslogs in der Konsole
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.WARNING)
+
 main_process = None
 bridge_connection = None
 
 def get_bridge_connection():
+    """Stellt eine Singleton-Verbindung zur Bridge her und gibt sie zurück."""
     global bridge_connection
     if bridge_connection is None:
         try:
@@ -30,6 +36,7 @@ def get_bridge_connection():
     return bridge_connection
 
 def restart_main_script():
+    """Stoppt den laufenden main.py Prozess und startet ihn neu."""
     global main_process
     if main_process and main_process.poll() is None:
         print("Beende laufendes Hauptskript...")
