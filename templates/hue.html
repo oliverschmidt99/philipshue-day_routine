@@ -79,7 +79,7 @@
     </style>
 </head>
 
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-50 text-gray-800">
 
     <div class="container mx-auto p-4 md:p-8">
         <header class="mb-6 flex justify-between items-center">
@@ -182,6 +182,13 @@
                 day: '☀️',
                 evening: '🌄',
                 night: '🌕'
+            };
+
+            const sectionColors = {
+                morning: 'bg-yellow-100',
+                day: 'bg-sky-100',
+                evening: 'bg-orange-100',
+                night: 'bg-indigo-100'
             };
 
             const init = async () => {
@@ -290,7 +297,6 @@
                         const sat = scene.sat / 254 * 100;
                         colorPreviewStyle = `background-color: hsl(${hue}, ${sat}%, 50%);`;
                     } else if (scene.ct !== undefined) {
-                        // KORRIGIERT: Berechnung für die Farbvorschau umgedreht
                         const tempPercent = (scene.ct - 153) / (500 - 153);
                         const red = 255 * tempPercent;
                         const blue = 255 * (1 - tempPercent);
@@ -443,7 +449,7 @@
                     const section = routine[name] || { scene_name: 'off', x_scene_name: 'off', bri_check: false, max_light_level: 0, motion_check: false, wait_time: { min: 5, sec: 0 }, do_not_disturb: false };
                     const waitTime = section.wait_time || { min: 5, sec: 0 };
                     return `
-                <div class="p-4 border rounded-lg" data-section-name="${name}">
+                <div class="p-4 border-2 rounded-lg ${sectionColors[name]}" data-section-name="${name}">
                     <h5 class="font-semibold capitalize mb-3 text-lg flex items-center">${icons[name] || ''} <span class="ml-2">${name}</span></h5>
                     
                     <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
