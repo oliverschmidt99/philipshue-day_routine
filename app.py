@@ -26,10 +26,12 @@ def get_bridge_connection():
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
-            b = Bridge(config['bridge_ip'])
+            # Lese die IP aus den neuen Einstellungen
+            bridge_ip = config.get('settings', {}).get('bridge_ip', '127.0.0.1')
+            b = Bridge(bridge_ip)
             b.connect()
             bridge_connection = b
-            app.logger.info("Bridge-Verbindung für API-Aufrufe hergestellt.")
+            app.logger.info(f"Bridge-Verbindung für API zu {bridge_ip} hergestellt.")
         except Exception as e:
             app.logger.error(f"Konnte keine Bridge-Verbindung für API herstellen: {e}")
             return None

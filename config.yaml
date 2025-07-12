@@ -1,68 +1,50 @@
-bridge_ip: 192.168.178.42
+settings:
+  bridge_ip: 192.168.178.42
+  language: de
+  refresh_rate_sec: 30
 location:
   latitude: 52.2059
   longitude: 8.0755
   elevation: 110
 scenes:
+  'false':
+    status: false
+    bri: 0
+    t_time: 10
   night:
     status: true
     bri: 1
-    sat: 254
     ct: 447
     t_time: 30
   warm_min:
     status: true
-    bri: 29
-    t_time: 10
-    ct: 221
-    sat: 0
+    bri: 80
+    ct: 350
+    t_time: 50
   warm_mid:
     status: true
     bri: 170
-    t_time: 10
-    ct: 500
-    sat: 0
+    ct: 350
+    t_time: 50
   warm_max:
     status: true
     bri: 254
-    t_time: 10
     ct: 500
-    sat: 0
+    t_time: 10
   cold_max:
     status: true
     bri: 254
-    t_time: 10
     ct: 153
-    sat: 0
-  'off':
-    status: false
-    bri: 0
     t_time: 10
-    ct: 300
-    sat: 0
 rooms:
-- name: Wohnzimmer
-  group_ids:
-  - 89
-  switch_ids:
-  - 5
-  - 99
-  sensor_id: 2
-- name: Flur
-  group_ids:
-  - 83
-  switch_ids:
-  - 5
-  - 99
-  sensor_id: 190
 - name: Zimmer_Olli
   group_ids:
   - 1
-  switch_ids: []
   sensor_id: 2
 routines:
 - name: TEST
   room_name: Zimmer_Olli
+  enabled: true
   daily_time:
     H1: 8
     M1: 0
@@ -82,7 +64,7 @@ routines:
     scene_name: warm_max
     x_scene_name: cold_max
     bri_check: false
-    max_light_level: 0
+    max_light_level: 18000
     motion_check: true
     wait_time:
       min: 0
@@ -92,7 +74,7 @@ routines:
     scene_name: warm_min
     x_scene_name: warm_max
     bri_check: false
-    max_light_level: 10000
+    max_light_level: 0
     motion_check: true
     wait_time:
       min: 0
@@ -108,4 +90,3 @@ routines:
       min: 0
       sec: 0
     do_not_disturb: false
-  enabled: true

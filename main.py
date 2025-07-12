@@ -75,7 +75,14 @@ def main():
         return
 
     try:
-        bridge = connect_bridge(config['bridge_ip'], log)
+        # KORRIGIERT: Lese die IP-Adresse aus dem neuen 'settings'-Block
+        settings = config.get('settings', {})
+        bridge_ip = settings.get('bridge_ip')
+        if not bridge_ip:
+            log.error("Bridge-IP nicht in den Einstellungen der config.yaml gefunden.")
+            return
+            
+        bridge = connect_bridge(bridge_ip, log)
         sun_times = get_sun_times(config.get('location'), log)
         
         scenes = {name: Scene(**params) for name, params in config.get('scenes', {}).items()}
@@ -119,7 +126,6 @@ def main():
 
     except (KeyboardInterrupt, SystemExit):
         log.info("Programm wird beendet.")
-        # KORRIGIERT: Prüft, ob die Datei existiert, bevor sie gelöscht wird.
         if os.path.exists(STATUS_FILE):
             try:
                 os.remove(STATUS_FILE)

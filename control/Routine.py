@@ -39,20 +39,20 @@ class Routine:
         start = self.start_time
         end = self.end_time
 
-        # 1. Zuerst prüfen, ob die Routine überhaupt aktiv ist.
+        # Prüfen, ob die Routine überhaupt aktiv ist.
+        # Dies berücksichtigt auch Zeiträume, die über Mitternacht gehen.
         is_active = (start <= end and start <= current_time < end) or \
                     (start > end and (current_time >= start or current_time < end))
         
         if not is_active:
             return None
 
-        # 2. Wenn aktiv, den spezifischen Zeitraum bestimmen.
+        # Wenn aktiv, den spezifischen Zeitraum bestimmen.
         sunrise = self.sun_times['sunrise'].time() if self.sun_times else time(6, 30)
         sunset = self.sun_times['sunset'].time() if self.sun_times else time(20, 0)
 
         # Hierarchische Prüfung, wie von dir vorgeschlagen
         if start <= current_time < sunrise:
-            # Gilt nur, wenn der Start vor Sonnenaufgang liegt
             return "morning"
         elif sunrise <= current_time < sunset:
             return "day"
@@ -60,7 +60,6 @@ class Routine:
             return "evening"
         else:
             # Alle anderen Fälle innerhalb des aktiven Zeitraums sind "Nacht".
-            # Das deckt die Zeit von 00:00 bis zum Morgen und vom Abend bis zum Ende ab.
             return "night"
 
     def get_status(self):

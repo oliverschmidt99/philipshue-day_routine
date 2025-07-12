@@ -1,0 +1,25 @@
+<div id="content-settings"
+    class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-2 border-gray-200 dark:border-gray-700">
+    <h2 class="text-2xl font-semibold mb-4" data-lang-key="settings_title">Einstellungen</h2>
+    <div class="space-y-4 max-w-md">
+        <div>
+            <label for="setting-lang" class="block text-sm font-medium" data-lang-key="label_lang">Sprache</label>
+            <select id="setting-lang"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700">
+                <option value="de">Deutsch</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        <div>
+            <label for="setting-ip" class="block text-sm font-medium" data-lang-key="label_ip">Bridge IP-Adresse</label>
+            <input type="text" id="setting-ip"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700">
+        </div>
+        <div>
+            <label for="setting-refresh" class="block text-sm font-medium" data-lang-key="label_refresh">Status
+                Aktualisierungsrate (Sekunden)</label>
+            <input type="number" id="setting-refresh"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700">
+        </div>
+    </div>
+</div>
