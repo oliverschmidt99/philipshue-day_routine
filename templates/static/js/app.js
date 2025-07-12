@@ -676,7 +676,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const hideLoading = () => {};
 
     init();
-    });
-    </script>
-</body>
-</html>
+});
