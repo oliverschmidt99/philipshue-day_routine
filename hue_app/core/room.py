@@ -1,4 +1,4 @@
-from control.scene import Scene
+from .scene import Scene
 
 class Room:
     """
@@ -24,6 +24,7 @@ class Room:
 
         for group_id in self.group_ids:
             try:
+                # Stellt sicher, dass die ID ein Integer ist
                 self.bridge.set_group(int(group_id), state)
             except Exception as e:
                 self.log.error(f"Fehler beim Setzen von Gruppe {group_id} in Raum '{self.name}': {e}")
