@@ -1,0 +1,10 @@
+[
+  {
+    "name": "TEST",
+    "enabled": true,
+    "period": "day",
+    "last_scene": "warm_max",
+    "motion_status": "Keine Bewegung",
+    "motion_active": false
+  }
+]
