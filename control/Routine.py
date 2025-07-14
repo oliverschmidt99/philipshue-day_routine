@@ -39,20 +39,20 @@ class Routine:
         start = self.start_time
         end = self.end_time
 
-        # Prüfen, ob die Routine überhaupt aktiv ist.
-        # Dies berücksichtigt auch Zeiträume, die über Mitternacht gehen.
+        # 1. Zuerst prüfen, ob die Routine überhaupt aktiv ist.
         is_active = (start <= end and start <= current_time < end) or \
                     (start > end and (current_time >= start or current_time < end))
         
         if not is_active:
             return None
 
-        # Wenn aktiv, den spezifischen Zeitraum bestimmen.
-        sunrise = self.sun_times['sunrise'].time() if self.sun_times and 'sunrise' in self.sun_times else time(6, 30)
-        sunset = self.sun_times['sunset'].time() if self.sun_times and 'sunset' in self.sun_times else time(20, 0)
+        # 2. Wenn aktiv, den spezifischen Zeitraum bestimmen.
+        sunrise = self.sun_times['sunrise'].time() if self.sun_times else time(6, 30)
+        sunset = self.sun_times['sunset'].time() if self.sun_times else time(20, 0)
 
         # Hierarchische Prüfung, wie von dir vorgeschlagen
         if start <= current_time < sunrise:
+            # Gilt nur, wenn der Start vor Sonnenaufgang liegt
             return "morning"
         elif sunrise <= current_time < sunset:
             return "day"
@@ -60,6 +60,7 @@ class Routine:
             return "evening"
         else:
             # Alle anderen Fälle innerhalb des aktiven Zeitraums sind "Nacht".
+            # Das deckt die Zeit von 00:00 bis zum Morgen und vom Abend bis zum Ende ab.
             return "night"
 
     def get_status(self):
@@ -93,14 +94,14 @@ class Routine:
         if not self.enabled:
             if self.current_period is not None:
                 self.log.info(f"[{self.name}] Routine ist deaktiviert, wird übersprungen.")
-                self.current_period = None # Setzt den Zustand zurück
+                self.current_period = None
             return
 
         period = self.get_current_period(now)
         
         if not period:
             if self.current_period is not None:
-                self.log.info(f"[{self.name}] Routine jetzt außerhalb des aktiven Zeitraums.")
+                self.log.info(f"[{self.name}] Routine jetzt inaktiv.")
             self.current_period = None
             return
 
@@ -111,26 +112,23 @@ class Routine:
         normal_scene_name = section_config.get('scene_name')
         motion_scene_name = section_config.get('x_scene_name')
 
-        # Logik für den Wechsel des Zeitraums
         if period != self.current_period:
-            self.log.info(f"---------- Zustandswechsel für Routine '{self.name}' ----------")
+            self.log.info(f"---------- Zustand-Wechsel für Routine '{self.name}' ----------")
             self.log.info(f"Neuer Zustand: {period.upper()}")
             scene_obj = self.scenes.get(normal_scene_name)
             if scene_obj:
-                self.log.info(f"Setze Normal-Szene für neuen Zustand: '{normal_scene_name}'.")
+                self.log.info(f"Setze Normal-Szene: '{normal_scene_name}'.")
                 self.room.turn_groups(scene_obj)
                 self.last_triggered_scene_name = normal_scene_name
             self.current_period = period
             self.last_motion_time = None
             self.is_in_motion_state = False
 
-        # Bewegungslogik nur ausführen, wenn ein Sensor vorhanden ist und die Prüfung aktiviert ist
         if not self.sensor or not section_config.get('motion_check', False):
             return
 
         has_motion = self.sensor.get_motion()
         
-        # Loggt Bewegung nur einmal pro Ereignis
         if has_motion:
             if not self.motion_logged:
                 self.log.info(f"[{self.name}] Bewegung erkannt.")
@@ -138,10 +136,10 @@ class Routine:
         else:
             self.motion_logged = False
 
-        # "Bitte nicht stören"-Funktion
+
         if section_config.get('do_not_disturb', False) and self.room.is_any_light_on():
             if has_motion:
-                self.last_motion_time = now # Aktualisiere Zeit, um Reset-Timer zu verschieben
+                self.last_motion_time = now
             self.log.debug(f"[{self.name}] 'Nicht stören' aktiv und Licht ist an. Ignoriere Trigger.")
             return
 
@@ -151,7 +149,6 @@ class Routine:
             
             scene_to_trigger = motion_scene_name
             
-            # Helligkeits-Check
             if section_config.get('bri_check', False):
                 brightness = self.sensor.get_brightness()
                 max_light = section_config.get('max_light_level', 0)
@@ -160,7 +157,6 @@ class Routine:
                     self.log.debug(f"[{self.name}] Zu hell für Bewegungs-Szene. Keine Aktion.")
                     return
 
-            # Szene nur auslösen, wenn es nicht schon die aktive ist
             if self.last_triggered_scene_name != scene_to_trigger:
                 scene_obj = self.scenes.get(scene_to_trigger)
                 if scene_obj:
@@ -174,7 +170,6 @@ class Routine:
                 wait_time_conf = section_config.get('wait_time', {'min': 5, 'sec': 0})
                 wait_time_delta = timedelta(minutes=wait_time_conf.get('min', 0), seconds=wait_time_conf.get('sec', 0))
 
-                # Wenn die Wartezeit seit der letzten Bewegung abgelaufen ist
                 if self.last_motion_time and (now > self.last_motion_time + wait_time_delta):
                     scene_obj = self.scenes.get(normal_scene_name)
                     if scene_obj:

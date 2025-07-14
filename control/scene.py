@@ -8,7 +8,7 @@ class Scene:
         self.bri = bri
         self.sat = sat
         self.ct = ct
-        self.hue = hue
+        self.hue = hue # Neuer Parameter für den Farbton
         self.t_time = t_time
 
     def get_state(self, t_time_overwrite: int = None) -> dict:
