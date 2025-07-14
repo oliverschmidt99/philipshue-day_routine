@@ -1,5 +1,4 @@
 # src/daily_time_span.py
-# (Inhaltlich unverändert, nur Kommentare bereinigt)
 
 from datetime import time
 
@@ -12,13 +11,14 @@ class DailyTimeSpan:
         self.time_start = time(H1, M1)
         self.time_end = time(H2, M2)
 
-    def check_time(self, t_now):
+    def check_time(self, t_now: time):
         """
         Checks if the current time is within the defined span.
 
         Handles time spans that cross midnight.
         """
-        current_time = t_now.time()
+        # KORREKTUR: Wir verwenden t_now direkt, da es bereits ein time-Objekt ist.
+        current_time = t_now
         
         if self.time_start <= self.time_end:
             # e.g., 08:00 - 22:00

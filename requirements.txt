@@ -1,5 +1,0 @@
-phue
-Flask
-PyYAML
-requests
-astral
