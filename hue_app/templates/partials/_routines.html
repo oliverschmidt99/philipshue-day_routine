@@ -1,9 +1,20 @@
 <!DOCTYPE html>
-<div id="content-routines">
-    <div class="flex justify-end mb-4">
-        <button type="button" id="btn-new-routine"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105"
-            data-lang-key="btn_new_routine">+ Neue Routine</button>
+<!-- ====================================================================== -->
+<!-- ROUTINES TAB: Zeigt eine Liste der konfigurierten Routinen an.      -->
+<!-- ====================================================================== -->
+<div id="routines" class="tab-content hidden">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Routinen</h2>
+        <!-- Dieser Button öffnet den "Neue Routine"-Dialog -->
+        <button type="button" id="add-routine-btn"
+            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+            <span class="material-icons">add</span>
+            <span>Neue Routine</span>
+        </button>
     </div>
-    <div id="routines-container" class="space-y-6"></div>
+
+    <!-- Dieser Container wird von app.js mit den Routinen gefüllt -->
+    <div id="routines-list" class="space-y-4">
+        <p>Lade Routinen...</p>
+    </div>
 </div>

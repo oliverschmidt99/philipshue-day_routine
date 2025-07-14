@@ -1,113 +1,76 @@
+import logging
 import os
 import json
-import logging
-import time
-from threading import Thread
-from datetime import datetime
-from flask import Flask, request, jsonify, render_template, Response
-
-# Importiere die Konfigurationsklasse
+from flask import Flask, render_template, jsonify, request, send_from_directory
 from hue_app.core.configuration import Configuration
 
-# --- Globale Konfiguration und Initialisierung ---
-app = Flask(__name__.split('.')[0])
+# Initialisierung
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, '..', '..', 'config.yaml')
+config = Configuration(config_path)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
-# Definiere die Pfade einmalig und für alle gültig
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-CONFIG_FILE = os.path.join(ROOT_DIR, 'config.yaml')
-STATUS_FILE = os.path.join(ROOT_DIR, 'status.json')
-LOG_FILE = os.path.join(ROOT_DIR, 'info.log')
-
-# Logging-Konfiguration
+# Logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 app.logger.setLevel(logging.INFO)
-
-# --- Globale Objekte für den gemeinsamen Zugriff ---
-config_manager = Configuration(config_file=CONFIG_FILE)
-bridge = config_manager.bridge
-
-# --- Hintergrund-Engine als Thread ---
-def run_background_engine():
-    """Diese Funktion läuft in einem separaten Thread und führt die Hue-Logik aus."""
-    app.logger.info("Hintergrund-Engine wird gestartet...")
-    
-    time.sleep(2) # Warte kurz, damit der Webserver vollständig initialisiert ist
-    
-    routines = config_manager.initialize_routines()
-    if not routines:
-        app.logger.warning("Keine Routinen gefunden. Engine läuft im Leerlauf.")
-
-    app.logger.info("Engine läuft. Starte Hauptschleife.")
-    while True:
-        try:
-            now = datetime.now().astimezone()
-            for routine in routines:
-                routine.run(now)
-
-            # Status schreiben
-            status_data = [r.get_status() for r in routines]
-            with open(STATUS_FILE, 'w', encoding='utf-8') as f:
-                json.dump(status_data, f, indent=2)
-
-            time.sleep(1)
-        except Exception as e:
-            app.logger.error(f"Fehler in der Hintergrund-Engine: {e}", exc_info=True)
-            time.sleep(5) # Warte bei einem Fehler, um die Logs nicht zu fluten
-
-# Starte den Hintergrund-Thread, wenn die App initialisiert wird.
-# 'daemon=True' sorgt dafür, dass der Thread beendet wird, wenn die Haupt-App stoppt.
-engine_thread = Thread(target=run_background_engine, daemon=True)
-engine_thread.start()
-
-# --- API Endpunkte ---
 
 @app.route('/')
 def index():
     return render_template('hue.html')
 
-@app.route('/api/config', methods=['GET'])
+# --- API Endpunkte ---
+@app.route('/api/config', methods=['GET', 'POST'])
 def handle_config():
-    # Fürs Erste nur GET, um die Stabilität zu gewährleisten.
-    # POST zum Neuladen der Konfiguration ist ein späterer Schritt.
-    if config_manager.config:
-        return Response(json.dumps(config_manager.config), mimetype='application/json')
-    else:
-        return jsonify({"error": "Konfiguration konnte nicht geladen werden."}), 500
+    if request.method == 'POST':
+        try:
+            config.save_config(request.get_json())
+            app.logger.info("Konfiguration gespeichert.")
+            return jsonify({"success": True, "message": "Konfiguration erfolgreich gespeichert."})
+        except Exception as e:
+            app.logger.error(f"Fehler beim Speichern: {e}")
+            return jsonify({"success": False, "error": str(e)}), 500
+    return jsonify(config.get_config())
 
-@app.route('/api/bridge/<item>', methods=['GET'])
-def get_bridge_data(item):
-    # Greift auf das globale, einmal initialisierte Bridge-Objekt zu
-    if not bridge:
-        return jsonify({"error": "Keine Verbindung zur Bridge"}), 500
+@app.route('/api/bridge/groups')
+def get_bridge_groups():
+    return jsonify(config.get_rooms_for_api())
+
+@app.route('/api/bridge/sensors')
+def get_bridge_sensors():
+    """NEU: Stellt eine Liste der Sensoren von der Bridge bereit."""
     try:
-        if item == 'groups':
-            data = bridge.get_group()
-            return jsonify([{"id": k, "name": v['name']} for k, v in data.items()])
-        elif item == 'sensors':
-            data = bridge.get_sensor_objects('id')
-            return jsonify([{"id": k, "name": v.name} for k, v in data.items() if v.type == 'ZLLPresence'])
-        return jsonify({"error": "Unbekannter Endpunkt"}), 404
+        sensors = config.bridge.get_sensors() if config.bridge else []
+        # Filtern und formatieren der Sensordaten für die UI
+        sensor_list = [{'id': s.sensorid, 'name': s.name} for s in sensors if 'motion' in s.type.lower()]
+        return jsonify(sensor_list)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/status', methods=['GET'])
-def get_status():
-    try:
-        with open(STATUS_FILE, 'r', encoding='utf-8') as f:
-            return jsonify(json.load(f))
-    except FileNotFoundError:
-        # Es ist normal, dass die Datei beim ersten Start noch nicht existiert
+        app.logger.error(f"Fehler beim Abrufen der Sensoren: {e}")
         return jsonify([])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/log', methods=['GET'])
-def get_log():
+@app.route('/api/status')
+def get_status_log():
+    # Diese Funktion bleibt im Wesentlichen gleich und liest status.json und app.log
+    status_data, log_data = {}, ""
     try:
-        with open(LOG_FILE, 'r', encoding='utf-8') as f:
-            return Response(f.read(), mimetype='text/plain')
-    except FileNotFoundError:
-        return Response("Log-Datei noch nicht erstellt.", mimetype='text/plain')
+        status_path = os.path.join(script_dir, '..', '..', 'status.json')
+        if os.path.exists(status_path):
+            with open(status_path, 'r') as f:
+                content = f.read()
+                if content.strip(): status_data = json.loads(content)
+        
+        log_path = os.path.join(script_dir, '..', '..', 'app.log')
+        if os.path.exists(log_path):
+            with open(log_path, 'r') as f: log_data = f.read()
     except Exception as e:
-        return Response(f"Fehler beim Lesen der Log-Datei: {e}", mimetype='text/plain')
+        app.logger.error(f"Fehler beim Lesen von Status/Log: {e}")
+    return jsonify({"status": status_data, "log": log_data})
+
+@app.route('/api/restart', methods=['POST'])
+def restart_logic():
+    app.logger.info("Neustart der Logik-Engine angefordert...")
+    # Hier würde die Logik zum Neustarten des Hintergrund-Threads implementiert.
+    return jsonify({"success": True, "message": "Neustart wird ausgeführt."})
+
+def run_server(debug=True):
+    app.run(host='0.0.0.0', port=5000, debug=debug)

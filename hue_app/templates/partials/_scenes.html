@@ -1,9 +1,20 @@
 <!DOCTYPE html>
-<div id="content-scenes" class="hidden">
-    <div class="flex justify-end mb-4">
-        <button type="button" id="btn-new-scene"
-            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105"
-            data-lang-key="btn_new_scene">+ Neue Szene</button>
+<!-- ====================================================================== -->
+<!-- SCENES TAB: Zeigt eine Liste der konfigurierten Lichtszenen.         -->
+<!-- ====================================================================== -->
+<div id="scenes" class="tab-content hidden">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Szenen</h2>
+        <button type="button"
+            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+            <span class="material-icons">add</span>
+            <span>Neue Szene</span>
+        </button>
     </div>
-    <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <!-- Dieser Container wird von app.js mit den Szenen gefüllt -->
+    <div id="scenes-list" class="space-y-4">
+        <!-- Ladeanzeige für Szenen -->
+        <p>Lade Szenen...</p>
+    </div>
 </div>

@@ -1,46 +1,68 @@
 import logging
 import sys
+from logging.handlers import TimedRotatingFileHandler
+
+# Ein Dictionary, das als Cache dient, um Logger-Instanzen zu speichern.
+_loggers = {}
 
 class Logger:
     """
-    Eine einfache Wrapper-Klasse für das Python-Logging, um
-    Nachrichten in eine Datei und auf die Konsole zu schreiben.
+    Eine Klasse zur Konfiguration eines Loggers.
+    Sie richtet Handler für die Konsolenausgabe und für rotierende Log-Dateien ein.
     """
-    def __init__(self, file_name):
-        # Wir holen den Logger mit einem eindeutigen Namen, um Konflikte zu vermeiden
-        self.logger = logging.getLogger(f"hue_routine_logger_{file_name}")
-        self.logger.setLevel(logging.DEBUG) # Das Gesamtlevel bleibt DEBUG, damit wir die Funktion im Code nutzen können
+    def __init__(self, name='HueFlowLogger', level_str='INFO', log_file="app.log"):
+        self.logger = logging.getLogger(name)
+        
+        # Mapping von Log-Level-Strings auf die Konstanten von logging.
+        levels = {
+            'DEBUG': logging.DEBUG,
+            'INFO': logging.INFO,
+            'WARNING': logging.WARNING,
+            'ERROR': logging.ERROR,
+            'CRITICAL': logging.CRITICAL
+        }
+        level = levels.get(level_str.upper(), logging.INFO)
+        self.logger.setLevel(level)
 
-        # Verhindern, dass Handler mehrfach hinzugefügt werden
+        # Verhindert, dass Log-Nachrichten an übergeordnete Logger weitergegeben werden.
+        self.logger.propagate = False
+
+        # Fügt Handler nur hinzu, wenn der Logger noch keine hat, um Duplikate zu vermeiden.
         if not self.logger.handlers:
-            # Handler für das Schreiben in eine Datei (inkl. Debug-Meldungen)
-            file_handler = logging.FileHandler(file_name, mode='w', encoding='utf-8')
-            file_handler.setLevel(logging.DEBUG)
-            # Detaillierterer Formatter für die Datei, um die Herkunft der Nachricht zu sehen
-            file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
-            file_handler.setFormatter(file_formatter)
-            self.logger.addHandler(file_handler)
+            # Konsolen-Handler (stdout)
+            ch = logging.StreamHandler(sys.stdout)
+            ch.setLevel(level)
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            ch.setFormatter(formatter)
+            self.logger.addHandler(ch)
 
-            # Handler für die Ausgabe auf der Konsole
-            stream_handler = logging.StreamHandler(sys.stdout)
-            # Zeigt nur INFO und höhere Level auf der Konsole an, um sie nicht zu überfluten
-            stream_handler.setLevel(logging.INFO) 
-            stream_formatter = logging.Formatter('%(asctime)s - %(message)s')
-            stream_handler.setFormatter(stream_formatter)
-            self.logger.addHandler(stream_handler)
+            # Datei-Handler (für app.log)
+            try:
+                # Erstellt eine täglich rotierende Log-Datei.
+                fh = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=7)
+                fh.setLevel(level)
+                fh.setFormatter(formatter)
+                self.logger.addHandler(fh)
+            except Exception as e:
+                # Fängt Fehler ab, z.B. wenn keine Schreibrechte für die Log-Datei bestehen.
+                self.logger.error(f"Konnte den Datei-Handler für '{log_file}' nicht erstellen: {e}")
 
-    def debug(self, message):
-        """Loggt eine Debug-Nachricht."""
-        self.logger.debug(message)
+    def get_logger(self):
+        """Gibt die konfigurierte Logger-Instanz zurück."""
+        return self.logger
 
-    def info(self, message):
-        """Loggt eine Info-Nachricht."""
-        self.logger.info(message)
+def setup_logger(name='HueFlowLogger', level_str='INFO'):
+    """
+    Diese Funktion dient als "Factory" für den Logger.
+    Sie stellt sicher, dass für einen bestimmten Namen immer dieselbe Logger-Instanz
+    verwendet wird, um eine saubere und konsistente Log-Ausgabe zu gewährleisten.
+    """
+    if name in _loggers:
+        # Wenn der Logger bereits existiert, wird die existierende Instanz zurückgegeben.
+        # So wird verhindert, dass versehentlich mehrere Handler hinzugefügt werden.
+        return _loggers[name]
 
-    def warning(self, message):
-        """Loggt eine Warnung."""
-        self.logger.warning(message)
-
-    def error(self, message, exc_info=False):
-        """Loggt einen Fehler."""
-        self.logger.error(message, exc_info=exc_info)
+    # Wenn der Logger neu ist, wird eine Instanz der Logger-Klasse erstellt.
+    logger_instance = Logger(name=name, level_str=level_str).get_logger()
+    _loggers[name] = logger_instance
+    return logger_instance

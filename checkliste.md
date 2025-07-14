@@ -9,6 +9,13 @@ Hier arbeiten wir Schritt für Schritt die offenen Punkte und neuen Features ab.
 - [ ] **Darkmode reparieren**: Der Umschaltknopf muss den Hintergrund und die Icons zuverlässig zwischen Hell und Dunkel wechseln.
 - [ ] **Tab-Navigation reparieren**: Ein Klick auf "Szenen", "Status" oder "Einstellungen" muss den korrekten Inhalt anzeigen.
 - [ ] **Fehler "Laden der Daten" beheben**: Die rote Fehlermeldung beim Start muss verschwinden.
+- [ ] **Tab sind ohne Funktion**
+- [ ] **Einstellung der Routinen** Die Routinen können nicht bearbeitet werden, da die UI nicht korrekt funktioniert.
+- [ ] **Einstellung der Szenen** Die Szenen können nicht bearbeitet werden, da die UI nicht korrekt funktioniert.
+- [ ] **Einstellung der IP-Adresse** Die IP-Adresse kann nicht gespeichert werden, da die UI nicht korrekt funktioniert.
+- [ ] **Einstellung der Refreshrate** Die Refreshrate kann nicht gespeichert werden, da die UI nicht korrekt funktioniert.
+- [ ] **Einstellung der Sprache** Die Sprache kann nicht gespeichert werden, da die UI nicht korrekt funktioniert.
+- [ ] **Einstellung der Log-Level** Die Log-Level können nicht gespeichert
 
 ---
 
