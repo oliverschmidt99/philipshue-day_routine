@@ -69,8 +69,8 @@ routines:
     H2: 23
     M2: 2
   morning:
-    scene_name: 'false'
-    x_scene_name: 'false'
+    scene_name: night
+    x_scene_name: night
     bri_check: false
     max_light_level: 0
     motion_check: false
@@ -79,7 +79,7 @@ routines:
       sec: 0
     do_not_disturb: false
   day:
-    scene_name: warm_max
+    scene_name: 'off'
     x_scene_name: cold_max
     bri_check: false
     max_light_level: 0
@@ -87,7 +87,7 @@ routines:
     wait_time:
       min: 0
       sec: 10
-    do_not_disturb: false
+    do_not_disturb: true
   evening:
     scene_name: warm_min
     x_scene_name: warm_max
@@ -99,8 +99,8 @@ routines:
       sec: 20
     do_not_disturb: true
   night:
-    scene_name: 'false'
-    x_scene_name: 'false'
+    scene_name: night
+    x_scene_name: night
     bri_check: false
     max_light_level: 0
     motion_check: false
@@ -108,4 +108,4 @@ routines:
       min: 0
       sec: 0
     do_not_disturb: false
-  enabled: true
+  enabled: false

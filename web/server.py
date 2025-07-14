@@ -1,26 +1,29 @@
+import os
+import sys
 from flask import Flask, request, jsonify, render_template, Response
 import yaml
-import os
-import subprocess
 import json
 import logging
 from phue import Bridge
 
-app = Flask(__name__)
-CONFIG_FILE = 'config.yaml'
-STATUS_FILE = 'status.json'
-LOG_FILE = 'info.log'
-MAIN_SCRIPT = 'main.py'
+# Pfade an neue Struktur anpassen
+# Wir gehen eine Ebene vom 'web'-Ordner nach oben
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), '..', 'config.yaml')
+STATUS_FILE = os.path.join(os.path.dirname(__file__), '..', 'status.json')
+LOG_FILE = os.path.join(os.path.dirname(__file__), '..', 'info.log')
 
-# Deaktiviere die standardmäßigen Flask-Zugriffslogs in der Konsole
+
+# Flask so konfigurieren, dass es den 'templates'-Ordner im selben Verzeichnis findet
+app = Flask(__name__, template_folder='templates')
+
+# Werkzeug-Logs reduzieren, um die Konsole sauber zu halten
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.WARNING)
 
-main_process = None
 bridge_connection = None
 
 def get_bridge_connection():
-    """Stellt eine Singleton-Verbindung zur Bridge her und gibt sie zurück."""
+    """Stellt eine Singleton-Verbindung zur Bridge für die API her."""
     global bridge_connection
     if bridge_connection is None:
         try:
@@ -31,31 +34,16 @@ def get_bridge_connection():
             bridge_connection = b
             app.logger.info("Bridge-Verbindung für API-Aufrufe hergestellt.")
         except Exception as e:
-            app.logger.error(f"Konnte keine Bridge-Verbindung für API herstellen: {e}")
+            app.logger.error(f"API kann keine Bridge-Verbindung herstellen: {e}")
             return None
     return bridge_connection
-
-def restart_main_script():
-    """Stoppt den laufenden main.py Prozess und startet ihn neu."""
-    global main_process
-    if main_process and main_process.poll() is None:
-        print("Beende laufendes Hauptskript...")
-        main_process.terminate()
-        try:
-            main_process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            print("Warnung: Hauptskript konnte nicht rechtzeitig beendet werden. Erzwinge Beendigung (kill).")
-            main_process.kill()
-    
-    print("Starte Hauptskript neu...")
-    main_process = subprocess.Popen(['python', MAIN_SCRIPT])
-    return "Hauptskript wurde neu gestartet."
 
 # === API Endpunkte ===
 
 @app.route('/')
 def index():
-    return render_template('hue.html')
+    # Der Name der Template-Datei wurde angepasst
+    return render_template('index.html')
 
 @app.route('/api/config', methods=['GET', 'POST'])
 def handle_config():
@@ -64,10 +52,10 @@ def handle_config():
             data = request.json
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                 yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
-            restart_message = restart_main_script()
-            return jsonify({"message": f"Konfiguration erfolgreich gespeichert. {restart_message}"})
+            # Hinweis: Ein Neustart der Logik muss nun manuell erfolgen,
+            # da der Server nicht mehr die Kontrolle darüber hat.
+            return jsonify({"message": "Konfiguration gespeichert. Bitte starte die Anwendung neu, um die Änderungen zu übernehmen."})
         except Exception as e:
-            app.logger.error(f"Fehler beim Speichern der Konfiguration: {e}", exc_info=True)
             return jsonify({"error": str(e)}), 500
     else: # GET
         try:
@@ -75,20 +63,22 @@ def handle_config():
                 config = yaml.safe_load(f)
             return Response(json.dumps(config), mimetype='application/json')
         except Exception as e:
-            app.logger.error(f"Fehler beim Laden der config.yaml: {e}", exc_info=True)
-            return jsonify({"error": "Server-Fehler beim Laden der Konfiguration."}), 500
+            return jsonify({"error": f"Fehler beim Laden von {CONFIG_FILE}: {e}"}), 500
 
 @app.route('/api/bridge/<item>', methods=['GET'])
 def get_bridge_data(item):
+    """Gibt Bridge-Informationen wie Gruppen oder Sensoren zurück."""
     bridge = get_bridge_connection()
     if not bridge:
         return jsonify({"error": "Keine Verbindung zur Bridge"}), 500
     try:
         if item == 'groups':
             data = bridge.get_group()
-            return jsonify([{"id": key, "name": value['name']} for key, value in data.items()])
+            # Nur Gruppen mit Typ "Room" oder "Zone" zurückgeben
+            return jsonify([{"id": key, "name": value['name']} for key, value in data.items() if value.get('type') in ['Room', 'Zone']])
         elif item == 'sensors':
             data = bridge.get_sensor_objects('id')
+            # Nur Bewegungsmelder (ZLLPresence) zurückgeben
             return jsonify([{"id": key, "name": value.name} for key, value in data.items() if value.type == 'ZLLPresence'])
         return jsonify({"error": "Unbekannter Endpunkt"}), 404
     except Exception as e:
@@ -102,7 +92,7 @@ def get_status():
             status_data = json.load(f)
         return jsonify(status_data)
     except FileNotFoundError:
-        return jsonify([]) # Leere Liste, wenn die Datei noch nicht existiert
+        return jsonify([])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -117,11 +107,10 @@ def get_log():
     except Exception as e:
         return Response(f"Fehler beim Lesen der Log-Datei: {e}", mimetype='text/plain')
 
-# === Server Start ===
 
 if __name__ == '__main__':
+    # Stellt sicher, dass die Bridge-Verbindung beim Start verfügbar ist
     if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN'):
         get_bridge_connection()
-        restart_main_script()
     
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -1,12 +1,16 @@
+# src/routine.py
+
 from datetime import datetime, time, timedelta
 
 class Routine:
     """
-    Diese Klasse implementiert die feste Tageslogik basierend auf dem
-    Konzept einer "Normal-Szene", die bei Bewegung von einer
-    "Bewegungs-Szene" überschrieben wird.
+    Implements the daily logic for a room.
+
+    This class manages transitions between different time periods of the day
+    (morning, day, evening, night) and handles motion-based scene changes.
     """
     def __init__(self, name, room, sensor, routine_config, scenes, sun_times, log):
+        """Initializes the Routine object."""
         self.name = name
         self.room = room
         self.sensor = sensor
@@ -24,7 +28,7 @@ class Routine:
         self.evening_conf = routine_config.get('evening')
         self.night_conf = routine_config.get('night')
 
-        self.current_period = None # Wird beim ersten Lauf initialisiert
+        self.current_period = None
         self.last_triggered_scene_name = None
         self.last_motion_time = None
         self.is_in_motion_state = False
@@ -32,54 +36,50 @@ class Routine:
 
     def get_current_period(self, now: datetime):
         """
-        Ermittelt den aktuellen Tageszeitraum ('morning', 'day', 'evening', 'night')
-        basierend auf der festen, hierarchischen Logik.
+        Determines the current time period ('morning', 'day', 'evening', 'night').
+
+        Args:
+            now: The current datetime object.
+
+        Returns:
+            The name of the current period as a string, or None if inactive.
         """
         current_time = now.time()
         start = self.start_time
         end = self.end_time
 
-        # 1. Zuerst prüfen, ob die Routine überhaupt aktiv ist.
         is_active = (start <= end and start <= current_time < end) or \
                     (start > end and (current_time >= start or current_time < end))
         
         if not is_active:
             return None
 
-        # 2. Wenn aktiv, den spezifischen Zeitraum bestimmen.
         sunrise = self.sun_times['sunrise'].time() if self.sun_times else time(6, 30)
         sunset = self.sun_times['sunset'].time() if self.sun_times else time(20, 0)
 
-        # Hierarchische Prüfung, wie von dir vorgeschlagen
         if start <= current_time < sunrise:
-            # Gilt nur, wenn der Start vor Sonnenaufgang liegt
             return "morning"
         elif sunrise <= current_time < sunset:
             return "day"
         elif sunset <= current_time < end:
             return "evening"
         else:
-            # Alle anderen Fälle innerhalb des aktiven Zeitraums sind "Nacht".
-            # Das deckt die Zeit von 00:00 bis zum Morgen und vom Abend bis zum Ende ab.
             return "night"
 
     def get_status(self):
-        """Gibt den aktuellen Zustand der Routine als Dictionary für die UI zurück."""
+        """Returns the current state of the routine for the UI."""
         current_period_for_status = self.get_current_period(datetime.now().astimezone())
         
-        motion_status_text = "Nicht relevant"
+        motion_status_text = "Not relevant"
         is_motion_active_now = False
         if self.sensor:
             is_motion_active_now = self.sensor.get_motion()
             if is_motion_active_now:
-                if self.last_motion_time:
-                     motion_status_text = f"Aktiv seit {self.last_motion_time.strftime('%H:%M:%S')}"
-                else:
-                     motion_status_text = "Aktiv"
+                motion_status_text = f"Active since {self.last_motion_time:%H:%M:%S}" if self.last_motion_time else "Active"
             elif self.is_in_motion_state and self.last_motion_time:
-                 motion_status_text = f"Letzte Bewegung um {self.last_motion_time.strftime('%H:%M:%S')}"
+                 motion_status_text = f"Last motion at {self.last_motion_time:%H:%M:%S}"
             else:
-                motion_status_text = "Keine Bewegung"
+                motion_status_text = "No motion"
 
         return {
             "name": self.name,
@@ -91,9 +91,10 @@ class Routine:
         }
 
     def run(self, now: datetime):
+        """Executes the routine logic for the current time."""
         if not self.enabled:
             if self.current_period is not None:
-                self.log.info(f"[{self.name}] Routine ist deaktiviert, wird übersprungen.")
+                self.log.info(f"[{self.name}] Routine disabled, skipping.")
                 self.current_period = None
             return
 
@@ -101,7 +102,7 @@ class Routine:
         
         if not period:
             if self.current_period is not None:
-                self.log.info(f"[{self.name}] Routine jetzt inaktiv.")
+                self.log.info(f"[{self.name}] Routine now inactive.")
             self.current_period = None
             return
 
@@ -113,11 +114,11 @@ class Routine:
         motion_scene_name = section_config.get('x_scene_name')
 
         if period != self.current_period:
-            self.log.info(f"---------- Zustand-Wechsel für Routine '{self.name}' ----------")
-            self.log.info(f"Neuer Zustand: {period.upper()}")
+            self.log.info(f"---------- Period change for routine '{self.name}' ----------")
+            self.log.info(f"New period: {period.upper()}")
             scene_obj = self.scenes.get(normal_scene_name)
             if scene_obj:
-                self.log.info(f"Setze Normal-Szene: '{normal_scene_name}'.")
+                self.log.info(f"Setting default scene: '{normal_scene_name}'.")
                 self.room.turn_groups(scene_obj)
                 self.last_triggered_scene_name = normal_scene_name
             self.current_period = period
@@ -129,18 +130,16 @@ class Routine:
 
         has_motion = self.sensor.get_motion()
         
-        if has_motion:
-            if not self.motion_logged:
-                self.log.info(f"[{self.name}] Bewegung erkannt.")
-                self.motion_logged = True
-        else:
+        if has_motion and not self.motion_logged:
+            self.log.info(f"[{self.name}] Motion detected.")
+            self.motion_logged = True
+        elif not has_motion:
             self.motion_logged = False
-
 
         if section_config.get('do_not_disturb', False) and self.room.is_any_light_on():
             if has_motion:
                 self.last_motion_time = now
-            self.log.debug(f"[{self.name}] 'Nicht stören' aktiv und Licht ist an. Ignoriere Trigger.")
+            self.log.debug(f"[{self.name}] 'Do not disturb' active and light is on. Ignoring trigger.")
             return
 
         if has_motion:
@@ -152,29 +151,31 @@ class Routine:
             if section_config.get('bri_check', False):
                 brightness = self.sensor.get_brightness()
                 max_light = section_config.get('max_light_level', 0)
-                self.log.debug(f"[{self.name}] Helligkeits-Check: Aktuell={brightness}, Max={max_light}")
+                self.log.debug(f"[{self.name}] Brightness check: Current={brightness}, Max={max_light}")
                 if brightness > max_light:
-                    self.log.debug(f"[{self.name}] Zu hell für Bewegungs-Szene. Keine Aktion.")
+                    self.log.debug(f"[{self.name}] Too bright for motion scene. No action.")
                     return
 
             if self.last_triggered_scene_name != scene_to_trigger:
                 scene_obj = self.scenes.get(scene_to_trigger)
                 if scene_obj:
-                    self.log.info(f"[{self.name}] Aktiviere Bewegungs-Szene: '{scene_to_trigger}'.")
+                    self.log.info(f"[{self.name}] Activating motion scene: '{scene_to_trigger}'.")
                     self.room.turn_groups(scene_obj)
                     self.last_triggered_scene_name = scene_to_trigger
             self.is_in_motion_state = True
         
-        else: # Keine Bewegung
+        else: # No motion
             if self.is_in_motion_state:
                 wait_time_conf = section_config.get('wait_time', {'min': 5, 'sec': 0})
-                wait_time_delta = timedelta(minutes=wait_time_conf.get('min', 0), seconds=wait_time_conf.get('sec', 0))
+                wait_delta = timedelta(minutes=wait_time_conf.get('min', 0), seconds=wait_time_conf.get('sec', 0))
 
-                if self.last_motion_time and (now > self.last_motion_time + wait_time_delta):
+                if self.last_motion_time and (now > self.last_motion_time + wait_delta):
                     scene_obj = self.scenes.get(normal_scene_name)
                     if scene_obj:
-                        self.log.info(f"[{self.name}] Keine Bewegung für {wait_time_delta}. Kehre zu Normal-Szene '{normal_scene_name}' zurück.")
+                        self.log.info(f"[{self.name}] No motion for {wait_delta}. Reverting to '{normal_scene_name}'.")
                         self.room.turn_groups(scene_obj)
                         self.last_triggered_scene_name = normal_scene_name
                     
                     self.is_in_motion_state = False
+
+# ---
