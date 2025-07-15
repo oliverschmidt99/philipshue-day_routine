@@ -1,20 +1,18 @@
 # tests/test_e2e.py
-# Verwendet jetzt das pytest-flask Plugin.
+# Verwendet jetzt die zentrale Mock-Konfiguration aus conftest.py
 
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
-from unittest.mock import MagicMock
 
-# Die 'live_server' Fixture wird jetzt automatisch von pytest-flask bereitgestellt.
-# Die 'app' Fixture kommt aus unserer neuen conftest.py.
+# Die 'live_server' und 'app' Fixtures werden automatisch bereitgestellt.
 
 @pytest.fixture(scope="function")
-def mock_app_dependencies(tmp_path, monkeypatch):
+def setup_e2e_files(tmp_path, monkeypatch):
     """
-    Diese Fixture wird vor jedem Test ausgeführt, um eine saubere
-    Umgebung mit Schein-Dateien und gemockten Verbindungen zu schaffen.
+    Erstellt für jeden Test temporäre, leere Konfigurationsdateien,
+    damit die Tests sich nicht gegenseitig beeinflussen.
     """
     config_file = tmp_path / "config.yaml"
     config_file.write_text("""
@@ -29,19 +27,14 @@ rooms: []
 
     monkeypatch.setattr('web.server.CONFIG_FILE', str(config_file))
     monkeypatch.setattr('web.server.STATUS_FILE', str(status_file))
-    
-    mock_bridge = MagicMock()
-    mock_bridge.get_group.return_value = {'1': {'name': 'Test Raum', 'type': 'Room'}}
-    mock_bridge.get_sensor_objects.return_value = {'2': MagicMock(name='Test Sensor', type='ZLLPresence')}
-    monkeypatch.setattr('web.server.get_bridge_connection', lambda: mock_bridge)
 
 
-def test_page_title(selenium, live_server, mock_app_dependencies):
+def test_page_title(selenium, live_server, setup_e2e_files):
     """Testet, ob der Titel der Webseite korrekt ist."""
     selenium.get(live_server.url())
     assert "Hue Routine und Scene Editor" in selenium.title
 
-def test_create_new_scene_workflow(selenium, live_server, mock_app_dependencies):
+def test_create_new_scene_workflow(selenium, live_server, setup_e2e_files):
     """
     Testet den kompletten Arbeitsablauf zum Erstellen einer neuen Szene.
     """
@@ -69,7 +62,7 @@ def test_create_new_scene_workflow(selenium, live_server, mock_app_dependencies)
     found_scene = any(scene_name.lower() in card.text.lower() for card in scene_cards)
     assert found_scene, f"Die Szene '{scene_name}' wurde nach dem Erstellen nicht auf der Seite gefunden."
 
-def test_create_new_routine_workflow(selenium, live_server, mock_app_dependencies):
+def test_create_new_routine_workflow(selenium, live_server, setup_e2e_files):
     """
     Testet den kompletten Arbeitsablauf zum Erstellen einer neuen Routine.
     """
@@ -85,13 +78,11 @@ def test_create_new_routine_workflow(selenium, live_server, mock_app_dependencie
     routine_name = "E2E Test Routine"
     modal_routine_name_input.send_keys(routine_name)
 
-    # KORREKTUR: Explizit warten, bis die Optionen im Dropdown geladen sind.
-    # Wir warten auf das erste <option>-Element innerhalb des <select>-Elements.
-    # Der CSS-Selektor sucht nach einem 'option'-Tag, das nicht leer ist.
+    # Warten, bis die Optionen im Dropdown geladen sind.
     group_dropdown = modal_container.find_element(By.ID, "new-routine-group")
     wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#new-routine-group option:not([value=''])")))
     
-    # Jetzt, wo wir wissen, dass die Optionen da sind, können wir sie sicher auswählen.
+    # Jetzt können die Optionen sicher ausgewählt werden.
     Select(group_dropdown).select_by_visible_text("Test Raum")
     Select(modal_container.find_element(By.ID, "new-routine-sensor")).select_by_visible_text("Test Sensor (ID: 2)")
 
