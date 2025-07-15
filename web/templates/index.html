@@ -236,7 +236,7 @@
                         const waitTimeString = `${waitTime.min || 0}m ${waitTime.sec || 0}s`;
 
                         return `
-                    <div class="py-2 px-3 bg-gray-50 rounded-md">
+                    <div class="py-2 px-3 ${sectionColors[name] || 'bg-gray-50'} rounded-md">
                         <p class="font-semibold capitalize flex items-center">${icons[name] || ''} <span class="ml-2">${name}</span></p>
                         <div class="text-sm text-gray-700 grid grid-cols-2 gap-x-4">
                             <span><strong class="font-medium">Normal-Szene:</strong> ${section.scene_name}</span>
@@ -336,15 +336,27 @@
                 statuses.forEach(status => {
                     const motionColor = status.motion_active ? 'text-green-500' : 'text-gray-500';
                     const enabledColor = status.enabled ? 'text-green-500' : 'text-red-500';
+
+                    // Aktuelle Szene aus der Konfiguration holen
+                    let currentSceneInfo = 'N/A';
+                    const routineConfig = config.routines.find(r => r.name === status.name);
+                    if (routineConfig && status.period && routineConfig[status.period]) {
+                        const periodConfig = routineConfig[status.period];
+                        currentSceneInfo = `Normal: <strong>${periodConfig.scene_name}</strong> / Bewegung: <strong>${periodConfig.x_scene_name}</strong>`;
+                    }
+
                     const statusEl = document.createElement('div');
                     statusEl.className = 'bg-white p-4 rounded-lg shadow border-2 border-gray-200';
                     statusEl.innerHTML = `
                     <h4 class="font-bold text-lg">${status.name}</h4>
-                    <div class="text-sm grid grid-cols-3 gap-2 mt-2">
+                    <div class="text-sm grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
                         <span><strong>Routine-Status:</strong> <span class="${enabledColor}">${status.enabled ? 'Aktiviert' : 'Deaktiviert'}</span></span>
                         <span><strong>Aktueller Zeitraum:</strong> <span class="flex items-center">${icons[status.period] || ''} <span class="ml-1">${status.period || 'Inaktiv'}</span></span></span>
-                        <span><strong>Letzte Szene:</strong> ${status.last_scene || 'N/A'}</span>
-                        <span class="${motionColor} col-span-3"><strong>Bewegung:</strong> ${status.motion_status || 'N/A'}</span>
+                        <span><strong>Letzte geschaltete Szene:</strong> ${status.last_scene || 'N/A'}</span>
+                        
+                        <span class="md:col-span-3"><strong>Konfigurierte Szene (für '${status.period}'):</strong> ${currentSceneInfo}</span>
+                        
+                        <span class="${motionColor} md:col-span-3"><strong>Bewegung:</strong> ${status.motion_status || 'N/A'}</span>
                     </div>
                 `;
                     statusContainer.appendChild(statusEl);

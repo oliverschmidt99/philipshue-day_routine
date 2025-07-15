@@ -75,15 +75,22 @@ def write_status(routines):
         print(f"Fehler beim Schreiben der Status-Datei: {e}")
 
 def run_logic(log):
-    """Die Hauptschleife, die die Routinen ausführt."""
-    log.info("Starte Hue-Logik...")
+    """Die Hauptschleife, die die Routinen ausführt. Gibt True zurück, wenn sie neu gestartet werden soll."""
+    log.info("Lade Konfiguration und starte Hue-Logik...")
     config = load_config(log)
     if not config:
-        return
+        return False # Beenden, wenn die Konfig nicht geladen werden kann
+
+    # NEU: Modifikationszeit der Konfigurationsdatei speichern
+    try:
+        last_mod_time = os.path.getmtime(CONFIG_FILE)
+    except OSError as e:
+        log.error(f"Konnte Modifikationszeit von '{CONFIG_FILE}' nicht lesen: {e}")
+        return False
 
     bridge = connect_bridge(config['bridge_ip'], log)
     if not bridge:
-        return
+        return False
 
     sun_times = get_sun_times(config.get('location'), log)
     
@@ -96,8 +103,7 @@ def run_logic(log):
     for routine_conf in config.get('routines', []):
         room_name = routine_conf['room_name']
         room = rooms.get(room_name)
-        sensor_id = room_to_sensor_map.get(room_name)
-        sensor = sensors.get(room_name) if sensor_id else None
+        sensor = sensors.get(room_name)
 
         if not room:
             log.error(f"Raum '{room_name}' für Routine '{routine_conf['name']}' nicht gefunden.")
@@ -107,16 +113,26 @@ def run_logic(log):
             name=routine_conf['name'], room=room, sensor=sensor,
             routine_config=routine_conf, scenes=scenes, sun_times=sun_times, log=log
         ))
-        log.info(f"Routine '{routine_conf['name']}' für Raum '{room_name}' geladen.")
-
-    if not routines:
-        log.warning("Keine Routinen gefunden. Beende Logik-Thread.")
-        return
+    
+    if routines:
+        log.info(f"{len(routines)} Routine(n) erfolgreich geladen.")
+    else:
+        log.warning("Keine Routinen in der Konfiguration gefunden.")
 
     log.info("Initialisierung abgeschlossen. Starte Hauptschleife.")
     last_status_write = time.time()
+    
     while True:
         try:
+            # NEU: Prüfen, ob die Konfigurationsdatei geändert wurde
+            try:
+                current_mod_time = os.path.getmtime(CONFIG_FILE)
+                if current_mod_time > last_mod_time:
+                    log.info("Änderung in 'config.yaml' erkannt. Starte die Logik neu...")
+                    return True  # Signalisiert der Hauptfunktion, die Schleife neu zu starten
+            except OSError:
+                pass # Datei könnte während des Schreibens kurz nicht verfügbar sein
+
             now = datetime.now().astimezone()
             for routine in routines:
                 routine.run(now)
@@ -127,18 +143,16 @@ def run_logic(log):
 
             time.sleep(1)
         except (KeyboardInterrupt, SystemExit):
-            break
+            return False # Signalisiert das Ende des Programms
         except Exception as e:
             log.error(f"Ein kritischer Fehler in der Hauptschleife ist aufgetreten: {e}", exc_info=True)
-
+            time.sleep(5) # Kurze Pause vor dem nächsten Versuch
 
 def start_server(log):
     """Startet den Flask-Webserver als separaten Prozess."""
     global server_process
     log.info("Starte den Webserver...")
-    # 'os.sys.executable' stellt sicher, dass dasselbe Python-Environment genutzt wird
     server_process = subprocess.Popen([os.sys.executable, SERVER_SCRIPT])
-
 
 def cleanup():
     """Räumt auf, wenn das Programm beendet wird."""
@@ -158,7 +172,6 @@ def cleanup():
             print(f"Fehler beim Löschen der Status-Datei: {e}")
     print("Programm beendet.")
 
-
 if __name__ == "__main__":
     log = Logger(LOG_FILE)
     start_server(log)
@@ -166,7 +179,10 @@ if __name__ == "__main__":
     atexit.register(cleanup)
     
     try:
-        run_logic(log)
+        # NEU: Eine äußere Schleife, die den Neustart der Logik ermöglicht
+        while run_logic(log):
+            log.info("Warte 2 Sekunden, bevor die Konfiguration neu geladen wird...")
+            time.sleep(2)
     except (KeyboardInterrupt, SystemExit):
         pass
     except Exception as e:

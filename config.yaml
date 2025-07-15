@@ -79,10 +79,10 @@ routines:
       sec: 0
     do_not_disturb: false
   day:
-    scene_name: 'off'
-    x_scene_name: 'off'
+    scene_name: warm_max
+    x_scene_name: cold_max
     bri_check: false
-    max_light_level: 0
+    max_light_level: 1000
     motion_check: true
     wait_time:
       min: 0
@@ -91,13 +91,13 @@ routines:
   evening:
     scene_name: warm_min
     x_scene_name: warm_max
-    bri_check: false
+    bri_check: true
     max_light_level: 10000
-    motion_check: true
+    motion_check: false
     wait_time:
       min: 0
       sec: 20
-    do_not_disturb: true
+    do_not_disturb: false
   night:
     scene_name: night
     x_scene_name: night
