@@ -80,7 +80,7 @@ routines:
     do_not_disturb: false
   day:
     scene_name: 'off'
-    x_scene_name: cold_max
+    x_scene_name: 'off'
     bri_check: false
     max_light_level: 0
     motion_check: true
