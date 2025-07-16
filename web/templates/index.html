@@ -199,11 +199,108 @@
                 </div>
             </div>
 
-            <div id="content-einstellungen" class="hidden">
-                <h2 class="text-2xl font-semibold">Allgemeine Einstellungen</h2>
-                <div class="bg-white p-6 rounded-lg shadow-md mt-4">
-                    <p class="text-gray-600">Hier können zukünftig allgemeine Einstellungen für die Anwendung
-                        vorgenommen werden.</p>
+            <div id="content-einstellungen" class="hidden space-y-6">
+                <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Linke Spalte -->
+                    <div class="space-y-6">
+                        <!-- Standort -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Standort für Sonnenzeiten</h3>
+                            <div class="grid grid-cols-1 gap-y-4">
+                                <div>
+                                    <label for="setting-latitude"
+                                        class="block text-sm font-medium text-gray-700">Breitengrad (Latitude)</label>
+                                    <input type="number" step="any" id="setting-latitude"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="setting-longitude"
+                                        class="block text-sm font-medium text-gray-700">Längengrad (Longitude)</label>
+                                    <input type="number" step="any" id="setting-longitude"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Regelungsparameter -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Regelung &amp; Zeit</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="setting-hysteresis"
+                                        class="block text-sm font-medium text-gray-700">Hysterese für Helligkeits-Check
+                                        (%)</label>
+                                    <input type="number" id="setting-hysteresis"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <p class="mt-1 text-xs text-gray-500">Verhindert Flackern. Standard: 25%</p>
+                                </div>
+                                <div>
+                                    <label for="setting-day-start"
+                                        class="block text-sm font-medium text-gray-700">Startzeit "Tag"</label>
+                                    <input type="time" id="setting-day-start"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="setting-night-start"
+                                        class="block text-sm font-medium text-gray-700">Startzeit "Nacht"</label>
+                                    <input type="time" id="setting-night-start"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rechte Spalte -->
+                    <div class="space-y-6">
+                        <!-- Daten & Logging -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Daten &amp; Logging</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="setting-datalogger-interval"
+                                        class="block text-sm font-medium text-gray-700">Datenlogger Intervall
+                                        (Minuten)</label>
+                                    <input type="number" id="setting-datalogger-interval"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="setting-loglevel"
+                                        class="block text-sm font-medium text-gray-700">Log-Level</label>
+                                    <select id="setting-loglevel"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                        <option value="INFO">Standard (Info)</option>
+                                        <option value="DEBUG">Detailliert (Debug)</option>
+                                    </select>
+                                </div>
+                                <button type="button" id="btn-clear-db"
+                                    class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">Messdaten-Historie
+                                    löschen</button>
+                            </div>
+                        </div>
+
+                        <!-- System-Aktionen -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">System-Aktionen</h3>
+                            <div class="space-y-4">
+                                <button type="button" id="btn-restart-app"
+                                    class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
+                                    neu starten</button>
+                                <button type="button" id="btn-backup-config"
+                                    class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Konfiguration
+                                    sichern</button>
+                                <button type="button" id="btn-restore-config"
+                                    class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Konfiguration
+                                    wiederherstellen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="button" id="btn-save-settings"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">Einstellungen
+                        speichern</button>
                 </div>
             </div>
 
@@ -925,6 +1022,68 @@
                 }
             };
 
+            // NEUE Funktionen für die Einstellungen
+            const loadSettings = () => {
+                const settings = config.global_settings || {};
+                const location = config.location || {};
+
+                document.getElementById('setting-latitude').value = location.latitude || '';
+                document.getElementById('setting-longitude').value = location.longitude || '';
+                document.getElementById('setting-hysteresis').value = settings.hysteresis_percent || 25;
+                document.getElementById('setting-day-start').value = settings.day_start_time || '12:00';
+                document.getElementById('setting-night-start').value = settings.night_start_time || '23:00';
+                document.getElementById('setting-datalogger-interval').value = settings.datalogger_interval_minutes || 15;
+                document.getElementById('setting-loglevel').value = settings.log_level || 'INFO';
+            };
+
+            const saveSettings = async () => {
+                const newConfig = JSON.parse(JSON.stringify(config));
+
+                if (!newConfig.location) newConfig.location = {};
+                newConfig.location.latitude = parseFloat(document.getElementById('setting-latitude').value);
+                newConfig.location.longitude = parseFloat(document.getElementById('setting-longitude').value);
+
+                if (!newConfig.global_settings) newConfig.global_settings = {};
+                newConfig.global_settings.hysteresis_percent = parseInt(document.getElementById('setting-hysteresis').value);
+                newConfig.global_settings.day_start_time = document.getElementById('setting-day-start').value;
+                newConfig.global_settings.night_start_time = document.getElementById('setting-night-start').value;
+                newConfig.global_settings.datalogger_interval_minutes = parseInt(document.getElementById('setting-datalogger-interval').value);
+                newConfig.global_settings.log_level = document.getElementById('setting-loglevel').value;
+
+                try {
+                    const response = await fetch('/api/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newConfig)
+                    });
+                    if (!response.ok) throw new Error('Speichern fehlgeschlagen');
+                    config = newConfig; // Lokale Konfiguration aktualisieren
+                    showToast("Einstellungen gespeichert. Bitte starte die Anwendung neu, damit alle Änderungen wirksam werden.");
+                } catch (error) {
+                    showToast(`Fehler: ${error.message}`, true);
+                }
+            };
+
+            const systemAction = async (url, confirmMsg) => {
+                if (confirm(confirmMsg)) {
+                    try {
+                        const response = await fetch(url, { method: 'POST' });
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.error);
+                        showToast(result.message);
+                    } catch (error) {
+                        showToast(`Fehler: ${error.message}`, true);
+                    }
+                }
+            };
+
+            document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
+            document.getElementById('btn-restart-app').addEventListener('click', () => systemAction('/api/system/restart', 'Möchtest du die Anwendung wirklich neu starten?'));
+            document.getElementById('btn-clear-db').addEventListener('click', () => systemAction('/api/database/clear', 'Möchtest du wirklich ALLE Messdaten unwiderruflich löschen?'));
+            document.getElementById('btn-backup-config').addEventListener('click', () => systemAction('/api/config/backup', 'Möchtest du ein Backup der aktuellen Konfiguration erstellen?'));
+            document.getElementById('btn-restore-config').addEventListener('click', () => systemAction('/api/config/restore', 'Möchtest du die Konfiguration aus dem Backup wiederherstellen? Aktuelle Änderungen gehen verloren.'));
+
+
             document.body.addEventListener('click', (e) => {
                 const action = e.target.dataset.action;
                 const target = e.target;
@@ -969,7 +1128,7 @@
                 { btn: 'tab-scenes', content: 'content-scenes' },
                 { btn: 'tab-status', content: 'content-status' },
                 { btn: 'tab-analyse', content: 'content-analyse', init: setupAnalyseTab },
-                { btn: 'tab-einstellungen', content: 'content-einstellungen' },
+                { btn: 'tab-einstellungen', content: 'content-einstellungen', init: loadSettings },
                 { btn: 'tab-hilfe', content: 'content-hilfe', init: loadReadme }
             ];
             tabs.forEach(tabInfo => {
@@ -987,7 +1146,6 @@
                         if (statusInterval) clearInterval(statusInterval);
                     }
 
-                    // Initialisierungsfunktion für den Tab aufrufen, falls vorhanden
                     if (tabInfo.init) {
                         tabInfo.init();
                     }
