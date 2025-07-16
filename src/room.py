@@ -24,7 +24,7 @@ class Room:
             self.log.debug(f"Room '{self.name}': Command throttled. Skipping.")
             return
 
-        self.log.info(f"Room '{self.name}': Setting groups {self.group_ids} to state: {state}")
+        self.log.debug(f"Room '{self.name}': Setting groups {self.group_ids} to state: {state}")
         try:
             # The phue library can take a list of group IDs
             self.bridge.set_group(self.group_ids, state)

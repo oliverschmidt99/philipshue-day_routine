@@ -6,7 +6,8 @@ class Logger:
     Initialisiert und konfiguriert einen Logger, der sowohl in die Konsole
     als auch in eine Datei schreibt.
     """
-    def __init__(self, log_file='info.log', level=logging.DEBUG):
+    # HINWEIS: Ändere logging.INFO zu logging.DEBUG, um alle Details zu sehen.
+    def __init__(self, log_file='info.log', level=logging.INFO):
         """
         Initialisiert den Logger. Stellt sicher, dass Handler nicht dupliziert werden.
         

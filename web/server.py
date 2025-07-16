@@ -1,124 +1,210 @@
 import os
 import sys
-from flask import Flask, request, jsonify, render_template, Response
-import yaml
 import json
-import logging
+import sqlite3
+import markdown
+import yaml
+import logging # NEU: Import für das Logging-Modul
+from datetime import datetime, timedelta
+
+# Füge das Hauptverzeichnis zum Python-Pfad hinzu, damit wir die src-Module importieren können
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from flask import Flask, jsonify, render_template, request
+from src.logger import Logger
+# Importiere die phue-Bibliothek, um mit der Bridge zu kommunizieren
 from phue import Bridge
-from unittest.mock import MagicMock # Import für den Test-Modus
 
-# Pfade an neue Struktur anpassen
-CONFIG_FILE = os.path.join(os.path.dirname(__file__), '..', 'config.yaml')
-STATUS_FILE = os.path.join(os.path.dirname(__file__), '..', 'status.json')
-LOG_FILE = os.path.join(os.path.dirname(__file__), '..', 'info.log')
+# Konfigurations- und Statusdateien
+CONFIG_FILE = 'config.yaml'
+STATUS_FILE = 'status.json'
+LOG_FILE = 'info.log'
+DB_FILE = 'sensor_data.db'
+README_FILE = 'readme.md'
 
-app = Flask(__name__, template_folder='templates')
+# Initialisiere Flask App und Logger
+app = Flask(__name__)
+log = Logger(LOG_FILE)
 
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.WARNING)
+# NEU: Deaktiviere das Standard-Logging von Flask/Werkzeug, um die Konsole sauber zu halten
+werkzeug_log = logging.getLogger('werkzeug')
+werkzeug_log.setLevel(logging.ERROR)
 
-bridge_connection = None
 
-def get_bridge_connection():
-    """
-    Stellt eine Verbindung zur Bridge her.
-    Im Test-Modus wird eine Schein-Bridge (Mock) zurückgegeben.
-    """
-    global bridge_connection
-
-    # Prüfe, ob die App im Test-Modus läuft.
-    if app.config.get("TESTING"):
-        mock_bridge = MagicMock()
-        mock_bridge.get_group.return_value = {'1': {'name': 'Test Raum', 'type': 'Room'}}
-        mock_sensor = MagicMock(name='Test Sensor', type='ZLLPresence')
-        mock_bridge.get_sensor_objects.return_value = {'2': mock_sensor}
-        return mock_bridge
-
-    # Normaler Betrieb
-    if bridge_connection is None:
-        try:
-            # Im Testfall werden diese Pfade durch die Test-Fixtures überschrieben
-            cfg_file = app.config.get('CONFIG_FILE', CONFIG_FILE)
-            with open(cfg_file, 'r', encoding='utf-8') as f:
-                config = yaml.safe_load(f)
-            b = Bridge(config['bridge_ip'])
-            b.connect()
-            bridge_connection = b
-            app.logger.info("Bridge-Verbindung hergestellt.")
-        except Exception as e:
-            app.logger.error(f"API kann keine Bridge-Verbindung herstellen: {e}")
+def get_bridge():
+    """Liest die Bridge-IP aus der config.yaml und stellt eine Verbindung her."""
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+        bridge_ip = config.get('bridge_ip')
+        if not bridge_ip:
             return None
-    return bridge_connection
-
-# === API Endpunkte ===
+        return Bridge(bridge_ip)
+    except Exception as e:
+        log.error(f"Fehler beim Verbinden mit der Bridge im Webserver: {e}")
+        return None
 
 @app.route('/')
 def index():
+    """Rendert die Hauptseite."""
     return render_template('index.html')
+
+@app.route('/api/bridge/groups')
+def get_bridge_groups():
+    """Liefert eine Liste aller Gruppen (Räume/Zonen) von der Bridge."""
+    b = get_bridge()
+    if not b:
+        return jsonify({"error": "Bridge nicht konfiguriert oder erreichbar"}), 500
+    try:
+        groups = b.get_group()
+        # Formatiere die Daten in eine einfachere Liste von Objekten
+        formatted_groups = [{"id": key, "name": value['name']} for key, value in groups.items()]
+        return jsonify(formatted_groups)
+    except Exception as e:
+        log.error(f"Fehler beim Abrufen der Gruppen von der Bridge: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/bridge/sensors')
+def get_bridge_sensors():
+    """Liefert eine Liste aller Sensoren von der Bridge."""
+    b = get_bridge()
+    if not b:
+        return jsonify({"error": "Bridge nicht konfiguriert oder erreichbar"}), 500
+    try:
+        sensors = b.get_sensor()
+        # Formatiere die Daten und filtere nur nach Bewegungssensoren
+        formatted_sensors = [
+            {"id": key, "name": value['name']} 
+            for key, value in sensors.items() 
+            if value.get('type') == 'ZLLPresence'
+        ]
+        return jsonify(formatted_sensors)
+    except Exception as e:
+        log.error(f"Fehler beim Abrufen der Sensoren von der Bridge: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/config', methods=['GET', 'POST'])
 def handle_config():
-    # Im Test-Modus die temporären Pfade verwenden, sonst die Standardpfade
-    cfg_file = app.config.get('TEST_CONFIG_FILE', CONFIG_FILE) if app.config.get("TESTING") else CONFIG_FILE
-    
+    """Liest oder schreibt die Hauptkonfigurationsdatei."""
     if request.method == 'POST':
         try:
-            data = request.json
-            with open(cfg_file, 'w', encoding='utf-8') as f:
-                yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
-            return jsonify({"message": "Konfiguration gespeichert. Bitte starte die Anwendung neu, um die Änderungen zu übernehmen."})
+            new_config = request.get_json()
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                yaml.dump(new_config, f, allow_unicode=True, sort_keys=False)
+            log.info("Konfiguration wurde erfolgreich über die API aktualisiert.")
+            return jsonify({"message": "Konfiguration erfolgreich gespeichert."})
         except Exception as e:
+            log.error(f"Fehler beim Schreiben der Konfiguration: {e}", exc_info=True)
             return jsonify({"error": str(e)}), 500
     else: # GET
         try:
-            with open(cfg_file, 'r', encoding='utf-8') as f:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
-            return Response(json.dumps(config), mimetype='application/json')
+            return jsonify(config)
+        except FileNotFoundError:
+            return jsonify({"error": "Konfigurationsdatei nicht gefunden."}), 404
         except Exception as e:
-            return jsonify({"error": f"Fehler beim Laden von {cfg_file}: {e}"}), 500
+            log.error(f"Fehler beim Lesen der Konfiguration: {e}", exc_info=True)
+            return jsonify({"error": str(e)}), 500
 
-@app.route('/api/bridge/<item>', methods=['GET'])
-def get_bridge_data(item):
-    bridge = get_bridge_connection()
-    if not bridge:
-        return jsonify({"error": "Keine Verbindung zur Bridge"}), 500
-    try:
-        if item == 'groups':
-            data = bridge.get_group()
-            return jsonify([{"id": key, "name": value['name']} for key, value in data.items() if value.get('type') in ['Room', 'Zone']])
-        elif item == 'sensors':
-            data = bridge.get_sensor_objects('id')
-            return jsonify([{"id": key, "name": value.name} for key, value in data.items() if value.type == 'ZLLPresence'])
-        return jsonify({"error": "Unbekannter Endpunkt"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/status', methods=['GET'])
+@app.route('/api/status')
 def get_status():
-    status_file = app.config.get('TEST_STATUS_FILE', STATUS_FILE) if app.config.get("TESTING") else STATUS_FILE
+    """Liest die Statusdatei und gibt ihren Inhalt zurück."""
     try:
-        with open(status_file, 'r', encoding='utf-8') as f:
-            status_data = json.load(f)
-        return jsonify(status_data)
+        with open(STATUS_FILE, 'r', encoding='utf-8') as f:
+            status = json.load(f)
+        return jsonify(status)
     except FileNotFoundError:
-        return jsonify([])
+        return jsonify([]), 404
     except Exception as e:
+        log.error(f"Fehler beim Lesen der Statusdatei: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/log', methods=['GET'])
+@app.route('/api/log')
 def get_log():
-    log_file = app.config.get('TEST_LOG_FILE', LOG_FILE) if app.config.get("TESTING") else LOG_FILE
+    """Liest die letzten Zeilen der Log-Datei."""
     try:
-        with open(log_file, 'r', encoding='utf-8') as f:
-            return Response(f.read(), mimetype='text/plain')
+        with open(LOG_FILE, 'r', encoding='utf-8') as f:
+            lines = f.readlines()[-500:]
+            return "".join(lines)
     except FileNotFoundError:
-        return Response("Log-Datei nicht gefunden.", mimetype='text/plain')
+        return "Log-Datei nicht gefunden.", 404
+
+@app.route('/api/data/history')
+def get_data_history():
+    """Liefert historische Sensordaten für die Diagramme."""
+    try:
+        sensor_id = request.args.get('sensor_id', type=int)
+        period = request.args.get('period', 'day') # day, month, year
+        start_date_str = request.args.get('date')
+
+        if not sensor_id or not start_date_str:
+            return jsonify({"error": "sensor_id und date sind erforderlich"}), 400
+
+        start_date = datetime.fromisoformat(start_date_str)
+
+        if period == 'day':
+            end_date = start_date + timedelta(days=1)
+            date_format = "%H:%M"
+        elif period == 'month':
+            year = start_date.year + (start_date.month // 12)
+            month = start_date.month % 12 + 1
+            end_date = datetime(year, month, 1)
+            date_format = "%d.%m"
+        elif period == 'year':
+            end_date = datetime(start_date.year + 1, 1, 1)
+            date_format = "%B"
+        else:
+            return jsonify({"error": "Ungültiger Zeitraum"}), 400
+        
+        con = sqlite3.connect(DB_FILE)
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT timestamp, value FROM measurements 
+            WHERE sensor_id = ? AND measurement_type = 'brightness' AND timestamp >= ? AND timestamp < ?
+            ORDER BY timestamp
+        """, (sensor_id, start_date.isoformat(), end_date.isoformat()))
+        brightness_data = cur.fetchall()
+
+        cur.execute("""
+            SELECT timestamp, value FROM measurements 
+            WHERE sensor_id = ? AND measurement_type = 'temperature' AND timestamp >= ? AND timestamp < ?
+            ORDER BY timestamp
+        """, (sensor_id + 1, start_date.isoformat(), end_date.isoformat()))
+        temperature_data = cur.fetchall()
+
+        con.close()
+
+        chart_data = {
+            'labels': [datetime.fromisoformat(row[0]).strftime(date_format) for row in brightness_data],
+            'brightness': [row[1] for row in brightness_data],
+            'temperature': [row[1] for row in temperature_data]
+        }
+        
+        return jsonify(chart_data)
+
     except Exception as e:
-        return Response(f"Fehler beim Lesen der Log-Datei: {e}", mimetype='text/plain')
+        log.error(f"Fehler beim Abrufen der Verlaufsdaten: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/readme')
+def get_readme():
+    """Liest die readme.md, konvertiert sie zu HTML und gibt sie zurück."""
+    try:
+        with open(README_FILE, 'r', encoding='utf-8') as f:
+            text = f.read()
+        html = markdown.markdown(text)
+        return html
+    except FileNotFoundError:
+        return "<p>README.md nicht gefunden.</p>", 404
+    except Exception as e:
+        log.error(f"Fehler beim Lesen der README-Datei: {e}")
+        return f"<p>Fehler: {e}</p>", 500
+
 
 if __name__ == '__main__':
-    # Im normalen Betrieb wird die Umgebungsvariable nicht gesetzt sein.
-    if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN'):
-        get_bridge_connection()
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Starte den Flask-Server im Debug-Modus
+    app.run(debug=False, port=5000, host='0.0.0.0')
+

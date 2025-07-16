@@ -7,6 +7,8 @@
     <title>Hue Routine und Scene Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+    <!-- NEU: Chart.js für Diagramme -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -40,41 +42,57 @@
             white-space: pre-wrap;
         }
 
-        .ct-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 15px;
-            border-radius: 5px;
-            background: linear-gradient(to right, #a1c4fd, #e1e1e1, #ffaf4b);
-            outline: none;
-            opacity: 0.7;
-            -webkit-transition: .2s;
-            transition: opacity .2s;
+        /* NEU: Styling für die Hilfe-Seite */
+        .readme-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
 
-        .ct-slider:hover {
-            opacity: 1;
+        .readme-content h1,
+        .readme-content h2,
+        .readme-content h3 {
+            font-weight: bold;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
         }
 
-        .ct-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            background: #ffffff;
-            cursor: pointer;
-            border: 2px solid #3b82f6;
+        .readme-content h1 {
+            font-size: 1.875rem;
         }
 
-        .ct-slider::-moz-range-thumb {
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            background: #ffffff;
-            cursor: pointer;
-            border: 2px solid #3b82f6;
+        .readme-content h2 {
+            font-size: 1.5rem;
+        }
+
+        .readme-content h3 {
+            font-size: 1.25rem;
+        }
+
+        .readme-content p {
+            margin-bottom: 1rem;
+        }
+
+        .readme-content ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .readme-content code {
+            background-color: #e5e7eb;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+        }
+
+        .readme-content pre {
+            background-color: #1f2937;
+            color: #d1d5db;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
@@ -101,6 +119,13 @@
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
                 <button type="button" id="tab-status"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Status</button>
+                <!-- NEUE REITER -->
+                <button type="button" id="tab-analyse"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-500 hover:text-blue-700 hover:border-blue-300">Analyse</button>
+                <button type="button" id="tab-einstellungen"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-green-500 hover:text-green-700 hover:border-green-300">Einstellungen</button>
+                <button type="button" id="tab-hilfe"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-yellow-500 hover:text-yellow-700 hover:border-yellow-300">Hilfe</button>
             </nav>
         </div>
 
@@ -140,6 +165,58 @@
                     <div id="log-container" class="log-container"></div>
                 </div>
             </div>
+
+            <!-- NEUER INHALT: ANALYSE -->
+            <div id="content-analyse" class="hidden space-y-6">
+                <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div>
+                            <label for="analyse-sensor" class="block text-sm font-medium text-gray-700">Sensor
+                                auswählen</label>
+                            <select id="analyse-sensor"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></select>
+                        </div>
+                        <div>
+                            <label for="analyse-date" class="block text-sm font-medium text-gray-700">Datum
+                                auswählen</label>
+                            <input type="date" id="analyse-date"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="button" data-period="day"
+                                class="analyse-period-btn bg-blue-500 text-white px-4 py-2 rounded-md w-full">Tag</button>
+                            <button type="button" data-period="month"
+                                class="analyse-period-btn bg-gray-200 px-4 py-2 rounded-md w-full">Monat</button>
+                            <button type="button" data-period="year"
+                                class="analyse-period-btn bg-gray-200 px-4 py-2 rounded-md w-full">Jahr</button>
+                        </div>
+                        <button type="button" id="btn-fetch-data"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Daten
+                            laden</button>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <canvas id="sensor-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- NEUER INHALT: EINSTELLUNGEN -->
+            <div id="content-einstellungen" class="hidden">
+                <h2 class="text-2xl font-semibold">Allgemeine Einstellungen</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md mt-4">
+                    <p class="text-gray-600">Hier können zukünftig allgemeine Einstellungen für die Anwendung
+                        vorgenommen werden.</p>
+                </div>
+            </div>
+
+            <!-- NEUER INHALT: HILFE -->
+            <div id="content-hilfe" class="hidden">
+                <div id="readme-content" class="readme-content">
+                    <p class="text-center">Lade README.md...</p>
+                </div>
+            </div>
+
         </main>
 
         <footer class="mt-12 text-center">
@@ -167,6 +244,7 @@
             let bridgeData = { groups: [], sensors: [] };
             let statusInterval;
             let colorPicker = null;
+            let chartInstance = null;
 
             const routinesContainer = document.getElementById('routines-container');
             const scenesContainer = document.getElementById('scenes-container');
@@ -194,22 +272,29 @@
             const init = async () => {
                 updateClock();
                 setInterval(updateClock, 1000);
-                showLoading();
+                routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Lade Konfiguration...</p>`;
                 try {
-                    const [configRes, groupsRes, sensorsRes] = await Promise.all([
-                        fetch('/api/config'),
+                    const configRes = await fetch('/api/config');
+                    if (!configRes.ok) throw new Error(`Konfiguration konnte nicht geladen werden: ${configRes.statusText}`);
+                    config = await configRes.json();
+
+                    routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Lade Bridge-Daten...</p>`;
+                    const [groupsRes, sensorsRes] = await Promise.all([
                         fetch('/api/bridge/groups'),
                         fetch('/api/bridge/sensors')
                     ]);
-                    config = await configRes.json();
+                    if (!groupsRes.ok) throw new Error(`Gruppen konnten nicht geladen werden: ${groupsRes.statusText}`);
+                    if (!sensorsRes.ok) throw new Error(`Sensoren konnten nicht geladen werden: ${sensorsRes.statusText}`);
+
                     bridgeData.groups = await groupsRes.json();
                     bridgeData.sensors = await sensorsRes.json();
+
                     renderAll();
                 } catch (error) {
                     console.error("Initialisierungsfehler:", error);
-                    showToast("Fehler beim Laden der Daten. Läuft der Server?", true);
-                } finally {
-                    hideLoading();
+                    const errorMsg = `Fehler beim Initialisieren: ${error.message}. Ist der Server erreichbar?`;
+                    routinesContainer.innerHTML = `<p class="text-red-500 text-center font-semibold">${errorMsg}</p>`;
+                    showToast(errorMsg, true);
                 }
             };
 
@@ -713,12 +798,135 @@
             const startStatusUpdates = () => {
                 if (statusInterval) clearInterval(statusInterval);
                 updateStatus();
-                statusInterval = setInterval(updateStatus, 30000); // Reduziert auf 30 Sekunden
+                statusInterval = setInterval(updateStatus, 5000); // Intervall für schnellere Updates
             };
 
             const updateClock = () => {
                 const now = new Date();
                 clockElement.textContent = now.toLocaleTimeString('de-DE');
+            };
+
+            const setupAnalyseTab = () => {
+                const sensorSelect = document.getElementById('analyse-sensor');
+                const dateInput = document.getElementById('analyse-date');
+                const fetchDataBtn = document.getElementById('btn-fetch-data');
+                const periodBtns = document.querySelectorAll('.analyse-period-btn');
+
+                dateInput.valueAsDate = new Date();
+
+                sensorSelect.innerHTML = '';
+                // KORREKTUR: Iteriere über alle verfügbaren Sensoren
+                if (bridgeData.sensors) {
+                    bridgeData.sensors.forEach(sensor => {
+                        const option = document.createElement('option');
+                        option.value = sensor.id;
+                        option.textContent = sensor.name;
+                        sensorSelect.appendChild(option);
+                    });
+                }
+
+                let selectedPeriod = 'day';
+                periodBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        periodBtns.forEach(b => b.classList.replace('bg-blue-500', 'bg-gray-200').remove('text-white'));
+                        btn.classList.add('bg-blue-500', 'text-white');
+                        btn.classList.remove('bg-gray-200');
+                        selectedPeriod = btn.dataset.period;
+                    });
+                });
+
+                fetchDataBtn.addEventListener('click', () => {
+                    const sensorId = sensorSelect.value;
+                    const date = dateInput.value;
+                    if (sensorId && date) {
+                        loadChartData(sensorId, selectedPeriod, date);
+                    } else {
+                        showToast("Bitte Sensor und Datum auswählen.", true);
+                    }
+                });
+            };
+
+            const loadChartData = async (sensorId, period, date) => {
+                try {
+                    const lightSensorId = parseInt(sensorId, 10) + 1;
+                    const response = await fetch(`/api/data/history?sensor_id=${lightSensorId}&period=${period}&date=${date}`);
+                    if (!response.ok) throw new Error('Daten konnten nicht geladen werden.');
+
+                    const data = await response.json();
+                    renderChart(data);
+                } catch (error) {
+                    console.error("Fehler beim Laden der Chart-Daten:", error);
+                    showToast(error.message, true);
+                }
+            };
+
+            const renderChart = (data) => {
+                const ctx = document.getElementById('sensor-chart').getContext('2d');
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [
+                            {
+                                label: 'Helligkeit (lightlevel)',
+                                data: data.brightness,
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                                yAxisID: 'y',
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Temperatur (°C)',
+                                data: data.temperature,
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                yAxisID: 'y1',
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Helligkeit (lightlevel)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Temperatur (°C)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false, // nur die Achse und Ticks zeichnen
+                                },
+                            }
+                        }
+                    }
+                });
+            };
+
+            const loadReadme = async () => {
+                const readmeContainer = document.getElementById('readme-content');
+                try {
+                    const response = await fetch('/api/readme');
+                    const html = await response.text();
+                    readmeContainer.innerHTML = html;
+                } catch (error) {
+                    readmeContainer.innerHTML = '<p class="text-red-500">Fehler beim Laden der Hilfe-Datei.</p>';
+                    console.error("Fehler beim Laden der README:", error);
+                }
             };
 
             document.body.addEventListener('click', (e) => {
@@ -760,7 +968,14 @@
             saveButton.addEventListener('click', saveFullConfig);
             refreshButton.addEventListener('click', updateStatus);
 
-            const tabs = [{ btn: 'tab-routines', content: 'content-routines' }, { btn: 'tab-scenes', content: 'content-scenes' }, { btn: 'tab-status', content: 'content-status' }];
+            const tabs = [
+                { btn: 'tab-routines', content: 'content-routines' },
+                { btn: 'tab-scenes', content: 'content-scenes' },
+                { btn: 'tab-status', content: 'content-status' },
+                { btn: 'tab-analyse', content: 'content-analyse', init: setupAnalyseTab },
+                { btn: 'tab-einstellungen', content: 'content-einstellungen' },
+                { btn: 'tab-hilfe', content: 'content-hilfe', init: loadReadme }
+            ];
             tabs.forEach(tabInfo => {
                 document.getElementById(tabInfo.btn).addEventListener('click', () => {
                     tabs.forEach(t => {
@@ -769,10 +984,16 @@
                     });
                     document.getElementById(tabInfo.btn).classList.add('tab-active');
                     document.getElementById(tabInfo.content).classList.remove('hidden');
+
                     if (tabInfo.btn === 'tab-status') {
                         startStatusUpdates();
                     } else {
                         if (statusInterval) clearInterval(statusInterval);
+                    }
+
+                    // Initialisierungsfunktion für den Tab aufrufen, falls vorhanden
+                    if (tabInfo.init) {
+                        tabInfo.init();
                     }
                 });
             });

@@ -1,111 +1,111 @@
 bridge_ip: 192.168.178.42
 location:
+  elevation: 110
   latitude: 52.2059
   longitude: 8.0755
-  elevation: 110
-scenes:
-  night:
-    status: true
-    bri: 1
-    sat: 254
-    ct: 447
-    t_time: 30
-  warm_min:
-    status: true
-    bri: 29
-    t_time: 10
-    ct: 221
-    sat: 0
-  warm_mid:
-    status: true
-    bri: 170
-    t_time: 10
-    ct: 500
-    sat: 0
-  warm_max:
-    status: true
-    bri: 254
-    t_time: 10
-    ct: 500
-    sat: 0
-  cold_max:
-    status: true
-    bri: 254
-    t_time: 10
-    ct: 153
-    sat: 0
-  'off':
-    status: false
-    bri: 0
-    t_time: 10
-    ct: 300
-    sat: 0
 rooms:
-- name: Wohnzimmer
-  group_ids:
+- group_ids:
   - 89
+  name: Wohnzimmer
+  sensor_id: 2
   switch_ids:
   - 5
   - 99
-  sensor_id: 2
-- name: Flur
-  group_ids:
+- group_ids:
   - 83
+  name: Flur
+  sensor_id: 190
   switch_ids:
   - 5
   - 99
-  sensor_id: 190
-- name: Zimmer_Olli
-  group_ids:
+- group_ids:
   - 1
-  switch_ids: []
+  name: Zimmer_Olli
   sensor_id: 2
+  switch_ids: []
 routines:
-- name: TEST
-  room_name: Zimmer_Olli
-  daily_time:
+- daily_time:
     H1: 8
-    M1: 0
     H2: 23
+    M1: 0
     M2: 2
-  morning:
-    scene_name: night
-    x_scene_name: night
-    bri_check: true
-    max_light_level: 1000
-    motion_check: false
-    wait_time:
-      min: 0
-      sec: 0
-    do_not_disturb: false
   day:
-    scene_name: warm_max
-    x_scene_name: cold_max
     bri_check: true
+    do_not_disturb: false
     max_light_level: 20000
     motion_check: false
+    scene_name: warm_max
     wait_time:
       min: 0
       sec: 10
-    do_not_disturb: false
+    x_scene_name: cold_max
+  enabled: true
   evening:
-    scene_name: warm_min
-    x_scene_name: warm_max
     bri_check: true
+    do_not_disturb: false
     max_light_level: 20000
     motion_check: false
+    scene_name: warm_min
     wait_time:
       min: 0
       sec: 20
+    x_scene_name: warm_max
+  morning:
+    bri_check: true
     do_not_disturb: false
-  night:
-    scene_name: night
-    x_scene_name: night
-    bri_check: false
-    max_light_level: 0
+    max_light_level: 1000
     motion_check: false
+    scene_name: night
     wait_time:
       min: 0
       sec: 0
+    x_scene_name: night
+  name: TEST
+  night:
+    bri_check: false
     do_not_disturb: false
-  enabled: true
+    max_light_level: 0
+    motion_check: false
+    scene_name: night
+    wait_time:
+      min: 0
+      sec: 0
+    x_scene_name: night
+  room_name: Zimmer_Olli
+scenes:
+  cold_max:
+    bri: 254
+    ct: 153
+    sat: 0
+    status: true
+    t_time: 10
+  night:
+    bri: 1
+    ct: 447
+    sat: 254
+    status: true
+    t_time: 30
+  'off':
+    bri: 0
+    ct: 300
+    sat: 0
+    status: false
+    t_time: 10
+  warm_max:
+    bri: 254
+    ct: 500
+    sat: 0
+    status: true
+    t_time: 10
+  warm_mid:
+    bri: 170
+    ct: 500
+    sat: 0
+    status: true
+    t_time: 10
+  warm_min:
+    bri: 29
+    ct: 221
+    sat: 0
+    status: true
+    t_time: 10

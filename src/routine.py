@@ -95,7 +95,7 @@ class Routine:
                 self.room.apply_state(new_state)
             # Wenn die Regelung bereits läuft, passe nur die Helligkeit an
             else:
-                self.log.info(f"[{self.name}] Update Helligkeitsregelung. Sensor: {light_level} -> Lampe: {bri}")
+                self.log.debug(f"[{self.name}] Update Helligkeitsregelung. Sensor: {light_level} -> Lampe: {bri}")
                 self.room.apply_state({'bri': bri})
             
             self.is_brightness_control_active = True
@@ -145,7 +145,6 @@ class Routine:
             timeout_seconds = (wait_time_conf.get('min', 0) * 60) + wait_time_conf.get('sec', 5)
             if now - self.last_motion_time > timedelta(seconds=timeout_seconds):
                 self.log.info(f"[{self.name}] Keine Bewegung für {timeout_seconds}s. Kehre zum Normalzustand zurück.")
-                # KORREKTUR: Erzwinge eine Neubewertung im nächsten Durchlauf
                 self.state = self.STATE_RESET 
             else:
                 return # Im Timeout, nichts weiter tun
