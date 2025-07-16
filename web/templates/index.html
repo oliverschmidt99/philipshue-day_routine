@@ -334,10 +334,9 @@
                     return;
                 }
                 statuses.forEach(status => {
-                    const motionColor = status.motion_active ? 'text-green-500' : 'text-gray-500';
+                    const motionColor = status.motion_status.includes('erkannt') ? 'text-green-500' : 'text-gray-500';
                     const enabledColor = status.enabled ? 'text-green-500' : 'text-red-500';
 
-                    // Aktuelle Szene aus der Konfiguration holen
                     let currentSceneInfo = 'N/A';
                     const routineConfig = config.routines.find(r => r.name === status.name);
                     if (routineConfig && status.period && routineConfig[status.period]) {
@@ -356,7 +355,8 @@
                         
                         <span class="md:col-span-3"><strong>Konfigurierte Szene (für '${status.period}'):</strong> ${currentSceneInfo}</span>
                         
-                        <span class="${motionColor} md:col-span-3"><strong>Bewegung:</strong> ${status.motion_status || 'N/A'}</span>
+                        <span class="${motionColor}"><strong>Bewegung:</strong> ${status.motion_status || 'N/A'}</span>
+                        <span><strong>Helligkeit (Sensor):</strong> ${status.brightness !== 'N/A' ? status.brightness : 'Kein Sensor'}</span>
                     </div>
                 `;
                     statusContainer.appendChild(statusEl);

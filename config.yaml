@@ -71,8 +71,8 @@ routines:
   morning:
     scene_name: night
     x_scene_name: night
-    bri_check: false
-    max_light_level: 0
+    bri_check: true
+    max_light_level: 1000
     motion_check: false
     wait_time:
       min: 0
@@ -81,9 +81,9 @@ routines:
   day:
     scene_name: warm_max
     x_scene_name: cold_max
-    bri_check: false
-    max_light_level: 1000
-    motion_check: true
+    bri_check: true
+    max_light_level: 20000
+    motion_check: false
     wait_time:
       min: 0
       sec: 10
@@ -92,7 +92,7 @@ routines:
     scene_name: warm_min
     x_scene_name: warm_max
     bri_check: true
-    max_light_level: 10000
+    max_light_level: 20000
     motion_check: false
     wait_time:
       min: 0

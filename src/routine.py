@@ -1,183 +1,188 @@
-# src/routine.py
-
 from datetime import datetime, time, timedelta
-
-# Die Import-Anweisung wurde angepasst, um aus demselben Paket zu importieren
+from .daily_time_span import DailyTimeSpan
 from .scene import Scene
+import copy
 
 class Routine:
-    """
-    Implements the daily logic for a room.
+    """Verwaltet die Logik für eine einzelne Tageslicht-Routine in einem Raum."""
 
-    This class manages transitions between different time periods of the day
-    (morning, day, evening, night) and handles motion-based scene changes.
-    """
+    # Zustände der Routine
+    STATE_OFF = "OFF"
+    STATE_MOTION = "MOTION"
+    STATE_BRIGHTNESS_ACTIVE = "BRIGHTNESS_ACTIVE" # Zustand für die Helligkeitsregelung
+    STATE_RESET = "RESET" # Ein temporärer Zustand, um eine Neubewertung zu erzwingen
+
     def __init__(self, name, room, sensor, routine_config, scenes, sun_times, log):
-        """Initializes the Routine object."""
         self.name = name
         self.room = room
         self.sensor = sensor
-        self.log = log
+        self.config = routine_config
         self.scenes = scenes
         self.sun_times = sun_times
-        self.enabled = routine_config.get('enabled', True)
+        self.log = log
 
-        dt_conf = routine_config.get('daily_time', {})
-        self.start_time = time(dt_conf.get('H1', 0), dt_conf.get('M1', 0))
-        self.end_time = time(dt_conf.get('H2', 23), dt_conf.get('M2', 59))
+        self.enabled = self.config.get('enabled', True)
+        self.time_span = self._create_time_span(self.config)
 
-        self.morning_conf = routine_config.get('morning')
-        self.day_conf = routine_config.get('day')
-        self.evening_conf = routine_config.get('evening')
-        self.night_conf = routine_config.get('night')
-
-        self.current_period = None
-        self.last_triggered_scene_name = None
+        # Interne Zustandsvariablen
+        self.state = self.STATE_OFF
         self.last_motion_time = None
-        self.is_in_motion_state = False
-        self.motion_logged = False
+        self.is_brightness_control_active = False # Eigener Status für die Helligkeitsregelung
 
-    def get_current_period(self, now: datetime):
-        """
-        Determines the current time period ('morning', 'day', 'evening', 'night').
+        self.log.info(f"Routine '{self.name}' für Raum '{self.room.name}' geladen.")
 
-        Args:
-            now: The current datetime object.
 
-        Returns:
-            The name of the current period as a string, or None if inactive.
-        """
-        current_time = now.time()
-        start = self.start_time
-        end = self.end_time
-
-        is_active = (start <= end and start <= current_time < end) or \
-                    (start > end and (current_time >= start or current_time < end))
+    def _create_time_span(self, config):
+        """Erstellt das DailyTimeSpan-Objekt basierend auf der Konfiguration."""
+        daily_time_conf = config.get('daily_time', {})
+        start_h = daily_time_conf.get('H1', 0)
+        start_m = daily_time_conf.get('M1', 0)
+        end_h = daily_time_conf.get('H2', 23)
+        end_m = daily_time_conf.get('M2', 59)
         
-        if not is_active:
-            return None
+        start_time = time(start_h, start_m)
+        end_time = time(end_h, end_m)
 
-        # Fallback-Werte, falls keine Sonnenzeiten verfügbar sind
-        sunrise = self.sun_times['sunrise'].time() if self.sun_times and 'sunrise' in self.sun_times else time(6, 30)
-        sunset = self.sun_times['sunset'].time() if self.sun_times and 'sunset' in self.sun_times else time(20, 0)
+        p_start_morning = 'sunrise'
+        p_start_day = time(12, 0)
+        p_start_evening = 'sunset'
+        p_start_night = time(23, 0)
 
-        if start <= current_time < sunrise:
-            return "morning"
-        elif sunrise <= current_time < sunset:
-            return "day"
-        elif sunset <= current_time < end:
-            return "evening"
-        else:
-            return "night"
+        time_spans = {
+            'morning': (p_start_morning, p_start_day),
+            'day': (p_start_day, p_start_evening),
+            'evening': (p_start_evening, p_start_night),
+            'night': (p_start_night, p_start_morning)
+        }
+
+        return DailyTimeSpan(
+            start_time, end_time, self.sun_times, time_spans, self.log
+        )
+
+    def _handle_brightness_control(self, period_config, current_period):
+        """Implementiert die Fading-Logik basierend auf der Helligkeit."""
+        if not self.sensor or not period_config.get('bri_check', False):
+            return False # Logik nicht aktiv oder nicht zuständig
+
+        light_level = self.sensor.get_brightness()
+        threshold_low = period_config.get('max_light_level', 0)
+        
+        # Wenn kein Schwellenwert gesetzt ist, kann die Logik nicht arbeiten
+        if threshold_low <= 0:
+            return False
+
+        # Hysterese: Ausschalt-Schwelle ist höher als die Einschalt-Schwelle
+        threshold_high = int(threshold_low * 1.25)
+
+        # Fall 1: Es wird dunkel -> Fading-Logik aktivieren
+        if light_level < threshold_low:
+            # Formel zur inversen linearen Skalierung der Helligkeit
+            bri = 1 + (253 * (threshold_low - light_level) / threshold_low)
+            bri = max(1, min(254, int(bri)))
+
+            # Wenn die Regelung gerade erst startet, setze die komplette Szene
+            if not self.is_brightness_control_active:
+                self.log.info(f"[{self.name}] Starte Helligkeitsregelung. Sensor: {light_level} -> Lampe: {bri}")
+                base_scene_name = period_config['scene_name']
+                base_scene = self.scenes.get(base_scene_name)
+                if not base_scene:
+                    self.log.warning(f"[{self.name}] Basis-Szene '{base_scene_name}' nicht gefunden.")
+                    return True
+
+                new_state = copy.deepcopy(base_scene.get_state())
+                new_state['on'] = True
+                new_state['bri'] = bri
+                self.room.apply_state(new_state)
+            # Wenn die Regelung bereits läuft, passe nur die Helligkeit an
+            else:
+                self.log.info(f"[{self.name}] Update Helligkeitsregelung. Sensor: {light_level} -> Lampe: {bri}")
+                self.room.apply_state({'bri': bri})
+            
+            self.is_brightness_control_active = True
+            self.state = self.STATE_BRIGHTNESS_ACTIVE
+            return True # Die Logik wurde ausgeführt
+
+        # Fall 2: Es wird wieder hell -> Licht ausschalten
+        elif light_level > threshold_high and self.is_brightness_control_active:
+            self.log.info(f"[{self.name}] Helligkeit ({light_level}) über Ausschalt-Schwelle ({threshold_high}). Deaktiviere Licht.")
+            self.room.apply_state({'on': False})
+            self.is_brightness_control_active = False
+            self.state = current_period # Zurück zum normalen Zustand
+            return True
+
+        # Fall 3: Wir sind in der Hysterese-Zone oder es ist bereits hell
+        return self.is_brightness_control_active
+
+    def run(self, now):
+        """Führt die Logik der Routine für den aktuellen Zeitpunkt aus."""
+        if not self.enabled or not self.time_span.is_active(now.time()):
+            if self.state != self.STATE_OFF:
+                self.room.apply_state({'on': False})
+                self.state = self.STATE_OFF
+            return
+
+        current_period = self.time_span.get_current_period(now)
+        if not current_period:
+            return
+            
+        period_config = self.config[current_period]
+
+        # Priorität 1: Bewegungserkennung
+        if self.sensor and period_config.get('motion_check', False):
+            if self.sensor.get_motion():
+                if self.state != self.STATE_MOTION:
+                    self.log.info(f"[{self.name}] Bewegung erkannt. Aktiviere Bewegungs-Szene: '{period_config['x_scene_name']}'.")
+                    scene_to_set = self.scenes.get(period_config['x_scene_name'])
+                    if scene_to_set:
+                        self.room.apply_state(scene_to_set.get_state())
+                    self.state = self.STATE_MOTION
+                self.last_motion_time = now
+                return
+
+        # Priorität 2: Timeout nach Bewegung
+        if self.state == self.STATE_MOTION:
+            wait_time_conf = period_config.get('wait_time', {'min': 0, 'sec': 5})
+            timeout_seconds = (wait_time_conf.get('min', 0) * 60) + wait_time_conf.get('sec', 5)
+            if now - self.last_motion_time > timedelta(seconds=timeout_seconds):
+                self.log.info(f"[{self.name}] Keine Bewegung für {timeout_seconds}s. Kehre zum Normalzustand zurück.")
+                # KORREKTUR: Erzwinge eine Neubewertung im nächsten Durchlauf
+                self.state = self.STATE_RESET 
+            else:
+                return # Im Timeout, nichts weiter tun
+
+        # Priorität 3: Helligkeitsregelung (Fading)
+        if self._handle_brightness_control(period_config, current_period):
+            return # Die Helligkeitsregelung hat die Kontrolle übernommen
+
+        # Priorität 4: Standard-Szene für den Zeitraum setzen (wenn keine der obigen Bedingungen zutrifft)
+        if self.state != current_period:
+            self.log.info(f"---------- Zustands-Wechsel für Routine '{self.name}' zu '{current_period}' ----------")
+            self.log.info(f"Setze Normal-Szene: '{period_config['scene_name']}'.")
+            scene_to_set = self.scenes.get(period_config['scene_name'])
+            if scene_to_set:
+                self.room.apply_state(scene_to_set.get_state())
+            self.state = current_period
+            self.is_brightness_control_active = False
 
     def get_status(self):
-        """Returns the current state of the routine for the UI."""
-        current_period_for_status = self.get_current_period(datetime.now().astimezone())
+        """Gibt den aktuellen Status der Routine für die UI zurück."""
+        motion_detected = self.sensor.get_motion() if self.sensor else False
+        brightness = self.sensor.get_brightness() if self.sensor else 'N/A'
+        last_scene_name = 'N/A'
         
-        motion_status_text = "Nicht relevant"
-        is_motion_active_now = False
-        if self.sensor:
-            is_motion_active_now = self.sensor.get_motion()
-            if is_motion_active_now:
-                motion_status_text = f"Aktiv seit {self.last_motion_time:%H:%M:%S}" if self.last_motion_time else "Aktiv"
-            elif self.is_in_motion_state and self.last_motion_time:
-                 motion_status_text = f"Letzte Bewegung um {self.last_motion_time:%H:%M:%S}"
-            else:
-                motion_status_text = "Keine Bewegung"
+        current_period_for_status = self.time_span.get_current_period(datetime.now().astimezone())
+        if self.state == self.STATE_MOTION and current_period_for_status:
+            last_scene_name = self.config[current_period_for_status]['x_scene_name']
+        elif self.state == self.STATE_BRIGHTNESS_ACTIVE and current_period_for_status:
+            last_scene_name = f"Geregelt ({self.config[current_period_for_status]['scene_name']})"
+        elif self.state != self.STATE_OFF and self.config.get(self.state):
+             last_scene_name = self.config.get(self.state, {}).get('scene_name', 'N/A')
 
         return {
             "name": self.name,
             "enabled": self.enabled,
             "period": current_period_for_status,
-            "last_scene": self.last_triggered_scene_name,
-            "motion_status": motion_status_text,
-            "motion_active": is_motion_active_now
+            "motion_status": f"{'Bewegung erkannt' if motion_detected else 'Keine Bewegung'}",
+            "last_scene": last_scene_name,
+            "brightness": brightness 
         }
-
-    def run(self, now: datetime):
-        """Executes the routine logic for the current time."""
-        if not self.enabled:
-            if self.current_period is not None:
-                self.log.info(f"[{self.name}] Routine deaktiviert, wird übersprungen.")
-                self.current_period = None
-            return
-
-        period = self.get_current_period(now)
-        
-        if not period:
-            if self.current_period is not None:
-                self.log.info(f"[{self.name}] Routine jetzt inaktiv.")
-            self.current_period = None
-            return
-
-        section_config = getattr(self, f"{period}_conf", None)
-        if not section_config:
-            return
-
-        normal_scene_name = section_config.get('scene_name')
-        motion_scene_name = section_config.get('x_scene_name')
-
-        if period != self.current_period:
-            self.log.info(f"---------- Zustands-Wechsel für Routine '{self.name}' ----------")
-            self.log.info(f"Neuer Zustand: {period.upper()}")
-            scene_obj = self.scenes.get(normal_scene_name)
-            if scene_obj:
-                self.log.info(f"Setze Normal-Szene: '{normal_scene_name}'.")
-                self.room.turn_groups(scene_obj)
-                self.last_triggered_scene_name = normal_scene_name
-            self.current_period = period
-            self.last_motion_time = None
-            self.is_in_motion_state = False
-
-        if not self.sensor or not section_config.get('motion_check', False):
-            return
-
-        has_motion = self.sensor.get_motion()
-        
-        if has_motion and not self.motion_logged:
-            self.log.info(f"[{self.name}] Bewegung erkannt.")
-            self.motion_logged = True
-        elif not has_motion:
-            self.motion_logged = False
-
-        if section_config.get('do_not_disturb', False) and self.room.is_any_light_on():
-            if has_motion:
-                self.last_motion_time = now
-            self.log.debug(f"[{self.name}] 'Nicht stören' aktiv und Licht ist an. Ignoriere Trigger.")
-            return
-
-        if has_motion:
-            if not self.is_in_motion_state:
-                self.last_motion_time = now
-            
-            scene_to_trigger = motion_scene_name
-            
-            if section_config.get('bri_check', False):
-                brightness = self.sensor.get_brightness()
-                max_light = section_config.get('max_light_level', 0)
-                self.log.debug(f"[{self.name}] Helligkeits-Check: Aktuell={brightness}, Max={max_light}")
-                if brightness > max_light:
-                    self.log.debug(f"[{self.name}] Zu hell für Bewegungs-Szene. Keine Aktion.")
-                    return
-
-            if self.last_triggered_scene_name != scene_to_trigger:
-                scene_obj = self.scenes.get(scene_to_trigger)
-                if scene_obj:
-                    self.log.info(f"[{self.name}] Aktiviere Bewegungs-Szene: '{scene_to_trigger}'.")
-                    self.room.turn_groups(scene_obj)
-                    self.last_triggered_scene_name = scene_to_trigger
-            self.is_in_motion_state = True
-        
-        else: # Keine Bewegung
-            if self.is_in_motion_state:
-                wait_time_conf = section_config.get('wait_time', {'min': 5, 'sec': 0})
-                wait_delta = timedelta(minutes=wait_time_conf.get('min', 0), seconds=wait_time_conf.get('sec', 0))
-
-                if self.last_motion_time and (now > self.last_motion_time + wait_delta):
-                    scene_obj = self.scenes.get(normal_scene_name)
-                    if scene_obj:
-                        self.log.info(f"[{self.name}] Keine Bewegung für {wait_delta}. Kehre zu '{normal_scene_name}' zurück.")
-                        self.room.turn_groups(scene_obj)
-                        self.last_triggered_scene_name = normal_scene_name
-                    
-                    self.is_in_motion_state = False

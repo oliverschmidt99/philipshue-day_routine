@@ -1,45 +1,52 @@
-# src/sensor.py
-# (Inhaltlich unverändert, nur Kommentare bereinigt)
-
 class Sensor:
-    """Reads and provides data from a Hue motion sensor."""
+    """
+    Liest Daten von einem Hue-Bewegungssensor und stellt sie bereit.
+    Verwendet die +1/+2 Logik, um die zugehörigen Licht- und Temperatursensoren zu finden.
+    """
+
     def __init__(self, bridge, sensor_id, log):
-        """Initializes the Sensor object."""
+        """Initialisiert das Sensor-Objekt und die zugehörigen IDs."""
         self.bridge = bridge
-        self.sensor_id = int(sensor_id)
         self.log = log
-        if not self._get_sensor_data():
-             self.log.error(f"Failed to initialize sensor {self.sensor_id}. Not found on bridge.")
+        self.motion_sensor_id = int(sensor_id)
+        
+        # Annahme, dass der Helligkeitssensor die ID+1 und der Temperatursensor
+        # die ID+2 hat, basierend auf dem Standard-Verhalten der Hue Bridge.
+        self.light_sensor_id = self.motion_sensor_id + 1
+        self.temp_sensor_id = self.motion_sensor_id + 2
 
-    def _get_sensor_data(self):
-        """Fetches the raw sensor data dictionary from the bridge."""
+        self.log.info(f"Initialisiere Sensor-Einheit für Bewegungs-ID: {self.motion_sensor_id}")
+        self.log.info(f"-> Annahme für Lichtsensor-ID: {self.light_sensor_id}")
+        self.log.info(f"-> Annahme für Temperatursensor-ID: {self.temp_sensor_id}")
+
+
+    def _get_state_value(self, sensor_id, key, default_value):
+        """Holt einen bestimmten Wert aus dem 'state'-Dictionary eines bestimmten Sensors."""
+        if sensor_id is None:
+            return default_value
         try:
-            sensor_data = self.bridge.get_sensor(self.sensor_id)
-            if not sensor_data:
-                self.log.warning(f"No data received for sensor {self.sensor_id}.")
-            return sensor_data
+            # Direkt den State abfragen, ist effizienter
+            state = self.bridge.get_sensor(sensor_id, 'state')
+            if state:
+                self.log.debug(f"Sensor {sensor_id} raw state: {state}")
+                return state.get(key, default_value)
+            self.log.warning(f"Kein 'state' für Sensor {sensor_id} empfangen.")
+            return default_value
         except Exception as e:
-            self.log.error(f"Error fetching data for sensor {self.sensor_id}: {e}")
-            return None
-
-    def _get_state_value(self, key, default_value):
-        """Gets a specific value from the sensor's 'state' dictionary."""
-        sensor_data = self._get_sensor_data()
-        if sensor_data and 'state' in sensor_data:
-            return sensor_data['state'].get(key, default_value)
-        return default_value
+            # Es ist normal, dass ein Sensor nicht gefunden wird, wenn er nicht existiert.
+            # Daher wird hier eine Debug-Nachricht anstelle eines Fehlers verwendet.
+            self.log.debug(f"Fehler beim Abrufen des Zustands für Sensor {sensor_id}: {e}")
+            return default_value
 
     def get_motion(self) -> bool:
-        """Returns True if motion is detected, False otherwise."""
-        return self._get_state_value('presence', False)
+        """Gibt True zurück, wenn eine Bewegung erkannt wird, sonst False."""
+        return self._get_state_value(self.motion_sensor_id, 'presence', False)
 
     def get_brightness(self) -> int:
-        """Returns the brightness value (lightlevel)."""
-        return self._get_state_value('lightlevel', 0)
+        """Gibt den Helligkeitswert (lightlevel) vom zugehörigen Lichtsensor zurück."""
+        return self._get_state_value(self.light_sensor_id, 'lightlevel', 0)
 
     def get_temperature(self) -> float:
-        """Returns the temperature in degrees Celsius."""
-        temp = self._get_state_value('temperature', 0)
+        """Gibt die Temperatur in Grad Celsius vom zugehörigen Temperatursensor zurück."""
+        temp = self._get_state_value(self.temp_sensor_id, 'temperature', 0)
         return temp / 100.0
-
-# ---

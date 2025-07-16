@@ -1,28 +1,83 @@
-# src/daily_time_span.py
-
-from datetime import time
+from datetime import time, datetime, timedelta
 
 class DailyTimeSpan:
     """
-    Defines a daily time range and checks if a given time is within it.
+    Verwaltet die Zeitberechnungen für eine tägliche Routine, einschließlich der
+    dynamischen Bestimmung von Morgen, Tag, Abend und Nacht basierend auf
+    Sonnenauf- und -untergang.
     """
-    def __init__(self, H1, M1, H2, M2):
-        """Initializes the time span from H1:M1 to H2:M2."""
-        self.time_start = time(H1, M1)
-        self.time_end = time(H2, M2)
 
-    def check_time(self, t_now: time):
+    def __init__(self, start_time, end_time, sun_times, time_spans_config, log):
         """
-        Checks if the current time is within the defined span.
+        Initialisiert das DailyTimeSpan-Objekt.
 
-        Handles time spans that cross midnight.
+        Args:
+            start_time (datetime.time): Die allgemeine Startzeit der Routine.
+            end_time (datetime.time): Die allgemeine Endzeit der Routine.
+            sun_times (dict): Ein Dictionary mit 'sunrise' und 'sunset' Objekten.
+            time_spans_config (dict): Konfiguration für die einzelnen Zeiträume.
+            log: Das Logger-Objekt.
         """
-        # KORREKTUR: Wir verwenden t_now direkt, da es bereits ein time-Objekt ist.
-        current_time = t_now
+        self.overall_start = start_time
+        self.overall_end = end_time
+        self.sun_times = sun_times
+        self.time_spans_config = time_spans_config
+        self.log = log
+        self.periods = self._calculate_periods()
+
+    def _resolve_time(self, time_str):
+        """Wandelt einen String ('sunrise', 'sunset', 'HH:MM') in ein time-Objekt um."""
+        if isinstance(time_str, time):
+            return time_str
+        if self.sun_times:
+            if time_str == 'sunrise':
+                return self.sun_times['sunrise'].time()
+            if time_str == 'sunset':
+                return self.sun_times['sunset'].time()
+        # Fallback, falls Sonnenzeiten nicht verfügbar sind
+        elif time_str in ['sunrise', 'sunset']:
+             self.log.warning(f"'{time_str}' kann nicht aufgelöst werden, da keine Sonnenzeiten verfügbar sind. Verwende 06:00/18:00.")
+             return time(6, 0) if time_str == 'sunrise' else time(18, 0)
         
-        if self.time_start <= self.time_end:
-            # e.g., 08:00 - 22:00
-            return self.time_start <= current_time <= self.time_end
-        else:
-            # e.g., 22:00 - 06:00
-            return self.time_start <= current_time or current_time <= self.time_end
+        return datetime.strptime(time_str, '%H:%M').time()
+
+    def _calculate_periods(self):
+        """Berechnet die Start- und Endzeiten für jeden Zeitraum."""
+        periods = {}
+        if not self.time_spans_config:
+            self.log.error("Keine 'time_spans_config' zum Berechnen der Perioden vorhanden.")
+            return periods
+            
+        for name, (start_str, end_str) in self.time_spans_config.items():
+            try:
+                start_time = self._resolve_time(start_str)
+                end_time = self._resolve_time(end_str)
+                periods[name] = (start_time, end_time)
+            except Exception as e:
+                self.log.error(f"Fehler beim Berechnen der Periode '{name}': {e}")
+        return periods
+
+    def is_active(self, current_time):
+        """Prüft, ob die Routine zur aktuellen Zeit insgesamt aktiv ist."""
+        # Behandelt den Fall, dass die Routine über Mitternacht läuft (z.B. 22:00 - 06:00)
+        if self.overall_start > self.overall_end:
+            return current_time >= self.overall_start or current_time < self.overall_end
+        return self.overall_start <= current_time < self.overall_end
+
+    def get_current_period(self, now):
+        """Gibt den Namen des aktuellen Zeitraums (z.B. 'day') zurück."""
+        current_time = now.time()
+        if not self.is_active(current_time):
+            return None
+
+        for name, (start, end) in self.periods.items():
+            # Behandelt den Fall, dass ein Zeitraum über Mitternacht läuft
+            if start > end:
+                if current_time >= start or current_time < end:
+                    return name
+            # Normaler Fall
+            elif start <= current_time < end:
+                return name
+        
+        self.log.debug(f"Für die Zeit {current_time} wurde keine passende Periode gefunden.")
+        return None
