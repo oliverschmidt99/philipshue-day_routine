@@ -7,7 +7,6 @@
     <title>Hue Routine und Scene Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
-    <!-- NEU: Chart.js für Diagramme -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -42,7 +41,6 @@
             white-space: pre-wrap;
         }
 
-        /* NEU: Styling für die Hilfe-Seite */
         .readme-content {
             background-color: white;
             padding: 2rem;
@@ -119,7 +117,6 @@
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
                 <button type="button" id="tab-status"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Status</button>
-                <!-- NEUE REITER -->
                 <button type="button" id="tab-analyse"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-500 hover:text-blue-700 hover:border-blue-300">Analyse</button>
                 <button type="button" id="tab-einstellungen"
@@ -166,7 +163,6 @@
                 </div>
             </div>
 
-            <!-- NEUER INHALT: ANALYSE -->
             <div id="content-analyse" class="hidden space-y-6">
                 <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
                 <div class="bg-white p-4 rounded-lg shadow-md">
@@ -186,6 +182,8 @@
                         <div class="flex space-x-2">
                             <button type="button" data-period="day"
                                 class="analyse-period-btn bg-blue-500 text-white px-4 py-2 rounded-md w-full">Tag</button>
+                            <button type="button" data-period="week"
+                                class="analyse-period-btn bg-gray-200 px-4 py-2 rounded-md w-full">Woche</button>
                             <button type="button" data-period="month"
                                 class="analyse-period-btn bg-gray-200 px-4 py-2 rounded-md w-full">Monat</button>
                             <button type="button" data-period="year"
@@ -201,7 +199,6 @@
                 </div>
             </div>
 
-            <!-- NEUER INHALT: EINSTELLUNGEN -->
             <div id="content-einstellungen" class="hidden">
                 <h2 class="text-2xl font-semibold">Allgemeine Einstellungen</h2>
                 <div class="bg-white p-6 rounded-lg shadow-md mt-4">
@@ -210,7 +207,6 @@
                 </div>
             </div>
 
-            <!-- NEUER INHALT: HILFE -->
             <div id="content-hilfe" class="hidden">
                 <div id="readme-content" class="readme-content">
                     <p class="text-center">Lade README.md...</p>

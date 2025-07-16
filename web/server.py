@@ -4,7 +4,7 @@ import json
 import sqlite3
 import markdown
 import yaml
-import logging # NEU: Import für das Logging-Modul
+import logging
 from datetime import datetime, timedelta
 
 # Füge das Hauptverzeichnis zum Python-Pfad hinzu, damit wir die src-Module importieren können
@@ -26,7 +26,7 @@ README_FILE = 'readme.md'
 app = Flask(__name__)
 log = Logger(LOG_FILE)
 
-# NEU: Deaktiviere das Standard-Logging von Flask/Werkzeug, um die Konsole sauber zu halten
+# Deaktiviere das Standard-Logging von Flask/Werkzeug, um die Konsole sauber zu halten
 werkzeug_log = logging.getLogger('werkzeug')
 werkzeug_log.setLevel(logging.ERROR)
 
@@ -136,51 +136,83 @@ def get_data_history():
     """Liefert historische Sensordaten für die Diagramme."""
     try:
         sensor_id = request.args.get('sensor_id', type=int)
-        period = request.args.get('period', 'day') # day, month, year
+        period = request.args.get('period', 'day')
         start_date_str = request.args.get('date')
 
         if not sensor_id or not start_date_str:
             return jsonify({"error": "sensor_id und date sind erforderlich"}), 400
 
         start_date = datetime.fromisoformat(start_date_str)
+        
+        agg_format = ""
+        date_format = ""
 
         if period == 'day':
             end_date = start_date + timedelta(days=1)
             date_format = "%H:%M"
+            agg_format = "" # Keine Aggregation für die Tagesansicht
+        elif period == 'week':
+            start_of_week = start_date - timedelta(days=start_date.weekday())
+            end_date = start_of_week + timedelta(days=7)
+            date_format = "%a, %d.%m."
+            agg_format = "%Y-%m-%d" # Aggregation pro Tag
         elif period == 'month':
             year = start_date.year + (start_date.month // 12)
             month = start_date.month % 12 + 1
             end_date = datetime(year, month, 1)
-            date_format = "%d.%m"
+            date_format = "%d.%m."
+            agg_format = "%Y-%m-%d" # Aggregation pro Tag
         elif period == 'year':
             end_date = datetime(start_date.year + 1, 1, 1)
             date_format = "%B"
+            agg_format = "%Y-%m" # Aggregation pro Monat
         else:
             return jsonify({"error": "Ungültiger Zeitraum"}), 400
         
         con = sqlite3.connect(DB_FILE)
         cur = con.cursor()
 
-        cur.execute("""
-            SELECT timestamp, value FROM measurements 
-            WHERE sensor_id = ? AND measurement_type = 'brightness' AND timestamp >= ? AND timestamp < ?
-            ORDER BY timestamp
-        """, (sensor_id, start_date.isoformat(), end_date.isoformat()))
-        brightness_data = cur.fetchall()
+        def fetch_aggregated_data(measurement_type, target_sensor_id):
+            if agg_format:
+                query = f"""
+                    SELECT strftime('{agg_format}', timestamp) as agg_time, AVG(value) 
+                    FROM measurements 
+                    WHERE sensor_id = ? AND measurement_type = ? AND timestamp >= ? AND timestamp < ?
+                    GROUP BY agg_time
+                    ORDER BY agg_time
+                """
+            else:
+                query = """
+                    SELECT timestamp, value 
+                    FROM measurements 
+                    WHERE sensor_id = ? AND measurement_type = ? AND timestamp >= ? AND timestamp < ?
+                    ORDER BY timestamp
+                """
+            cur.execute(query, (target_sensor_id, measurement_type, start_date.isoformat(), end_date.isoformat()))
+            return cur.fetchall()
 
-        cur.execute("""
-            SELECT timestamp, value FROM measurements 
-            WHERE sensor_id = ? AND measurement_type = 'temperature' AND timestamp >= ? AND timestamp < ?
-            ORDER BY timestamp
-        """, (sensor_id + 1, start_date.isoformat(), end_date.isoformat()))
-        temperature_data = cur.fetchall()
+        brightness_data = fetch_aggregated_data('brightness', sensor_id)
+        temperature_data = fetch_aggregated_data('temperature', sensor_id + 1)
 
         con.close()
 
+        def format_label(ts_str, fmt, agg):
+            if agg == "%Y-%m-%d":
+                return datetime.strptime(ts_str, "%Y-%m-%d").strftime(fmt)
+            elif agg == "%Y-%m":
+                return datetime.strptime(ts_str, "%Y-%m").strftime(fmt)
+            else:
+                return datetime.fromisoformat(ts_str).strftime(fmt)
+
+        all_labels_raw = sorted(list(set([row[0] for row in brightness_data] + [row[0] for row in temperature_data])))
+        
+        brightness_dict = dict(brightness_data)
+        temperature_dict = dict(temperature_data)
+        
         chart_data = {
-            'labels': [datetime.fromisoformat(row[0]).strftime(date_format) for row in brightness_data],
-            'brightness': [row[1] for row in brightness_data],
-            'temperature': [row[1] for row in temperature_data]
+            'labels': [format_label(raw, date_format, agg_format) for raw in all_labels_raw],
+            'brightness': [brightness_dict.get(raw) for raw in all_labels_raw],
+            'temperature': [temperature_dict.get(raw) for raw in all_labels_raw]
         }
         
         return jsonify(chart_data)
@@ -205,6 +237,5 @@ def get_readme():
 
 
 if __name__ == '__main__':
-    # Starte den Flask-Server im Debug-Modus
+    # Starte den Flask-Server
     app.run(debug=False, port=5000, host='0.0.0.0')
-
