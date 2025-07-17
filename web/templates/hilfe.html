@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<div class="prose max-w-none">
+    <h2 class="text-2xl font-bold">Willkommen beim Hue Routine Editor!</h2>
+    <p>
+        Diese Anwendung hilft dir dabei, deine Philips Hue Beleuchtung intelligent und automatisiert zu steuern.
+        Hier findest du eine Erklärung der wichtigsten Funktionen.
+    </p>
+
+    <h3 class="text-xl font-semibold mt-6 border-b pb-2">Routinen</h3>
+    <p>
+        Das Herzstück der Anwendung. Hier kannst du komplexe tägliche Abläufe für deine Lampen erstellen.
+        Eine Routine ist an einen Raum gebunden und definiert, wie sich das Licht über vier Tagesabschnitte (Morgen,
+        Tag, Abend, Nacht) verhalten soll. Du kannst für jeden Abschnitt festlegen, welche Szene aktiviert wird, ob auf
+        Bewegung reagiert werden soll und vieles mehr.
+    </p>
+
+    <h3 class="text-xl font-semibold mt-6 border-b pb-2">Szenen</h3>
+    <p>
+        Eine Szene ist eine Lichteinstellung. Sie definiert, ob das Licht an oder aus ist, welche Helligkeit, welche
+        Farbe oder welche Farbtemperatur (Weißton) es haben soll. Routinen verwenden diese Szenen, um das Licht zu
+        bestimmten Zeiten oder bei Ereignissen zu schalten.
+    </p>
+
+    <h3 class="text-xl font-semibold mt-6 border-b pb-2">Status</h3>
+    <p>
+        Auf dieser Seite siehst du in Echtzeit, was deine Routinen gerade tun. Du kannst überprüfen, welche Routine
+        aktiv ist, in welchem Tageszeitraum sie sich befindet und ob gerade eine Bewegung erkannt wurde. Hier findest du
+        auch die Live-Log-Ausgaben des Servers zur Fehleranalyse.
+    </p>
+
+    <h3 class="text-xl font-semibold mt-6 border-b pb-2">Analyse</h3>
+    <p>
+        Visualisiere die von deinen Sensoren aufgezeichneten Daten. Wähle einen Sensor und einen Zeitraum aus, um
+        Diagramme zur Helligkeit und Temperatur anzuzeigen. Das hilft dir zu verstehen, wie die Umgebungsbedingungen in
+        deinen Räumen sind.
+    </p>
+
+    <h3 class="text-xl font-semibold mt-6 border-b pb-2">Einstellungen</h3>
+    <p>
+        Hier kannst du die Anwendung konfigurieren:
+    </p>
+    <ul class="list-disc list-inside space-y-2 mt-2">
+        <li><strong>IP-Adresse der Hue Bridge:</strong> Gib hier die lokale IP-Adresse deiner Hue Bridge ein. Diese ist
+            entscheidend für die Verbindung. Nach einer Änderung ist ein Neustart des Systems erforderlich.</li>
+        <li><strong>Backup erstellen:</strong> Sichert deine komplette Konfiguration und alle Messdaten in einer
+            einzigen ZIP-Datei. Lade diese Datei herunter, um deine Einstellungen zu sichern.</li>
+        <li><strong>Neue Messreihe starten:</strong> Archiviert die bisher gesammelten Messdaten und beginnt mit einer
+            neuen, leeren Messdatei. Nützlich, um die Analyse übersichtlich zu halten.</li>
+        <li><strong>Messreihen zusammenführen:</strong> Fügt die zuletzt archivierte Messreihe an die aktuelle an.
+            Praktisch, wenn du eine Archivierung rückgängig machen möchtest.</li>
+        <li><strong>System neustarten:</strong> Startet die Server-Anwendung neu. Dies ist nach wichtigen Änderungen
+            (wie der Bridge-IP) notwendig.</li>
+    </ul>
+</div>

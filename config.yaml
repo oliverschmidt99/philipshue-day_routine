@@ -1,4 +1,10 @@
 bridge_ip: 192.168.178.42
+global_settings:
+  datalogger_interval_minutes: 15
+  day_start_time: '12:00'
+  hysteresis_percent: 25
+  log_level: INFO
+  night_start_time: '23:00'
 location:
   elevation: 110
   latitude: 52.2059
@@ -26,51 +32,51 @@ rooms:
 routines:
 - daily_time:
     H1: 8
-    H2: 23
     M1: 0
-    M2: 2
+    H2: 0
+    M2: 0
   day:
+    scene_name: warm_mid
+    x_scene_name: cold_max
     bri_check: true
-    do_not_disturb: false
     max_light_level: 20000
     motion_check: false
-    scene_name: 'off'
     wait_time:
       min: 0
       sec: 10
-    x_scene_name: cold_max
+    do_not_disturb: false
   enabled: true
   evening:
+    scene_name: warm_min
+    x_scene_name: warm_max
     bri_check: true
-    do_not_disturb: false
     max_light_level: 20000
     motion_check: false
-    scene_name: warm_min
     wait_time:
       min: 0
       sec: 20
-    x_scene_name: warm_max
-  morning:
-    bri_check: true
     do_not_disturb: false
+  morning:
+    scene_name: night
+    x_scene_name: night
+    bri_check: true
     max_light_level: 1000
     motion_check: false
-    scene_name: night
     wait_time:
       min: 0
       sec: 0
-    x_scene_name: night
+    do_not_disturb: false
   name: TEST
   night:
+    scene_name: night
+    x_scene_name: night
     bri_check: false
-    do_not_disturb: false
     max_light_level: 0
     motion_check: false
-    scene_name: night
     wait_time:
       min: 0
       sec: 0
-    x_scene_name: night
+    do_not_disturb: false
   room_name: Zimmer_Olli
 scenes:
   cold_max:
@@ -109,9 +115,3 @@ scenes:
     sat: 0
     status: true
     t_time: 10
-global_settings:
-  hysteresis_percent: 25
-  day_start_time: '12:00'
-  night_start_time: '23:00'
-  datalogger_interval_minutes: 15
-  log_level: INFO
