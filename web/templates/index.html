@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -202,9 +203,18 @@
             <div id="content-einstellungen" class="hidden space-y-6">
                 <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Linke Spalte -->
                     <div class="space-y-6">
+                        <!-- Bridge IP -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Bridge-Verbindung</h3>
+                            <label for="setting-bridge-ip" class="block text-sm font-medium text-gray-700">IP-Adresse
+                                der Hue Bridge</label>
+                            <input type="text" id="setting-bridge-ip"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+
                         <!-- Standort -->
                         <div class="bg-white p-6 rounded-lg shadow-md">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Standort für Sonnenzeiten</h3>
@@ -223,10 +233,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- Rechte Spalte -->
+                    <div class="space-y-6">
                         <!-- Regelungsparameter -->
                         <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Regelung &amp; Zeit</h3>
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Regelung &amp; Logging</h3>
                             <div class="space-y-4">
                                 <div>
                                     <label for="setting-hysteresis"
@@ -236,28 +249,6 @@
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                                     <p class="mt-1 text-xs text-gray-500">Verhindert Flackern. Standard: 25%</p>
                                 </div>
-                                <div>
-                                    <label for="setting-day-start"
-                                        class="block text-sm font-medium text-gray-700">Startzeit "Tag"</label>
-                                    <input type="time" id="setting-day-start"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-                                <div>
-                                    <label for="setting-night-start"
-                                        class="block text-sm font-medium text-gray-700">Startzeit "Nacht"</label>
-                                    <input type="time" id="setting-night-start"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Rechte Spalte -->
-                    <div class="space-y-6">
-                        <!-- Daten & Logging -->
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Daten &amp; Logging</h3>
-                            <div class="space-y-4">
                                 <div>
                                     <label for="setting-datalogger-interval"
                                         class="block text-sm font-medium text-gray-700">Datenlogger Intervall
@@ -274,29 +265,43 @@
                                         <option value="DEBUG">Detailliert (Debug)</option>
                                     </select>
                                 </div>
-                                <button type="button" id="btn-clear-db"
-                                    class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">Messdaten-Historie
-                                    löschen</button>
-                            </div>
-                        </div>
-
-                        <!-- System-Aktionen -->
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">System-Aktionen</h3>
-                            <div class="space-y-4">
-                                <button type="button" id="btn-restart-app"
-                                    class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
-                                    neu starten</button>
-                                <button type="button" id="btn-backup-config"
-                                    class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Konfiguration
-                                    sichern</button>
-                                <button type="button" id="btn-restore-config"
-                                    class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Konfiguration
-                                    wiederherstellen</button>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- System-Aktionen -->
+                <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Daten und System-Aktionen</h3>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <button type="button" id="btn-backup"
+                                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center">
+                                <i class="fas fa-download mr-2"></i> Backup erstellen
+                            </button>
+                            <button type="button" id="btn-new-series"
+                                class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center">
+                                <i class="fas fa-plus-circle mr-2"></i> Neue Messreihe
+                            </button>
+                            <button type="button" id="btn-merge-series"
+                                class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center">
+                                <i class="fas fa-code-merge mr-2"></i> Messreihen verbinden
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <button type="button" id="btn-restart-app"
+                                class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
+                                neu starten</button>
+                            <button type="button" id="btn-backup-config"
+                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+                                disabled>Konfiguration sichern</button>
+                            <button type="button" id="btn-restore-config"
+                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+                                disabled>Konfiguration wiederherstellen</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-6 flex justify-end">
                     <button type="button" id="btn-save-settings"
                         class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">Einstellungen
@@ -414,18 +419,18 @@
                         const waitTimeString = `${waitTime.min || 0}m ${waitTime.sec || 0}s`;
 
                         return `
-                    <div class="py-2 px-3 ${sectionColors[name] || 'bg-gray-50'} rounded-md">
-                        <p class="font-semibold capitalize flex items-center">${icons[name] || ''} <span class="ml-2">${name}</span></p>
-                        <div class="text-sm text-gray-700 grid grid-cols-2 gap-x-4">
-                            <span><strong class="font-medium">Normal-Szene:</strong> ${section.scene_name}</span>
-                            <span><strong class="font-medium">Bewegungs-Szene:</strong> ${section.x_scene_name}</span>
-                            <span><strong class="font-medium">Bewegung:</strong> ${section.motion_check ? `Ja (${waitTimeString})` : 'Nein'}</span>
-                            <span><strong class="font-medium">Nicht stören:</strong> ${section.do_not_disturb ? 'Ja' : 'Nein'}</span>
-                            <span><strong class="font-medium">Helligkeits-Check:</strong> ${section.bri_check ? 'Ja' : 'Nein'}</span>
-                            ${section.bri_check ? `<span><strong class="font-medium">Max. Helligkeit:</strong> ${section.max_light_level}</span>` : ''}
+                        <div class="py-2 px-3 ${sectionColors[name] || 'bg-gray-50'} rounded-md">
+                            <p class="font-semibold capitalize flex items-center">${icons[name] || ''} <span class="ml-2">${name}</span></p>
+                            <div class="text-sm text-gray-700 grid grid-cols-2 gap-x-4">
+                                <span><strong class="font-medium">Normal-Szene:</strong> ${section.scene_name}</span>
+                                <span><strong class="font-medium">Bewegungs-Szene:</strong> ${section.x_scene_name}</span>
+                                <span><strong class="font-medium">Bewegung:</strong> ${section.motion_check ? `Ja (${waitTimeString})` : 'Nein'}</span>
+                                <span><strong class="font-medium">Nicht stören:</strong> ${section.do_not_disturb ? 'Ja' : 'Nein'}</span>
+                                <span><strong class="font-medium">Helligkeits-Check:</strong> ${section.bri_check ? 'Ja' : 'Nein'}</span>
+                                ${section.bri_check ? `<span><strong class="font-medium">Max. Helligkeit:</strong> ${section.max_light_level}</span>` : ''}
+                            </div>
                         </div>
-                    </div>
-                `}).join('');
+                    `}).join('');
 
                     const dailyTime = routine.daily_time || { H1: 0, M1: 0, H2: 23, M2: 59 };
 
@@ -485,8 +490,8 @@
                     sceneEl.innerHTML = `
                     <div>
                         <div class="flex items-center mb-2">
-                             <div class="w-6 h-6 rounded-full mr-3 border border-gray-300" style="${colorPreviewStyle}"></div>
-                             <h4 class="text-xl font-semibold capitalize">${name.replace(/_/g, ' ')}</h4>
+                            <div class="w-6 h-6 rounded-full mr-3 border border-gray-300" style="${colorPreviewStyle}"></div>
+                            <h4 class="text-xl font-semibold capitalize">${name.replace(/_/g, ' ')}</h4>
                         </div>
                         <div class="mt-2 text-sm text-gray-600 space-y-1">
                             <p>Status: <span class="font-medium ${scene.status ? 'text-green-600' : 'text-red-600'}">${scene.status ? 'An' : 'Aus'}</span></p>
@@ -497,8 +502,8 @@
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end space-x-2">
-                         <button type="button" data-action="edit-scene" data-name="${name}" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">Bearbeiten</button>
-                         <button type="button" data-action="delete-scene" data-name="${name}" class="text-red-500 hover:text-red-700 text-sm font-semibold">Löschen</button>
+                        <button type="button" data-action="edit-scene" data-name="${name}" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">Bearbeiten</button>
+                        <button type="button" data-action="delete-scene" data-name="${name}" class="text-red-500 hover:text-red-700 text-sm font-semibold">Löschen</button>
                     </div>
                 `;
                     scenesContainer.appendChild(sceneEl);
@@ -714,15 +719,15 @@
                     <div class="p-6">
                         <h3 class="text-2xl font-bold mb-4">Neue Routine erstellen</h3>
                         <form id="form-create-routine" class="space-y-4">
-                             <div>
-                                <label for="new-routine-name" class="block text-sm font-medium text-gray-700">Routine-Name</label>
-                                <input type="text" id="new-routine-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
+                                <div>
+                                    <label for="new-routine-name" class="block text-sm font-medium text-gray-700">Routine-Name</label>
+                                    <input type="text" id="new-routine-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
                             <div>
                                 <label for="new-routine-group" class="block text-sm font-medium text-gray-700">Raum / Zone</label>
                                 <select id="new-routine-group" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${groupOptions}</select>
                             </div>
-                             <div>
+                                <div>
                                 <label for="new-routine-sensor" class="block text-sm font-medium text-gray-700">Bewegungsmelder</label>
                                 <select id="new-routine-sensor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                                     <option value="">Kein Sensor (rein zeitgesteuert)</option>
@@ -736,7 +741,7 @@
                         <button type="button" data-action="create-routine" class="bg-blue-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium hover:bg-blue-700">Routine erstellen</button>
                     </div>
                 </div>
-             `;
+               `;
                 modal.classList.remove('hidden');
             };
 
@@ -891,7 +896,7 @@
             const startStatusUpdates = () => {
                 if (statusInterval) clearInterval(statusInterval);
                 updateStatus();
-                statusInterval = setInterval(updateStatus, 5000); // Intervall für schnellere Updates
+                statusInterval = setInterval(updateStatus, 5000);
             };
 
             const updateClock = () => {
@@ -908,7 +913,6 @@
                 dateInput.valueAsDate = new Date();
 
                 sensorSelect.innerHTML = '';
-                // KORREKTUR: Iteriere über alle verfügbaren Sensoren
                 if (bridgeData.sensors) {
                     bridgeData.sensors.forEach(sensor => {
                         const option = document.createElement('option');
@@ -1002,7 +1006,7 @@
                                     text: 'Temperatur (°C)'
                                 },
                                 grid: {
-                                    drawOnChartArea: false, // nur die Achse und Ticks zeichnen
+                                    drawOnChartArea: false,
                                 },
                             }
                         }
@@ -1027,11 +1031,10 @@
                 const settings = config.global_settings || {};
                 const location = config.location || {};
 
+                document.getElementById('setting-bridge-ip').value = config.bridge_ip || '';
                 document.getElementById('setting-latitude').value = location.latitude || '';
                 document.getElementById('setting-longitude').value = location.longitude || '';
                 document.getElementById('setting-hysteresis').value = settings.hysteresis_percent || 25;
-                document.getElementById('setting-day-start').value = settings.day_start_time || '12:00';
-                document.getElementById('setting-night-start').value = settings.night_start_time || '23:00';
                 document.getElementById('setting-datalogger-interval').value = settings.datalogger_interval_minutes || 15;
                 document.getElementById('setting-loglevel').value = settings.log_level || 'INFO';
             };
@@ -1039,14 +1042,14 @@
             const saveSettings = async () => {
                 const newConfig = JSON.parse(JSON.stringify(config));
 
+                newConfig.bridge_ip = document.getElementById('setting-bridge-ip').value;
+
                 if (!newConfig.location) newConfig.location = {};
                 newConfig.location.latitude = parseFloat(document.getElementById('setting-latitude').value);
                 newConfig.location.longitude = parseFloat(document.getElementById('setting-longitude').value);
 
                 if (!newConfig.global_settings) newConfig.global_settings = {};
                 newConfig.global_settings.hysteresis_percent = parseInt(document.getElementById('setting-hysteresis').value);
-                newConfig.global_settings.day_start_time = document.getElementById('setting-day-start').value;
-                newConfig.global_settings.night_start_time = document.getElementById('setting-night-start').value;
                 newConfig.global_settings.datalogger_interval_minutes = parseInt(document.getElementById('setting-datalogger-interval').value);
                 newConfig.global_settings.log_level = document.getElementById('setting-loglevel').value;
 
@@ -1069,7 +1072,7 @@
                     try {
                         const response = await fetch(url, { method: 'POST' });
                         const result = await response.json();
-                        if (!response.ok) throw new Error(result.error);
+                        if (!response.ok) throw new Error(result.error || result.message);
                         showToast(result.message);
                     } catch (error) {
                         showToast(`Fehler: ${error.message}`, true);
@@ -1077,11 +1080,17 @@
                 }
             };
 
+            const downloadBackup = () => {
+                if (confirm('Möchtest du ein Backup der Konfiguration und Messdaten erstellen?')) {
+                    window.location.href = '/api/config/backup';
+                }
+            }
+
             document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
             document.getElementById('btn-restart-app').addEventListener('click', () => systemAction('/api/system/restart', 'Möchtest du die Anwendung wirklich neu starten?'));
-            document.getElementById('btn-clear-db').addEventListener('click', () => systemAction('/api/database/clear', 'Möchtest du wirklich ALLE Messdaten unwiderruflich löschen?'));
-            document.getElementById('btn-backup-config').addEventListener('click', () => systemAction('/api/config/backup', 'Möchtest du ein Backup der aktuellen Konfiguration erstellen?'));
-            document.getElementById('btn-restore-config').addEventListener('click', () => systemAction('/api/config/restore', 'Möchtest du die Konfiguration aus dem Backup wiederherstellen? Aktuelle Änderungen gehen verloren.'));
+            document.getElementById('btn-backup').addEventListener('click', downloadBackup);
+            document.getElementById('btn-new-series').addEventListener('click', () => systemAction('/api/database/new_series', 'Möchtest du wirklich eine neue Messreihe starten? Die alte wird archiviert.'));
+            document.getElementById('btn-merge-series').addEventListener('click', () => systemAction('/api/database/merge_series', 'Möchtest du die neueste archivierte Messreihe mit der aktuellen zusammenführen?'));
 
 
             document.body.addEventListener('click', (e) => {
@@ -1093,7 +1102,6 @@
                         const routineIndex = parseInt(target.dataset.index);
                         config.routines[routineIndex].enabled = target.checked;
                         showToast(`Routine '${config.routines[routineIndex].name}' ${target.checked ? 'aktiviert' : 'deaktiviert'}.`);
-                        saveFullConfig();
                         break;
                     case 'delete-scene':
                         if (confirm(`Möchtest du die Szene "${target.dataset.name}" wirklich löschen?`)) {
@@ -1158,8 +1166,6 @@
                 toastElement.classList.remove('hidden');
                 setTimeout(() => toastElement.classList.add('hidden'), 4000);
             };
-            const showLoading = () => routinesContainer.innerHTML = `<p class="text-gray-500 text-center">Lade Daten von der Bridge...</p>`;
-            const hideLoading = () => { };
 
             init();
         });

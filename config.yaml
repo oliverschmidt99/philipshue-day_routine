@@ -33,7 +33,7 @@ routines:
 - daily_time:
     H1: 8
     M1: 0
-    H2: 0
+    H2: 23
     M2: 0
   day:
     scene_name: warm_mid
