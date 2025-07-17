@@ -8,11 +8,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
         }
 
         .tab-active {
@@ -104,8 +106,13 @@
                 <h1 class="text-4xl font-bold text-gray-900">Hue Editor</h1>
                 <p class="text-lg text-gray-600">Verwalte deine Routinen und Lichtszenen.</p>
             </div>
-            <div id="clock" class="text-2xl font-semibold text-gray-700 bg-white px-4 py-2 rounded-lg shadow">
-                --:--:--
+            <div class="flex items-center space-x-4">
+                <div id="sun-times" class="text-right text-gray-600 text-sm p-2 bg-yellow-200 rounded-lg">
+                    <!-- Sonnenzeiten werden hier via JS eingefügt -->
+                </div>
+                <div id="clock" class="text-2xl font-semibold text-gray-700 bg-white px-4 py-2 rounded-lg shadow">
+                    --:--:--
+                </div>
             </div>
         </header>
 
@@ -166,47 +173,33 @@
 
             <div id="content-analyse" class="hidden space-y-6">
                 <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
-                <div class="bg-white p-4 rounded-lg shadow-md">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                        <div>
-                            <label for="analyse-sensor" class="block text-sm font-medium text-gray-700">Sensor
-                                auswählen</label>
-                            <select id="analyse-sensor"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></select>
-                        </div>
-                        <div>
-                            <label for="analyse-date" class="block text-sm font-medium text-gray-700">Datum
-                                auswählen</label>
-                            <input type="date" id="analyse-date"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        </div>
-                        <div class="flex space-x-2">
-                            <button type="button" data-period="day"
-                                class="analyse-period-btn bg-blue-500 text-white px-4 py-2 rounded-md w-full">Tag</button>
-                            <button type="button" data-period="week"
-                                class="analyse-period-btn bg-gray-200 px-4 py-2 rounded-md w-full">Woche</button>
-                            <button type="button" data-period="month"
-                                class="analyse-period-btn bg-gray-200 px-4 py-2 rounded-md w-full">Monat</button>
-                            <button type="button" data-period="year"
-                                class="analyse-period-btn bg-gray-200 px-4 py-2 rounded-md w-full">Jahr</button>
-                        </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <select id="analyse-sensor"
+                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                        <select id="analyse-period"
+                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="day">Tag</option>
+                            <option value="week">Woche</option>
+                        </select>
+                        <input type="date" id="analyse-date-picker"
+                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="week" id="analyse-week-picker"
+                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            style="display: none;">
                         <button type="button" id="btn-fetch-data"
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Daten
-                            laden</button>
+                            class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600">
+                            <i class="fas fa-sync-alt mr-2"></i>Daten laden
+                        </button>
                     </div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-md">
                     <canvas id="sensor-chart"></canvas>
                 </div>
             </div>
 
             <div id="content-einstellungen" class="hidden space-y-6">
                 <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Linke Spalte -->
                     <div class="space-y-6">
-                        <!-- Bridge IP -->
                         <div class="bg-white p-6 rounded-lg shadow-md">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Bridge-Verbindung</h3>
                             <label for="setting-bridge-ip" class="block text-sm font-medium text-gray-700">IP-Adresse
@@ -214,8 +207,6 @@
                             <input type="text" id="setting-bridge-ip"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                         </div>
-
-                        <!-- Standort -->
                         <div class="bg-white p-6 rounded-lg shadow-md">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Standort für Sonnenzeiten</h3>
                             <div class="grid grid-cols-1 gap-y-4">
@@ -234,10 +225,7 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Rechte Spalte -->
                     <div class="space-y-6">
-                        <!-- Regelungsparameter -->
                         <div class="bg-white p-6 rounded-lg shadow-md">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Regelung &amp; Logging</h3>
                             <div class="space-y-4">
@@ -269,8 +257,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- System-Aktionen -->
                 <div class="bg-white p-6 rounded-lg shadow-md mt-6">
                     <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Daten und System-Aktionen</h3>
                     <div class="space-y-4">
@@ -301,7 +287,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="mt-6 flex justify-end">
                     <button type="button" id="btn-save-settings"
                         class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">Einstellungen
@@ -314,7 +299,6 @@
                     <p class="text-center">Lade README.md...</p>
                 </div>
             </div>
-
         </main>
 
         <footer class="mt-12 text-center">
@@ -352,19 +336,13 @@
             const toastElement = document.getElementById('toast');
             const clockElement = document.getElementById('clock');
             const refreshButton = document.getElementById('btn-refresh-status');
+            const sunTimesContainer = document.getElementById('sun-times');
 
             const icons = {
-                morning: '🌅',
-                day: '☀️',
-                evening: '🌄',
-                night: '🌕'
+                morning: '🌅', day: '☀️', evening: '🌇', night: '🌕'
             };
-
             const sectionColors = {
-                morning: 'bg-yellow-100',
-                day: 'bg-sky-100',
-                evening: 'bg-orange-100',
-                night: 'bg-indigo-100'
+                morning: 'bg-yellow-100', day: 'bg-sky-100', evening: 'bg-orange-100', night: 'bg-indigo-100'
             };
 
             const init = async () => {
@@ -433,7 +411,6 @@
                     `}).join('');
 
                     const dailyTime = routine.daily_time || { H1: 0, M1: 0, H2: 23, M2: 59 };
-
                     const isEnabled = routine.enabled !== false;
 
                     routineEl.innerHTML = `
@@ -486,7 +463,6 @@
                         colorPreviewStyle = `background-color: rgb(${Math.round(red)}, ${Math.round(red * 0.8 + blue * 0.2)}, ${Math.round(blue)});`;
                     }
 
-
                     sceneEl.innerHTML = `
                     <div>
                         <div class="flex items-center mb-2">
@@ -507,6 +483,34 @@
                     </div>
                 `;
                     scenesContainer.appendChild(sceneEl);
+                }
+            };
+
+            const renderSunTimes = (sunTimes) => {
+                if (sunTimes && sunTimes.sunrise) {
+                    const sunrise = new Date(sunTimes.sunrise).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                    const sunset = new Date(sunTimes.sunset).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                    sunTimesContainer.innerHTML = `
+                        <div>
+                            <span>Sonnenaufgang:</span>
+                            <span class="font-semibold">${sunrise}</span>
+                        </div>
+                        <div>
+                            <span>Sonnenuntergang:</span>
+                            <span class="font-semibold">${sunset}</span>
+                        </div>
+                    `;
+                } else {
+                    sunTimesContainer.innerHTML = `
+                        <div>
+                            <span>Sonnenaufgang:</span>
+                            <span class="font-semibold">--:--</span>
+                        </div>
+                        <div>
+                            <span>Sonnenuntergang:</span>
+                            <span class="font-semibold">--:--</span>
+                        </div>
+                    `;
                 }
             };
 
@@ -535,9 +539,7 @@
                         <span><strong>Routine-Status:</strong> <span class="${enabledColor}">${status.enabled ? 'Aktiviert' : 'Deaktiviert'}</span></span>
                         <span><strong>Aktueller Zeitraum:</strong> <span class="flex items-center">${icons[status.period] || ''} <span class="ml-1">${status.period || 'Inaktiv'}</span></span></span>
                         <span><strong>Letzte geschaltete Szene:</strong> ${status.last_scene || 'N/A'}</span>
-                        
                         <span class="md:col-span-3"><strong>Konfigurierte Szene (für '${status.period}'):</strong> ${currentSceneInfo}</span>
-                        
                         <span class="${motionColor}"><strong>Bewegung:</strong> ${status.motion_status || 'N/A'}</span>
                         <span><strong>Helligkeit (Sensor):</strong> ${status.brightness !== 'N/A' ? status.brightness : 'Kein Sensor'}</span>
                     </div>
@@ -547,7 +549,7 @@
             };
 
             const renderLog = (logText) => {
-                logContainer.innerHTML = ''; // Clear previous content
+                logContainer.innerHTML = '';
                 const lines = logText.split('\n');
                 lines.forEach(line => {
                     const span = document.createElement('span');
@@ -570,7 +572,6 @@
                 const isEditing = sceneName !== null;
                 const scene = isEditing ? config.scenes[sceneName] : { status: true, bri: 128, sat: 254, ct: 300, t_time: 10 };
                 const modal = document.getElementById('modal-scene');
-
                 const isColorMode = scene.hue !== undefined;
 
                 modal.innerHTML = `
@@ -583,27 +584,22 @@
                                 <label for="scene-name" class="block text-sm font-medium text-gray-700">Szenen-Name</label>
                                 <input type="text" id="scene-name" value="${isEditing ? sceneName : ''}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" ${isEditing ? 'readonly' : ''}>
                             </div>
-                            
                             <div class="flex space-x-4 border-b pb-2">
                                 <label><input type="radio" name="color-mode" value="ct" ${!isColorMode ? 'checked' : ''}> Weißtöne</label>
                                 <label><input type="radio" name="color-mode" value="color" ${isColorMode ? 'checked' : ''}> Farbe</label>
                             </div>
-
                             <div id="ct-controls" class="${isColorMode ? 'hidden' : ''}">
                                 <label for="scene-ct" class="block text-sm font-medium text-gray-700">Farbtemperatur (Kalt ⟷ Warm)</label>
                                 <input type="range" id="scene-ct" min="153" max="500" value="${scene.ct || 300}" class="w-full ct-slider">
                             </div>
-
                             <div id="color-controls" class="${!isColorMode ? 'hidden' : ''}">
                                 <label class="block text-sm font-medium text-gray-700">Farbe</label>
                                 <div id="color-picker-container" class="flex justify-center my-2"></div>
                             </div>
-
                             <div>
                                 <label for="scene-bri" class="block text-sm font-medium text-gray-700">Helligkeit (0-254)</label>
                                 <input type="range" id="scene-bri" min="0" max="254" value="${scene.bri}" class="w-full">
                             </div>
-
                             <div class="flex items-center">
                                 <input type="checkbox" id="scene-status" ${scene.status ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300">
                                 <label for="scene-status" class="ml-2 block text-sm text-gray-900">Licht an</label>
@@ -646,18 +642,15 @@
                     return `
                 <div class="p-4 border-2 rounded-lg ${sectionColors[name]}" data-section-name="${name}">
                     <h5 class="font-semibold capitalize mb-3 text-lg flex items-center">${icons[name] || ''} <span class="ml-2">${name}</span></h5>
-                    
                     <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                         <!-- Szenen -->
                         <div><label class="block font-medium">Normal-Szene</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-scene-name">${sceneOptions.replace(`value="${section.scene_name}"`, `value="${section.scene_name}" selected`)}</select></div>
                         <div><label class="block font-medium">Szene bei Bewegung</label><select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-x-scene-name">${sceneOptions.replace(`value="${section.x_scene_name}"`, `value="${section.x_scene_name}" selected`)}</select></div>
-                        
                         <!-- Helligkeit -->
                         <div class="col-span-2 border-t mt-2 pt-2">
                             <div class="flex items-center"><input type="checkbox" ${section.bri_check ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 section-bri-check"><label class="ml-2 font-medium">Helligkeit prüfen (für Bewegung)</label></div>
                             <div class="mt-1"><label class="block">Max. Helligkeit</label><input type="number" value="${section.max_light_level}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm section-max-light-level"></div>
                         </div>
-
                         <!-- Bewegung -->
                         <div class="col-span-2 border-t mt-2 pt-2">
                             <div class="flex items-center"><input type="checkbox" ${section.motion_check ? 'checked' : ''} class="h-4 w-4 rounded border-gray-300 section-motion-check"><label class="ml-2 font-medium">Auf Bewegung reagieren</label></div>
@@ -741,7 +734,7 @@
                         <button type="button" data-action="create-routine" class="bg-blue-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium hover:bg-blue-700">Routine erstellen</button>
                     </div>
                 </div>
-               `;
+                `;
                 modal.classList.remove('hidden');
             };
 
@@ -884,9 +877,17 @@
                         fetch('/api/status'),
                         fetch('/api/log')
                     ]);
-                    const statuses = await statusRes.json();
+                    const statusData = await statusRes.json();
                     const logText = await logRes.text();
-                    renderStatus(statuses);
+
+                    if (statusData && typeof statusData === 'object' && !Array.isArray(statusData)) {
+                        renderStatus(statusData.routines || []);
+                        renderSunTimes(statusData.sun_times || null);
+                    } else {
+                        renderStatus([]);
+                        renderSunTimes(null);
+                    }
+
                     renderLog(logText);
                 } catch (error) {
                     console.error("Fehler beim Abrufen des Status:", error);
@@ -906,11 +907,10 @@
 
             const setupAnalyseTab = () => {
                 const sensorSelect = document.getElementById('analyse-sensor');
-                const dateInput = document.getElementById('analyse-date');
+                const periodSelect = document.getElementById('analyse-period');
+                const datePicker = document.getElementById('analyse-date-picker');
+                const weekPicker = document.getElementById('analyse-week-picker');
                 const fetchDataBtn = document.getElementById('btn-fetch-data');
-                const periodBtns = document.querySelectorAll('.analyse-period-btn');
-
-                dateInput.valueAsDate = new Date();
 
                 sensorSelect.innerHTML = '';
                 if (bridgeData.sensors) {
@@ -922,93 +922,116 @@
                     });
                 }
 
-                let selectedPeriod = 'day';
-                periodBtns.forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        periodBtns.forEach(b => b.classList.replace('bg-blue-500', 'bg-gray-200').remove('text-white'));
-                        btn.classList.add('bg-blue-500', 'text-white');
-                        btn.classList.remove('bg-gray-200');
-                        selectedPeriod = btn.dataset.period;
-                    });
+                const today = new Date().toISOString().split('T')[0];
+                datePicker.value = today;
+                const now = new Date();
+                const startOfYear = new Date(now.getFullYear(), 0, 1);
+                const pastDaysOfYear = (now - startOfYear) / 86400000;
+                const weekNumber = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+                weekPicker.value = `${now.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
+
+                periodSelect.addEventListener('change', () => {
+                    if (periodSelect.value === 'week') {
+                        datePicker.style.display = 'none';
+                        weekPicker.style.display = 'block';
+                    } else {
+                        datePicker.style.display = 'block';
+                        weekPicker.style.display = 'none';
+                    }
                 });
 
                 fetchDataBtn.addEventListener('click', () => {
                     const sensorId = sensorSelect.value;
-                    const date = dateInput.value;
+                    const period = periodSelect.value;
+                    let date;
+                    if (period === 'week') {
+                        const [year, weekNum] = weekPicker.value.split('-W');
+                        const d = new Date(year, 0, 1 + (weekNum - 1) * 7);
+                        if (d.getDay() > 1 || d.getDay() === 0) {
+                            d.setDate(d.getDate() + (1 - d.getDay()));
+                        }
+                        date = d.toISOString().split('T')[0];
+                    } else {
+                        date = datePicker.value;
+                    }
                     if (sensorId && date) {
-                        loadChartData(sensorId, selectedPeriod, date);
+                        loadChartData(sensorId, period, date);
                     } else {
                         showToast("Bitte Sensor und Datum auswählen.", true);
                     }
                 });
+
+                if (sensorSelect.value) {
+                    loadChartData(sensorSelect.value, 'day', today);
+                }
             };
 
             const loadChartData = async (sensorId, period, date) => {
                 try {
-                    const lightSensorId = parseInt(sensorId, 10) + 1;
-                    const response = await fetch(`/api/data/history?sensor_id=${lightSensorId}&period=${period}&date=${date}`);
-                    if (!response.ok) throw new Error('Daten konnten nicht geladen werden.');
-
+                    const response = await fetch(`/api/data/history?sensor_id=${sensorId}&period=${period}&date=${date}`);
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || 'Daten konnten nicht geladen werden.');
+                    }
                     const data = await response.json();
-                    renderChart(data);
+                    if (data.error) throw new Error(data.error);
+                    renderChart(data, period, date);
                 } catch (error) {
                     console.error("Fehler beim Laden der Chart-Daten:", error);
                     showToast(error.message, true);
                 }
             };
 
-            const renderChart = (data) => {
+            const renderChart = (data, period, selectedDate) => {
                 const ctx = document.getElementById('sensor-chart').getContext('2d');
                 if (chartInstance) {
                     chartInstance.destroy();
                 }
+
+                let xAxisOptions = {};
+                if (period === 'day') {
+                    xAxisOptions = {
+                        type: 'time',
+                        time: { unit: 'hour', tooltipFormat: 'HH:mm', displayFormats: { hour: 'HH:mm' } },
+                        min: `${selectedDate}T00:00:00`,
+                        max: `${selectedDate}T23:59:59`,
+                        title: { display: true, text: 'Uhrzeit' }
+                    };
+                } else if (period === 'week') {
+                    xAxisOptions = {
+                        type: 'category',
+                        title: { display: true, text: 'Wochentag' }
+                    };
+                }
+
                 chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.labels,
-                        datasets: [
-                            {
-                                label: 'Helligkeit (lightlevel)',
-                                data: data.brightness,
-                                borderColor: 'rgba(255, 206, 86, 1)',
-                                backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                                yAxisID: 'y',
-                                tension: 0.1
-                            },
-                            {
-                                label: 'Temperatur (°C)',
-                                data: data.temperature,
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                yAxisID: 'y1',
-                                tension: 0.1
-                            }
-                        ]
+                        datasets: [{
+                            label: 'Helligkeit (lightlevel)',
+                            data: data.brightness,
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                            yAxisID: 'y',
+                            tension: 0.1,
+                            spanGaps: true,
+                        }, {
+                            label: 'Temperatur (°C)',
+                            data: data.temperature,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            yAxisID: 'y1',
+                            tension: 0.1,
+                            spanGaps: true,
+                        }]
                     },
                     options: {
                         responsive: true,
                         scales: {
-                            y: {
-                                type: 'linear',
-                                display: true,
-                                position: 'left',
-                                title: {
-                                    display: true,
-                                    text: 'Helligkeit (lightlevel)'
-                                }
-                            },
-                            y1: {
-                                type: 'linear',
-                                display: true,
-                                position: 'right',
-                                title: {
-                                    display: true,
-                                    text: 'Temperatur (°C)'
-                                },
-                                grid: {
-                                    drawOnChartArea: false,
-                                },
-                            }
+                            x: xAxisOptions,
+                            y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Helligkeit (lightlevel)' } },
+                            y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Temperatur (°C)' }, grid: { drawOnChartArea: false } }
                         }
                     }
                 });
@@ -1026,7 +1049,6 @@
                 }
             };
 
-            // NEUE Funktionen für die Einstellungen
             const loadSettings = () => {
                 const settings = config.global_settings || {};
                 const location = config.location || {};
@@ -1043,11 +1065,9 @@
                 const newConfig = JSON.parse(JSON.stringify(config));
 
                 newConfig.bridge_ip = document.getElementById('setting-bridge-ip').value;
-
                 if (!newConfig.location) newConfig.location = {};
                 newConfig.location.latitude = parseFloat(document.getElementById('setting-latitude').value);
                 newConfig.location.longitude = parseFloat(document.getElementById('setting-longitude').value);
-
                 if (!newConfig.global_settings) newConfig.global_settings = {};
                 newConfig.global_settings.hysteresis_percent = parseInt(document.getElementById('setting-hysteresis').value);
                 newConfig.global_settings.datalogger_interval_minutes = parseInt(document.getElementById('setting-datalogger-interval').value);
@@ -1060,7 +1080,7 @@
                         body: JSON.stringify(newConfig)
                     });
                     if (!response.ok) throw new Error('Speichern fehlgeschlagen');
-                    config = newConfig; // Lokale Konfiguration aktualisieren
+                    config = newConfig;
                     showToast("Einstellungen gespeichert. Bitte starte die Anwendung neu, damit alle Änderungen wirksam werden.");
                 } catch (error) {
                     showToast(`Fehler: ${error.message}`, true);
@@ -1086,20 +1106,28 @@
                 }
             }
 
+            const showToast = (message, isError = false) => {
+                toastElement.textContent = message;
+                toastElement.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300 ${isError ? 'bg-red-600' : 'bg-gray-900'}`;
+                toastElement.classList.remove('hidden');
+                setTimeout(() => toastElement.classList.add('hidden'), 4000);
+            };
+
             document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
             document.getElementById('btn-restart-app').addEventListener('click', () => systemAction('/api/system/restart', 'Möchtest du die Anwendung wirklich neu starten?'));
             document.getElementById('btn-backup').addEventListener('click', downloadBackup);
             document.getElementById('btn-new-series').addEventListener('click', () => systemAction('/api/database/new_series', 'Möchtest du wirklich eine neue Messreihe starten? Die alte wird archiviert.'));
             document.getElementById('btn-merge-series').addEventListener('click', () => systemAction('/api/database/merge_series', 'Möchtest du die neueste archivierte Messreihe mit der aktuellen zusammenführen?'));
 
-
             document.body.addEventListener('click', (e) => {
                 const action = e.target.dataset.action;
                 const target = e.target;
+                if (!action) return;
+
+                const routineIndex = target.closest('[data-index]')?.dataset.index;
 
                 switch (action) {
                     case 'toggle-routine':
-                        const routineIndex = parseInt(target.dataset.index);
                         config.routines[routineIndex].enabled = target.checked;
                         showToast(`Routine '${config.routines[routineIndex].name}' ${target.checked ? 'aktiviert' : 'deaktiviert'}.`);
                         break;
@@ -1111,14 +1139,14 @@
                         }
                         break;
                     case 'delete-routine':
-                        if (confirm(`Möchtest du die Routine "${config.routines[target.dataset.index].name}" wirklich löschen?`)) {
-                            config.routines.splice(target.dataset.index, 1);
+                        if (confirm(`Möchtest du die Routine "${config.routines[routineIndex].name}" wirklich löschen?`)) {
+                            config.routines.splice(routineIndex, 1);
                             renderAll();
                             showToast("Routine gelöscht.");
                         }
                         break;
                     case 'edit-scene': openSceneModal(target.dataset.name); break;
-                    case 'edit-routine': openEditRoutineModal(target.dataset.index); break;
+                    case 'edit-routine': openEditRoutineModal(routineIndex); break;
                     case 'save-scene': handleSaveScene(); break;
                     case 'save-routine': handleSaveEditedRoutine(); break;
                     case 'create-routine': handleCreateNewRoutine(); break;
@@ -1159,13 +1187,6 @@
                     }
                 });
             });
-
-            const showToast = (message, isError = false) => {
-                toastElement.textContent = message;
-                toastElement.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300 ${isError ? 'bg-red-600' : 'bg-gray-900'}`;
-                toastElement.classList.remove('hidden');
-                setTimeout(() => toastElement.classList.add('hidden'), 4000);
-            };
 
             init();
         });

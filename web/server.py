@@ -6,6 +6,7 @@ import markdown
 import yaml
 import logging
 import shutil
+import time
 from datetime import datetime, timedelta
 
 # Füge das Hauptverzeichnis zum Python-Pfad hinzu, damit wir die src-Module importieren können
@@ -90,11 +91,14 @@ def handle_config():
 
 @app.route('/api/status')
 def get_status():
+    """Gibt den aktuellen Status der Routinen und die Sonnenzeiten zurück."""
     try:
         with open(STATUS_FILE, 'r', encoding='utf-8') as f:
-            return jsonify(json.load(f))
+            data = json.load(f)
+            return jsonify(data)
     except (FileNotFoundError, json.JSONDecodeError):
-        return jsonify([]), 200
+        # KORREKTUR: Gibt eine leere, aber gültige Objektstruktur zurück, die das Frontend erwartet.
+        return jsonify({'routines': [], 'sun_times': None}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -108,63 +112,84 @@ def get_log():
 
 @app.route('/api/data/history')
 def get_data_history():
+    """Gibt historische Sensordaten für die Diagramme zurück."""
     try:
         sensor_id = request.args.get('sensor_id', type=int)
         period = request.args.get('period', 'day')
-        start_date_str = request.args.get('date')
+        date_str = request.args.get('date')
 
-        if not sensor_id or not start_date_str:
+        if sensor_id is None or not date_str:
             return jsonify({"error": "sensor_id und date sind erforderlich"}), 400
 
-        start_date = datetime.fromisoformat(start_date_str)
+        start_date = datetime.fromisoformat(date_str)
         
-        agg_format, date_format, end_date = "", "", None
-        if period == 'day':
-            end_date, date_format, agg_format = start_date + timedelta(days=1), "%H:%M", ""
-        elif period == 'week':
-            start_of_week = start_date - timedelta(days=start_date.weekday())
-            end_date, date_format, agg_format = start_of_week + timedelta(days=7), "%a, %d.%m.", "%Y-%m-%d"
-        elif period == 'month':
-            year, month = (start_date.year, start_date.month % 12 + 1) if start_date.month < 12 else (start_date.year + 1, 1)
-            end_date, date_format, agg_format = datetime(year, month, 1), "%d.%m.", "%Y-%m-%d"
-        elif period == 'year':
-            end_date, date_format, agg_format = datetime(start_date.year + 1, 1, 1), "%B", "%Y-%m"
-        else:
-            return jsonify({"error": "Ungültiger Zeitraum"}), 400
+        # Annahme: Lichtsensor = Bewegungssensor+1, Temperatursensor = Bewegungssensor+2
+        light_sensor_id = sensor_id + 1
+        temp_sensor_id = sensor_id + 2
         
         con = sqlite3.connect(DB_FILE)
         cur = con.cursor()
 
-        def fetch_aggregated_data(measurement_type, target_sensor_id):
-            query = f"""
-                SELECT strftime('{agg_format}', timestamp) as agg_time, AVG(value) 
-                FROM measurements WHERE sensor_id = ? AND measurement_type = ? AND timestamp >= ? AND timestamp < ?
-                GROUP BY agg_time ORDER BY agg_time
-            """ if agg_format else """
-                SELECT timestamp, value FROM measurements 
-                WHERE sensor_id = ? AND measurement_type = ? AND timestamp >= ? AND timestamp < ? ORDER BY timestamp
-            """
-            cur.execute(query, (target_sensor_id, measurement_type, start_date.isoformat(), end_date.isoformat()))
-            return cur.fetchall()
+        if period == 'day':
+            end_date = start_date + timedelta(days=1)
+            
+            cur.execute("SELECT timestamp, value FROM measurements WHERE sensor_id = ? AND measurement_type = 'brightness' AND timestamp >= ? AND timestamp < ? ORDER BY timestamp",
+                        (light_sensor_id, start_date.isoformat(), end_date.isoformat()))
+            brightness_data = cur.fetchall()
+            
+            cur.execute("SELECT timestamp, value FROM measurements WHERE sensor_id = ? AND measurement_type = 'temperature' AND timestamp >= ? AND timestamp < ? ORDER BY timestamp",
+                        (temp_sensor_id, start_date.isoformat(), end_date.isoformat()))
+            temperature_data = cur.fetchall()
 
-        brightness_data = fetch_aggregated_data('brightness', sensor_id)
-        temperature_data = fetch_aggregated_data('temperature', sensor_id + 1)
-        con.close()
+            labels = sorted(list(set([row[0] for row in brightness_data] + [row[0] for row in temperature_data])))
+            brightness_dict = dict(brightness_data)
+            temperature_dict = dict(temperature_data)
 
-        def format_label(ts_str, fmt, agg):
-            dt_obj = datetime.strptime(ts_str, agg) if agg else datetime.fromisoformat(ts_str)
-            return dt_obj.strftime(fmt)
+            return jsonify({
+                'labels': labels,
+                'brightness': [brightness_dict.get(ts) for ts in labels],
+                'temperature': [temperature_dict.get(ts) for ts in labels]
+            })
 
-        all_labels_raw = sorted(list(set([row[0] for row in brightness_data] + [row[0] for row in temperature_data])))
-        brightness_dict, temperature_dict = dict(brightness_data), dict(temperature_data)
-        
-        return jsonify({
-            'labels': [format_label(raw, date_format, agg_format) for raw in all_labels_raw],
-            'brightness': [brightness_dict.get(raw) for raw in all_labels_raw],
-            'temperature': [temperature_dict.get(raw) for raw in all_labels_raw]
-        })
+        elif period == 'week':
+            # KORREKTUR: Logik für die Wochenansicht mit korrekten Labels (Mo-So)
+            start_of_week = start_date - timedelta(days=start_date.weekday())
+            end_of_week = start_of_week + timedelta(days=7)
+            
+            def fetch_weekly_avg(target_sensor_id, m_type):
+                query = """
+                    SELECT strftime('%Y-%m-%d', timestamp) as day, AVG(value)
+                    FROM measurements WHERE sensor_id = ? AND measurement_type = ? AND timestamp >= ? AND timestamp < ?
+                    GROUP BY day ORDER BY day
+                """
+                cur.execute(query, (target_sensor_id, m_type, start_of_week.isoformat(), end_of_week.isoformat()))
+                return dict(cur.fetchall())
+
+            brightness_dict = fetch_weekly_avg(light_sensor_id, 'brightness')
+            temperature_dict = fetch_weekly_avg(temp_sensor_id, 'temperature')
+            
+            week_days_iso = [(start_of_week + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(7)]
+            day_names = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+            
+            return jsonify({
+                'labels': day_names,
+                'brightness': [brightness_dict.get(day) for day in week_days_iso],
+                'temperature': [temperature_dict.get(day) for day in week_days_iso]
+            })
+
+        # Die Logik für 'month' und 'year' bleibt wie in deiner Originaldatei erhalten,
+        # falls du sie wieder hinzufügen möchtest.
+        else:
+             return jsonify({"error": "Ungültiger Zeitraum"}), 400
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+    finally:
+        if 'con' in locals() and con:
+            con.close()
+
 
 @app.route('/api/readme')
 def get_readme():
@@ -174,14 +199,10 @@ def get_readme():
     except FileNotFoundError:
         return "<p>README.md nicht gefunden.</p>", 404
 
-# NEUE Endpunkte für die Einstellungen
 @app.route('/api/system/restart', methods=['POST'])
 def restart_app():
     log.info("Neustart der Anwendung über API ausgelöst.")
-    # Dieser Befehl beendet den aktuellen Prozess und startet ihn neu.
-    # Funktioniert gut in einfachen Szenarien, kann aber bei komplexen Setups unzuverlässig sein.
     try:
-        # Gib dem Frontend Zeit, die Antwort zu empfangen, bevor der Server neu startet.
         def restart_later():
             time.sleep(1)
             os.execv(sys.executable, ['python'] + sys.argv)

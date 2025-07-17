@@ -1,0 +1,10 @@
+[
+  {
+    "name": "TEST",
+    "enabled": true,
+    "period": "day",
+    "motion_status": "Keine Bewegung",
+    "last_scene": "Geregelt (warm_mid)",
+    "brightness": 11853
+  }
+]
