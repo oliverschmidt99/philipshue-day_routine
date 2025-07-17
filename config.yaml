@@ -38,7 +38,7 @@ routines:
   day:
     scene_name: warm_mid
     x_scene_name: cold_max
-    bri_check: true
+    bri_check: false
     max_light_level: 20000
     motion_check: false
     wait_time:

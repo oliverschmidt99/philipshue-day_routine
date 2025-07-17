@@ -1,3 +1,21 @@
+# ================================================================= #
+# Project-specific files
+# ================================================================= #
+# Ignoriert die lokale Konfigurationsdatei. So kann jeder Server
+# (z.B. bei dir und bei deiner Oma) seine eigene Konfiguration haben.
+config.yaml
+config.backup.yaml
+sensor_data.db
+
+# Ignoriert die Statusdatei, da diese Laufzeitinformationen enthält,
+# die nicht versioniert werden sollen.
+status.json
+
+
+# ================================================================= #
+# Standard Python .gitignore (deine Vorlage)
+# ================================================================= #
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -182,11 +200,9 @@ cython_debug/
 .abstra/
 
 # Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
-#  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
-#  you could uncomment the following to ignore the entire vscode folder
-# .vscode/
+#  Es ist eine gute Praxis, den .vscode-Ordner zu ignorieren, damit jeder
+#  Entwickler seine eigenen Editor-Einstellungen haben kann.
+.vscode/
 
 # Ruff stuff:
 .ruff_cache/
