@@ -21,11 +21,15 @@ from src.sensor import Sensor
 from src.routine import Routine
 from src.logger import Logger
 
-CONFIG_FILE = 'config.yaml'
-STATUS_FILE = 'status.json'
-LOG_FILE = 'info.log'
-DB_FILE = 'sensor_data.db'
-SERVER_SCRIPT = os.path.join('web', 'server.py')
+# Globale Dateipfade
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_FILE = os.path.join(BASE_DIR, 'config.yaml')
+CONFIG_LOCK_FILE = os.path.join(BASE_DIR, 'config.yaml.lock')
+STATUS_FILE = os.path.join(BASE_DIR, 'status.json')
+LOG_FILE = os.path.join(BASE_DIR, 'info.log')
+DB_FILE = os.path.join(BASE_DIR, 'sensor_data.db')
+SERVER_SCRIPT = os.path.join(BASE_DIR, 'web', 'server.py')
+
 
 # Hält den Prozess für den Webserver
 server_process = None
@@ -73,7 +77,6 @@ def data_logger_worker(sensors, interval_minutes, log):
                 brightness = sensor.get_brightness()
                 temperature = sensor.get_temperature()
                 
-                # *** HIER IST DIE KORREKTUR ***
                 if brightness is None or temperature is None:
                     log.warning(f"Konnte keine gültigen Daten von Sensor {sensor.motion_sensor_id} abrufen (Netzwerkproblem?), überspringe DB-Eintrag.")
                     continue
@@ -148,7 +151,6 @@ def write_status(routines, sun_times):
         "sun_times": sun_times
     }
     try:
-        # Konvertiere datetime-Objekte in ISO-Strings für JSON-Kompatibilität
         if status_data["sun_times"]:
             serializable_sun_times = status_data["sun_times"].copy()
             serializable_sun_times["sunrise"] = serializable_sun_times["sunrise"].isoformat()
@@ -167,7 +169,7 @@ def run_logic(log):
     config = load_config(log)
     if not config:
         log.error("Laden der Konfiguration fehlgeschlagen. Breche ab.")
-        return False # False beendet das Programm
+        return False
 
     bridge_ip = config.get('bridge_ip')
     if not bridge_ip:
@@ -178,9 +180,8 @@ def run_logic(log):
     if not bridge:
         log.warning("Verbindung zur Bridge fehlgeschlagen. Versuche es in 30 Sekunden erneut...")
         time.sleep(30)
-        return True # True startet die Logik neu
+        return True
 
-    # Ab hier gehen wir davon aus, dass wir eine Bridge-Verbindung haben.
     try:
         global_settings = config.get('global_settings', {})
         datalogger_interval = global_settings.get('datalogger_interval_minutes', 15)
@@ -226,18 +227,28 @@ def run_logic(log):
         last_status_write = time.time()
         
         while True:
-            # 1. Auf Konfigurationsänderung prüfen
+            # Auf Konfigurationsänderung prüfen (mit Lock-File-Check)
             current_mod_time = os.path.getmtime(CONFIG_FILE)
             if current_mod_time > last_mod_time:
-                log.info("Änderung in 'config.yaml' erkannt. Starte die Logik neu...")
-                return True
+                log.info("Änderung in 'config.yaml' erkannt. Warte auf Freigabe (Lock-Datei)...")
+                
+                lock_wait_start = time.time()
+                while os.path.exists(CONFIG_LOCK_FILE):
+                    time.sleep(0.1)
+                    if time.time() - lock_wait_start > 10:
+                        log.error("Lock-Datei wurde nach 10s nicht entfernt. Breche Neustart ab.")
+                        last_mod_time = current_mod_time
+                        break
+                else:
+                    log.info("Konfiguration freigegeben. Starte die Logik neu...")
+                    return True
 
-            # 2. Routinen ausführen
+            # Routinen ausführen
             now = datetime.now().astimezone()
             for routine in routines:
                 routine.run(now)
             
-            # 3. Status schreiben
+            # Status schreiben
             if time.time() - last_status_write > status_interval:
                 write_status(routines, sun_times)
                 last_status_write = time.time()
@@ -246,14 +257,14 @@ def run_logic(log):
 
     except (PhueRequestTimeout, ConnectionError, OSError) as e:
         log.error(f"Netzwerkverbindung zur Bridge verloren: {e}. Starte Logik neu...")
-        time.sleep(10) # Kurze Pause vor dem Neustart
-        return True # Löst einen Neustart der Logik aus
+        time.sleep(10)
+        return True
     except (KeyboardInterrupt, SystemExit):
-        return False # Beendet das Programm
+        return False
     except Exception as e:
         log.error(f"Ein kritischer Fehler in der Hauptschleife ist aufgetreten: {e}", exc_info=True)
         time.sleep(5)
-        return True # Versuche auch hier einen Neustart
+        return True
 
 def start_server(log):
     global server_process
@@ -282,21 +293,17 @@ def cleanup():
     print("Programm beendet.")
 
 if __name__ == "__main__":
-    # Logger einmal initialisieren
     log = Logger(LOG_FILE, level=logging.INFO)
     atexit.register(cleanup)
     start_server(log)
     
-    # Haupt-Schleife, die die Logik am Leben hält und bei Bedarf neu startet
     while True:
-        # run_logic gibt True zurück für Neustart, False für Beenden
         if not run_logic(log):
             break
         
         log.info("Warte 5 Sekunden, bevor die Logik neu gestartet wird...")
         time.sleep(5)
         
-        # Log-Level nach Neustart eventuell anpassen
         config = load_config(log)
         if config:
             new_log_level_str = config.get('global_settings', {}).get('log_level', 'INFO').upper()

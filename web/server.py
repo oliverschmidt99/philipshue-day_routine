@@ -9,20 +9,24 @@ import shutil
 import time
 from datetime import datetime, timedelta
 
-# Füge das Hauptverzeichnis zum Python-Pfad hinzu, damit wir die src-Module importieren können
+# Füge das Hauptverzeichnis zum Python-Pfad hinzu
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from flask import Flask, jsonify, render_template, request
 from src.logger import Logger
 from phue import Bridge
 
-# Konfigurations- und Statusdateien
-CONFIG_FILE = 'config.yaml'
-CONFIG_BACKUP_FILE = 'config.backup.yaml'
-STATUS_FILE = 'status.json'
-LOG_FILE = 'info.log'
-DB_FILE = 'sensor_data.db'
-README_FILE = 'readme.md'
+# Globale Dateipfade
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Gehe ein Verzeichnis nach oben, um im Projekt-Root zu sein
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))
+CONFIG_FILE = os.path.join(PROJECT_ROOT, 'config.yaml')
+CONFIG_LOCK_FILE = os.path.join(PROJECT_ROOT, 'config.yaml.lock')
+CONFIG_BACKUP_FILE = os.path.join(PROJECT_ROOT, 'config.backup.yaml')
+STATUS_FILE = os.path.join(PROJECT_ROOT, 'status.json')
+LOG_FILE = os.path.join(PROJECT_ROOT, 'info.log')
+DB_FILE = os.path.join(PROJECT_ROOT, 'sensor_data.db')
+README_FILE = os.path.join(PROJECT_ROOT, 'readme.md')
 
 # Initialisiere Flask App und Logger
 app = Flask(__name__)
@@ -74,12 +78,26 @@ def handle_config():
     if request.method == 'POST':
         try:
             new_config = request.get_json()
-            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            
+            with open(CONFIG_LOCK_FILE, 'w') as f:
+                pass
+            log.debug("Config-Lock erstellt.")
+
+            temp_file = CONFIG_FILE + '.tmp'
+            with open(temp_file, 'w', encoding='utf-8') as f:
                 yaml.dump(new_config, f, allow_unicode=True, sort_keys=False)
+
+            os.replace(temp_file, CONFIG_FILE)
+            
             log.info("Konfiguration wurde erfolgreich über die API aktualisiert.")
             return jsonify({"message": "Konfiguration erfolgreich gespeichert."})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+        finally:
+            if os.path.exists(CONFIG_LOCK_FILE):
+                os.remove(CONFIG_LOCK_FILE)
+                log.debug("Config-Lock entfernt.")
+
     else: # GET
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
@@ -94,16 +112,13 @@ def get_status():
     """Gibt den aktuellen Status der Routinen und die Sonnenzeiten zurück."""
     try:
         with open(STATUS_FILE, 'r', encoding='utf-8') as f:
-            # Lade die Daten aus der Datei
             data = json.load(f)
-            # Stelle sicher, dass die zurückgegebene Struktur immer korrekt ist
             response_data = {
                 'routines': data.get('routines', []),
                 'sun_times': data.get('sun_times', None)
             }
             return jsonify(response_data)
     except (FileNotFoundError, json.JSONDecodeError):
-        # Wenn die Datei nicht existiert oder fehlerhaft ist, eine leere, aber gültige Struktur senden.
         return jsonify({'routines': [], 'sun_times': None}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -129,7 +144,6 @@ def get_data_history():
 
         start_date = datetime.fromisoformat(date_str)
         
-        # Annahme: Lichtsensor = Bewegungssensor+1, Temperatursensor = Bewegungssensor+2
         light_sensor_id = sensor_id + 1
         temp_sensor_id = sensor_id + 2
         
@@ -158,7 +172,6 @@ def get_data_history():
             })
 
         elif period == 'week':
-            # KORREKTUR: Logik für die Wochenansicht mit korrekten Labels (Mo-So)
             start_of_week = start_date - timedelta(days=start_date.weekday())
             end_of_week = start_of_week + timedelta(days=7)
             
@@ -183,8 +196,6 @@ def get_data_history():
                 'temperature': [temperature_dict.get(day) for day in week_days_iso]
             })
 
-        # Die Logik für 'month' und 'year' bleibt wie in deiner Originaldatei erhalten,
-        # falls du sie wieder hinzufügen möchtest.
         else:
              return jsonify({"error": "Ungültiger Zeitraum"}), 400
 
@@ -211,28 +222,13 @@ def restart_app():
     try:
         def restart_later():
             time.sleep(1)
-            os.execv(sys.executable, ['python'] + sys.argv)
+            os.execv(sys.executable, ['python3'] + sys.argv)
         
-        import threading
         threading.Thread(target=restart_later).start()
         
         return jsonify({"message": "Anwendung wird neu gestartet..."})
     except Exception as e:
         log.error(f"Fehler beim Neustart der Anwendung: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/database/clear', methods=['POST'])
-def clear_database():
-    log.info("Löschen der Datenbank über API ausgelöst.")
-    try:
-        con = sqlite3.connect(DB_FILE)
-        cur = con.cursor()
-        cur.execute("DELETE FROM measurements")
-        con.commit()
-        con.close()
-        return jsonify({"message": "Messdaten-Historie wurde gelöscht."})
-    except Exception as e:
-        log.error(f"Fehler beim Löschen der Datenbank: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/config/backup', methods=['POST'])
