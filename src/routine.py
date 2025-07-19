@@ -85,8 +85,6 @@ class Routine:
         return self.is_brightness_control_active
 
     def run(self, now):
-        # *** HIER IST DIE KORREKTUR ***
-        # Die Prüfung auf is_active() wurde entfernt. Nur der Hauptschalter zählt.
         if not self.enabled:
             if self.state != self.STATE_OFF:
                 self.room.apply_state({'on': False})
@@ -95,7 +93,6 @@ class Routine:
 
         current_period = self.time_span.get_current_period(now)
         if not current_period:
-            # Dieser Fall sollte jetzt kaum noch eintreten, ist aber eine gute Absicherung.
             self.log.debug(f"Keine gültige Periode für {now.time()}, es wird nichts unternommen.")
             return
             
@@ -103,6 +100,25 @@ class Routine:
 
         if self.sensor and period_config.get('motion_check', False):
             if self.sensor.get_motion():
+                
+                # *** HIER IST DIE KORREKTUR ***
+                # Prüfe auf "Bitte nicht stören", BEVOR die Bewegungsszene aktiviert wird.
+                if period_config.get('do_not_disturb', False):
+                    # Finde heraus, ob das Licht an oder aus sein sollte.
+                    normal_scene = self.scenes.get(period_config.get('scene_name'))
+                    if normal_scene:
+                        expected_state_on = normal_scene.status
+                        actual_state_on = self.room.is_any_light_on()
+
+                        # Wenn der Zustand abweicht (z.B. Licht ist an, sollte aber aus sein),
+                        # dann ignoriere die Bewegung.
+                        if actual_state_on is not None and actual_state_on != expected_state_on:
+                            self.log.debug(f"[{self.name}] 'Bitte nicht stören' aktiv. Erwartet: {'An' if expected_state_on else 'Aus'}, Realität: {'An' if actual_state_on else 'Aus'}. Ignoriere Bewegung.")
+                            # Wichtig: Wir aktualisieren trotzdem die last_motion_time, damit der Timeout-Timer nicht abläuft.
+                            self.last_motion_time = now
+                            return
+
+                # Wenn "Bitte nicht stören" nicht aktiv ist oder die Zustände übereinstimmen:
                 if self.state != self.STATE_MOTION:
                     self.log.info(f"[{self.name}] Bewegung erkannt. Aktiviere Bewegungs-Szene: '{period_config['x_scene_name']}'.")
                     scene_to_set = self.scenes.get(period_config['x_scene_name'])
@@ -137,7 +153,6 @@ class Routine:
         motion_detected = self.sensor.get_motion() if self.sensor else False
         brightness_value = self.sensor.get_brightness() if self.sensor else 'N/A'
         
-        # Sicherstellen, dass brightness_value ein numerischer Wert ist für die Anzeige
         try:
             brightness = int(brightness_value) if brightness_value != 'N/A' else 'N/A'
         except (ValueError, TypeError):
