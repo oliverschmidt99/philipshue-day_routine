@@ -31,22 +31,24 @@ class Sensor:
                 self.log.debug(f"Sensor {sensor_id} raw state: {state}")
                 return state.get(key, default_value)
             self.log.warning(f"Kein 'state' für Sensor {sensor_id} empfangen.")
-            return default_value
+            return None # Gibt None bei Fehler zurück
         except Exception as e:
             # Es ist normal, dass ein Sensor nicht gefunden wird, wenn er nicht existiert.
             # Daher wird hier eine Debug-Nachricht anstelle eines Fehlers verwendet.
             self.log.debug(f"Fehler beim Abrufen des Zustands für Sensor {sensor_id}: {e}")
-            return default_value
+            return None # Gibt None bei Fehler zurück
 
     def get_motion(self) -> bool:
         """Gibt True zurück, wenn eine Bewegung erkannt wird, sonst False."""
-        return self._get_state_value(self.motion_sensor_id, 'presence', False)
+        presence = self._get_state_value(self.motion_sensor_id, 'presence', False)
+        return presence if presence is not None else False
 
     def get_brightness(self) -> int:
         """Gibt den Helligkeitswert (lightlevel) vom zugehörigen Lichtsensor zurück."""
-        return self._get_state_value(self.light_sensor_id, 'lightlevel', 0)
+        lightlevel = self._get_state_value(self.light_sensor_id, 'lightlevel', 0)
+        return lightlevel
 
     def get_temperature(self) -> float:
         """Gibt die Temperatur in Grad Celsius vom zugehörigen Temperatursensor zurück."""
         temp = self._get_state_value(self.temp_sensor_id, 'temperature', 0)
-        return temp / 100.0
+        return temp / 100.0 if temp is not None else None

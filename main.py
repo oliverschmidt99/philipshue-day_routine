@@ -9,9 +9,10 @@ import threading
 import logging
 import sys
 from datetime import datetime, date, timedelta
-from phue import Bridge
+from phue import Bridge, PhueRequestTimeout
 from astral.sun import sun
 from astral import LocationInfo
+from requests.exceptions import ConnectionError
 
 # Angepasste Importe für die neue Struktur
 from src.scene import Scene
@@ -72,6 +73,11 @@ def data_logger_worker(sensors, interval_minutes, log):
                 brightness = sensor.get_brightness()
                 temperature = sensor.get_temperature()
                 
+                # *** HIER IST DIE KORREKTUR ***
+                if brightness is None or temperature is None:
+                    log.warning(f"Konnte keine gültigen Daten von Sensor {sensor.motion_sensor_id} abrufen (Netzwerkproblem?), überspringe DB-Eintrag.")
+                    continue
+
                 log.debug(f"Datenlogger: Sensor {sensor.motion_sensor_id} -> Helligkeit={brightness}, Temp={temperature}")
 
                 cur.execute("INSERT OR IGNORE INTO measurements VALUES (?, ?, ?, ?)",
@@ -95,7 +101,6 @@ def load_config(log):
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
-            # FIX: Wenn die Datei leer ist, gibt safe_load None zurück.
             if config is None:
                 log.warning(f"Konfigurationsdatei '{CONFIG_FILE}' ist leer oder ungültig. Wird als leeres Dict behandelt.")
                 return {}
@@ -115,8 +120,11 @@ def connect_bridge(ip, log):
         b.connect()
         log.info("Verbindung zur Hue Bridge erfolgreich hergestellt.")
         return b
+    except (PhueRequestTimeout, ConnectionError) as e:
+        log.error(f"Konnte keine Verbindung zur Bridge herstellen (Netzwerkfehler): {e}")
+        return None
     except Exception as e:
-        log.error(f"Konnte keine Verbindung zur Bridge herstellen: {e}", exc_info=True)
+        log.error(f"Ein unerwarteter Fehler ist beim Verbinden mit der Bridge aufgetreten: {e}", exc_info=True)
         return None
 
 def get_sun_times(location_config, log):
@@ -142,7 +150,6 @@ def write_status(routines, sun_times):
     try:
         # Konvertiere datetime-Objekte in ISO-Strings für JSON-Kompatibilität
         if status_data["sun_times"]:
-            # Erstelle eine Kopie, um das Original-Dictionary nicht zu verändern
             serializable_sun_times = status_data["sun_times"].copy()
             serializable_sun_times["sunrise"] = serializable_sun_times["sunrise"].isoformat()
             serializable_sun_times["sunset"] = serializable_sun_times["sunset"].isoformat()
@@ -151,7 +158,6 @@ def write_status(routines, sun_times):
         with open(STATUS_FILE, 'w', encoding='utf-8') as f:
             json.dump(status_data, f, indent=2)
     except Exception as e:
-        # Verwende den Logger, wenn möglich
         print(f"Fehler beim Schreiben der Status-Datei: {e}")
 
 def run_logic(log):
@@ -160,103 +166,94 @@ def run_logic(log):
     log.info("Lade Konfiguration und starte Hue-Logik...")
     config = load_config(log)
     if not config:
+        log.error("Laden der Konfiguration fehlgeschlagen. Breche ab.")
+        return False # False beendet das Programm
+
+    bridge_ip = config.get('bridge_ip')
+    if not bridge_ip:
+        log.error("Keine 'bridge_ip' in der Konfiguration gefunden. Breche ab.")
         return False
 
-    global_settings = config.get('global_settings', {})
-    datalogger_interval = global_settings.get('datalogger_interval_minutes', 15)
-    status_interval = global_settings.get('status_interval_s', 5)
-
-    try:
-        last_mod_time = os.path.getmtime(CONFIG_FILE)
-    except OSError as e:
-        log.error(f"Konnte Modifikationszeit von '{CONFIG_FILE}' nicht lesen: {e}")
-        return False
-
-    bridge = connect_bridge(config.get('bridge_ip'), log)
+    bridge = connect_bridge(bridge_ip, log)
     if not bridge:
-        return False
+        log.warning("Verbindung zur Bridge fehlgeschlagen. Versuche es in 30 Sekunden erneut...")
+        time.sleep(30)
+        return True # True startet die Logik neu
 
-    sun_times = get_sun_times(config.get('location'), log)
-    
-    scenes = {name: Scene(**params) for name, params in config.get('scenes', {}).items()}
-    
-    # KORREKTUR: Lade ALLE Bewegungssensoren für den Datenlogger
+    # Ab hier gehen wir davon aus, dass wir eine Bridge-Verbindung haben.
     try:
+        global_settings = config.get('global_settings', {})
+        datalogger_interval = global_settings.get('datalogger_interval_minutes', 15)
+        status_interval = global_settings.get('status_interval_s', 5)
+        last_mod_time = os.path.getmtime(CONFIG_FILE)
+        sun_times = get_sun_times(config.get('location'), log)
+        
+        scenes = {name: Scene(**params) for name, params in config.get('scenes', {}).items()}
+        
         all_sensors_data = bridge.get_sensor()
         all_motion_sensor_ids = [int(sid) for sid, data in all_sensors_data.items() if data.get('type') == 'ZLLPresence']
-        log.info(f"Gefundene Bewegungssensoren auf der Bridge: {all_motion_sensor_ids}")
         all_sensor_objects_for_logger = [Sensor(bridge, sensor_id, log) for sensor_id in all_motion_sensor_ids]
-    except Exception as e:
-        log.error(f"Fehler beim Abrufen aller Sensoren von der Bridge: {e}")
-        all_sensor_objects_for_logger = []
 
-    # Erstelle Sensor-Objekte nur für die in Routinen verwendeten Sensoren
-    unique_sensor_ids_in_routines = {room.get('sensor_id') for room in config.get('rooms', []) if room.get('sensor_id')}
-    sensors_for_routines = [Sensor(bridge, sensor_id, log) for sensor_id in unique_sensor_ids_in_routines]
-    
-    room_to_sensor_map = {}
-    for room_conf in config.get('rooms', []):
-        sensor_id = room_conf.get('sensor_id')
-        if sensor_id:
-            sensor_obj = next((s for s in sensors_for_routines if s.motion_sensor_id == sensor_id), None)
-            room_to_sensor_map[room_conf['name']] = sensor_obj
+        unique_sensor_ids_in_routines = {room.get('sensor_id') for room in config.get('rooms', []) if room.get('sensor_id')}
+        sensors_for_routines = {sensor_id: Sensor(bridge, sensor_id, log) for sensor_id in unique_sensor_ids_in_routines}
+        
+        room_to_sensor_map = {
+            room_conf['name']: sensors_for_routines.get(room_conf.get('sensor_id'))
+            for room_conf in config.get('rooms', [])
+        }
 
-    rooms = {room_conf['name']: Room(bridge, log, **room_conf) for room_conf in config.get('rooms', [])}
+        rooms = {room_conf['name']: Room(bridge, log, **room_conf) for room_conf in config.get('rooms', [])}
 
-    routines = []
-    for routine_conf in config.get('routines', []):
-        room_name = routine_conf['room_name']
-        room = rooms.get(room_name)
-        sensor = room_to_sensor_map.get(room_name)
-
-        if not room:
-            log.error(f"Raum '{room_name}' für Routine '{routine_conf['name']}' nicht gefunden.")
-            continue
-
-        routines.append(Routine(
-            name=routine_conf['name'], room=room, sensor=sensor,
-            routine_config=routine_conf, scenes=scenes, sun_times=sun_times, log=log, global_settings=global_settings
-        ))
-    
-    if routines:
+        routines = [
+            Routine(
+                name=r_conf['name'], room=rooms.get(r_conf['room_name']),
+                sensor=room_to_sensor_map.get(r_conf['room_name']),
+                routine_config=r_conf, scenes=scenes, sun_times=sun_times,
+                log=log, global_settings=global_settings
+            )
+            for r_conf in config.get('routines', []) if rooms.get(r_conf['room_name'])
+        ]
+        
         log.info(f"{len(routines)} Routine(n) erfolgreich geladen.")
-    else:
-        log.warning("Keine Routinen in der Konfiguration gefunden.")
 
-    if data_logger_thread is None or not data_logger_thread.is_alive():
-        stop_event.clear()
-        # Übergebe ALLE Sensoren an den Logger
-        data_logger_thread = threading.Thread(target=data_logger_worker, args=(all_sensor_objects_for_logger, datalogger_interval, log))
-        data_logger_thread.daemon = True
-        data_logger_thread.start()
+        if all_sensor_objects_for_logger and (data_logger_thread is None or not data_logger_thread.is_alive()):
+            stop_event.clear()
+            data_logger_thread = threading.Thread(target=data_logger_worker, args=(all_sensor_objects_for_logger, datalogger_interval, log))
+            data_logger_thread.daemon = True
+            data_logger_thread.start()
 
-    log.info("Initialisierung abgeschlossen. Starte Hauptschleife.")
-    last_status_write = time.time()
-    
-    while True:
-        try:
-            try:
-                current_mod_time = os.path.getmtime(CONFIG_FILE)
-                if current_mod_time > last_mod_time:
-                    log.info("Änderung in 'config.yaml' erkannt. Starte die Logik neu...")
-                    return True
-            except OSError:
-                pass
+        log.info("Initialisierung abgeschlossen. Starte Hauptschleife.")
+        last_status_write = time.time()
+        
+        while True:
+            # 1. Auf Konfigurationsänderung prüfen
+            current_mod_time = os.path.getmtime(CONFIG_FILE)
+            if current_mod_time > last_mod_time:
+                log.info("Änderung in 'config.yaml' erkannt. Starte die Logik neu...")
+                return True
 
+            # 2. Routinen ausführen
             now = datetime.now().astimezone()
             for routine in routines:
                 routine.run(now)
             
+            # 3. Status schreiben
             if time.time() - last_status_write > status_interval:
                 write_status(routines, sun_times)
                 last_status_write = time.time()
 
             time.sleep(1)
-        except (KeyboardInterrupt, SystemExit):
-            return False
-        except Exception as e:
-            log.error(f"Ein kritischer Fehler in der Hauptschleife ist aufgetreten: {e}", exc_info=True)
-            time.sleep(5)
+
+    except (PhueRequestTimeout, ConnectionError, OSError) as e:
+        log.error(f"Netzwerkverbindung zur Bridge verloren: {e}. Starte Logik neu...")
+        time.sleep(10) # Kurze Pause vor dem Neustart
+        return True # Löst einen Neustart der Logik aus
+    except (KeyboardInterrupt, SystemExit):
+        return False # Beendet das Programm
+    except Exception as e:
+        log.error(f"Ein kritischer Fehler in der Hauptschleife ist aufgetreten: {e}", exc_info=True)
+        time.sleep(5)
+        return True # Versuche auch hier einen Neustart
 
 def start_server(log):
     global server_process
@@ -285,39 +282,25 @@ def cleanup():
     print("Programm beendet.")
 
 if __name__ == "__main__":
-    initial_log = Logger(LOG_FILE, level=logging.INFO)
-    config = load_config(initial_log)
-
-    if config is not None:
-        log_level_str = config.get('global_settings', {}).get('log_level', 'INFO').upper()
-        log_level = getattr(logging, log_level_str, logging.INFO)
+    # Logger einmal initialisieren
+    log = Logger(LOG_FILE, level=logging.INFO)
+    atexit.register(cleanup)
+    start_server(log)
+    
+    # Haupt-Schleife, die die Logik am Leben hält und bei Bedarf neu startet
+    while True:
+        # run_logic gibt True zurück für Neustart, False für Beenden
+        if not run_logic(log):
+            break
         
-        log = Logger(LOG_FILE, level=log_level)
-        init_database(log)
-        start_server(log)
+        log.info("Warte 5 Sekunden, bevor die Logik neu gestartet wird...")
+        time.sleep(5)
         
-        atexit.register(cleanup)
-        
-        try:
-            while run_logic(log):
-                log.info("Warte 2 Sekunden, bevor die Konfiguration neu geladen wird...")
-                time.sleep(2) # Warte, um dem Webserver Zeit zum Schreiben zu geben
-                
-                config = load_config(log)
-                
-                # *** HIER IST DIE KORREKTUR ***
-                if config is None:
-                    log.error("Konnte Konfiguration nicht neu laden. Breche Neustart ab und versuche es in 10 Sekunden erneut.")
-                    time.sleep(10)
-                    continue
+        # Log-Level nach Neustart eventuell anpassen
+        config = load_config(log)
+        if config:
+            new_log_level_str = config.get('global_settings', {}).get('log_level', 'INFO').upper()
+            log.logger.setLevel(getattr(logging, new_log_level_str, logging.INFO))
+            log.info(f"Log-Level wurde auf {new_log_level_str} gesetzt.")
 
-                new_log_level_str = config.get('global_settings', {}).get('log_level', 'INFO').upper()
-                log.logger.setLevel(getattr(logging, new_log_level_str, logging.INFO))
-                log.info("Log-Level wurde auf " + new_log_level_str + " gesetzt.")
-
-        except (KeyboardInterrupt, SystemExit):
-            pass
-        except Exception as e:
-            log.error(f"Ein unerwarteter Fehler hat das Hauptprogramm beendet: {e}", exc_info=True)
-    else:
-        initial_log.error("Programm konnte nicht gestartet werden, da die Konfiguration initial nicht geladen werden konnte.")
+    log.info("Hauptprogramm wird beendet.")
