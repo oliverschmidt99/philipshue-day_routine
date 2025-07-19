@@ -4,7 +4,7 @@
     "enabled": true,
     "period": "day",
     "motion_status": "Keine Bewegung",
-    "last_scene": "Geregelt (warm_mid)",
-    "brightness": 10876
+    "last_scene": "red",
+    "brightness": 20793
   }
 ]

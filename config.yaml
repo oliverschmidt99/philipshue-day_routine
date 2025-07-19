@@ -36,53 +36,71 @@ routines:
     H2: 23
     M2: 0
   day:
-    scene_name: warm_mid
+    scene_name: red
     x_scene_name: cold_max
-    bri_check: false
+    bri_check: true
     max_light_level: 20000
-    motion_check: false
+    motion_check: true
     wait_time:
       min: 0
       sec: 10
     do_not_disturb: false
   enabled: true
   evening:
-    scene_name: warm_min
-    x_scene_name: warm_max
+    scene_name: grün
+    x_scene_name: cold_max
     bri_check: true
     max_light_level: 20000
-    motion_check: false
+    motion_check: true
     wait_time:
       min: 0
-      sec: 20
+      sec: 10
     do_not_disturb: false
   morning:
-    scene_name: night
-    x_scene_name: night
+    scene_name: blau
+    x_scene_name: cold_max
     bri_check: true
-    max_light_level: 1000
-    motion_check: false
+    max_light_level: 20000
+    motion_check: true
     wait_time:
       min: 0
-      sec: 0
+      sec: 10
     do_not_disturb: false
   name: TEST
   night:
-    scene_name: night
-    x_scene_name: night
-    bri_check: false
-    max_light_level: 0
-    motion_check: false
+    scene_name: gelb
+    x_scene_name: cold_max
+    bri_check: true
+    max_light_level: 20000
+    motion_check: true
     wait_time:
       min: 0
-      sec: 0
+      sec: 10
     do_not_disturb: false
   room_name: Zimmer_Olli
 scenes:
+  blau:
+    bri: 254
+    hue: 43690
+    sat: 254
+    status: true
+    t_time: 10
   cold_max:
     bri: 254
     ct: 153
     sat: 0
+    status: true
+    t_time: 10
+  gelb:
+    bri: 254
+    hue: 10558
+    sat: 254
+    status: true
+    t_time: 10
+  grün:
+    bri: 254
+    hue: 20935
+    sat: 254
     status: true
     t_time: 10
   night:
@@ -96,6 +114,12 @@ scenes:
     ct: 300
     sat: 0
     status: false
+    t_time: 10
+  red:
+    bri: 254
+    hue: 64443
+    sat: 254
+    status: true
     t_time: 10
   warm_max:
     bri: 254
