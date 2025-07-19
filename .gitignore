@@ -23,7 +23,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+*.json
 # Distribution / packaging
 .Python
 build/
@@ -224,3 +224,4 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+status.json
