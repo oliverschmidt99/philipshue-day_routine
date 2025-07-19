@@ -5,8 +5,8 @@
       "enabled": true,
       "period": "day",
       "motion_status": "Keine Bewegung",
-      "last_scene": "Geregelt (red)",
-      "brightness": 18586
+      "last_scene": "Geregelt (off)",
+      "brightness": 12327
     }
   ],
   "sun_times": {

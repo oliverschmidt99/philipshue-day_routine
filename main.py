@@ -94,7 +94,12 @@ def load_config(log):
     """Lädt die Konfiguration aus der YAML-Datei."""
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
+            config = yaml.safe_load(f)
+            # FIX: Wenn die Datei leer ist, gibt safe_load None zurück.
+            if config is None:
+                log.warning(f"Konfigurationsdatei '{CONFIG_FILE}' ist leer oder ungültig. Wird als leeres Dict behandelt.")
+                return {}
+            return config
     except FileNotFoundError:
         log.error(f"Fehler: Die Konfigurationsdatei '{CONFIG_FILE}' wurde nicht gefunden.")
         return None
@@ -167,7 +172,7 @@ def run_logic(log):
         log.error(f"Konnte Modifikationszeit von '{CONFIG_FILE}' nicht lesen: {e}")
         return False
 
-    bridge = connect_bridge(config['bridge_ip'], log)
+    bridge = connect_bridge(config.get('bridge_ip'), log)
     if not bridge:
         return False
 
@@ -280,24 +285,39 @@ def cleanup():
     print("Programm beendet.")
 
 if __name__ == "__main__":
-    config = load_config(Logger(LOG_FILE, level=logging.INFO))
-    log_level_str = config.get('global_settings', {}).get('log_level', 'INFO').upper()
-    log_level = getattr(logging, log_level_str, logging.INFO)
-    
-    log = Logger(LOG_FILE, level=log_level)
-    init_database(log)
-    start_server(log)
-    
-    atexit.register(cleanup)
-    
-    try:
-        while run_logic(log):
-            log.info("Warte 2 Sekunden, bevor die Konfiguration neu geladen wird...")
-            config = load_config(log)
-            log_level_str = config.get('global_settings', {}).get('log_level', 'INFO').upper()
-            log.logger.setLevel(getattr(logging, log_level_str, logging.INFO))
-            time.sleep(2)
-    except (KeyboardInterrupt, SystemExit):
-        pass
-    except Exception as e:
-        log.error(f"Ein unerwarteter Fehler hat das Hauptprogramm beendet: {e}", exc_info=True)
+    initial_log = Logger(LOG_FILE, level=logging.INFO)
+    config = load_config(initial_log)
+
+    if config is not None:
+        log_level_str = config.get('global_settings', {}).get('log_level', 'INFO').upper()
+        log_level = getattr(logging, log_level_str, logging.INFO)
+        
+        log = Logger(LOG_FILE, level=log_level)
+        init_database(log)
+        start_server(log)
+        
+        atexit.register(cleanup)
+        
+        try:
+            while run_logic(log):
+                log.info("Warte 2 Sekunden, bevor die Konfiguration neu geladen wird...")
+                time.sleep(2) # Warte, um dem Webserver Zeit zum Schreiben zu geben
+                
+                config = load_config(log)
+                
+                # *** HIER IST DIE KORREKTUR ***
+                if config is None:
+                    log.error("Konnte Konfiguration nicht neu laden. Breche Neustart ab und versuche es in 10 Sekunden erneut.")
+                    time.sleep(10)
+                    continue
+
+                new_log_level_str = config.get('global_settings', {}).get('log_level', 'INFO').upper()
+                log.logger.setLevel(getattr(logging, new_log_level_str, logging.INFO))
+                log.info("Log-Level wurde auf " + new_log_level_str + " gesetzt.")
+
+        except (KeyboardInterrupt, SystemExit):
+            pass
+        except Exception as e:
+            log.error(f"Ein unerwarteter Fehler hat das Hauptprogramm beendet: {e}", exc_info=True)
+    else:
+        initial_log.error("Programm konnte nicht gestartet werden, da die Konfiguration initial nicht geladen werden konnte.")

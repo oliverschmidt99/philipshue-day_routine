@@ -36,11 +36,11 @@ routines:
     H2: 23
     M2: 0
   day:
-    scene_name: red
-    x_scene_name: cold_max
+    scene_name: 'off'
+    x_scene_name: warm_mid
     bri_check: true
     max_light_level: 20000
-    motion_check: true
+    motion_check: false
     wait_time:
       min: 0
       sec: 10
@@ -49,9 +49,9 @@ routines:
   evening:
     scene_name: grün
     x_scene_name: cold_max
-    bri_check: true
+    bri_check: false
     max_light_level: 20000
-    motion_check: true
+    motion_check: false
     wait_time:
       min: 0
       sec: 10
@@ -59,9 +59,9 @@ routines:
   morning:
     scene_name: blau
     x_scene_name: cold_max
-    bri_check: true
+    bri_check: false
     max_light_level: 20000
-    motion_check: true
+    motion_check: false
     wait_time:
       min: 0
       sec: 10
@@ -70,9 +70,9 @@ routines:
   night:
     scene_name: gelb
     x_scene_name: cold_max
-    bri_check: true
+    bri_check: false
     max_light_level: 20000
-    motion_check: true
+    motion_check: false
     wait_time:
       min: 0
       sec: 10
