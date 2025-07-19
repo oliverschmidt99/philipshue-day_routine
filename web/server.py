@@ -94,10 +94,16 @@ def get_status():
     """Gibt den aktuellen Status der Routinen und die Sonnenzeiten zurück."""
     try:
         with open(STATUS_FILE, 'r', encoding='utf-8') as f:
+            # Lade die Daten aus der Datei
             data = json.load(f)
-            return jsonify(data)
+            # Stelle sicher, dass die zurückgegebene Struktur immer korrekt ist
+            response_data = {
+                'routines': data.get('routines', []),
+                'sun_times': data.get('sun_times', None)
+            }
+            return jsonify(response_data)
     except (FileNotFoundError, json.JSONDecodeError):
-        # KORREKTUR: Gibt eine leere, aber gültige Objektstruktur zurück, die das Frontend erwartet.
+        # Wenn die Datei nicht existiert oder fehlerhaft ist, eine leere, aber gültige Struktur senden.
         return jsonify({'routines': [], 'sun_times': None}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -128,13 +128,25 @@ def get_sun_times(location_config, log):
         log.error(f"Fehler bei der Berechnung der Sonnenzeiten: {e}", exc_info=True)
         return None
 
-def write_status(routines):
-    """Schreibt den aktuellen Status aller Routinen in eine Datei."""
-    status_data = [r.get_status() for r in routines]
+def write_status(routines, sun_times):
+    """Schreibt den aktuellen Status aller Routinen und die Sonnenzeiten in eine Datei."""
+    status_data = {
+        "routines": [r.get_status() for r in routines],
+        "sun_times": sun_times
+    }
     try:
+        # Konvertiere datetime-Objekte in ISO-Strings für JSON-Kompatibilität
+        if status_data["sun_times"]:
+            # Erstelle eine Kopie, um das Original-Dictionary nicht zu verändern
+            serializable_sun_times = status_data["sun_times"].copy()
+            serializable_sun_times["sunrise"] = serializable_sun_times["sunrise"].isoformat()
+            serializable_sun_times["sunset"] = serializable_sun_times["sunset"].isoformat()
+            status_data["sun_times"] = serializable_sun_times
+
         with open(STATUS_FILE, 'w', encoding='utf-8') as f:
             json.dump(status_data, f, indent=2)
     except Exception as e:
+        # Verwende den Logger, wenn möglich
         print(f"Fehler beim Schreiben der Status-Datei: {e}")
 
 def run_logic(log):
@@ -231,7 +243,7 @@ def run_logic(log):
                 routine.run(now)
             
             if time.time() - last_status_write > status_interval:
-                write_status(routines)
+                write_status(routines, sun_times)
                 last_status_write = time.time()
 
             time.sleep(1)
