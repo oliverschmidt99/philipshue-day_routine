@@ -32,26 +32,12 @@ class Routine:
 
 
     def _create_time_span(self, config):
+        """Erstellt das DailyTimeSpan-Objekt für die Routine."""
         daily_time_conf = config.get('daily_time', {})
         start_time = time(daily_time_conf.get('H1', 0), daily_time_conf.get('M1', 0))
         end_time = time(daily_time_conf.get('H2', 23), daily_time_conf.get('M2', 59))
 
-        day_start_str = self.global_settings.get('day_start_time', '12:00')
-        night_start_str = self.global_settings.get('night_start_time', '23:00')
-
-        p_start_morning = 'sunrise'
-        p_start_day = datetime.strptime(day_start_str, '%H:%M').time()
-        p_start_evening = 'sunset'
-        p_start_night = datetime.strptime(night_start_str, '%H:%M').time()
-
-        time_spans = {
-            'morning': (p_start_morning, p_start_day),
-            'day': (p_start_day, p_start_evening),
-            'evening': (p_start_evening, p_start_night),
-            'night': (p_start_night, p_start_morning)
-        }
-
-        return DailyTimeSpan(start_time, end_time, self.sun_times, time_spans, self.log)
+        return DailyTimeSpan(start_time, end_time, self.sun_times, self.log)
 
     def _handle_brightness_control(self, period_config, current_period):
         if not self.sensor or not period_config.get('bri_check', False):
@@ -60,7 +46,7 @@ class Routine:
         light_level = self.sensor.get_brightness()
         threshold_low = period_config.get('max_light_level', 0)
         
-        if threshold_low <= 0:
+        if light_level <= 0:
             return False
 
         hysteresis_percent = self.global_settings.get('hysteresis_percent', 25)
@@ -99,7 +85,9 @@ class Routine:
         return self.is_brightness_control_active
 
     def run(self, now):
-        if not self.enabled or not self.time_span.is_active(now.time()):
+        # *** HIER IST DIE KORREKTUR ***
+        # Die Prüfung auf is_active() wurde entfernt. Nur der Hauptschalter zählt.
+        if not self.enabled:
             if self.state != self.STATE_OFF:
                 self.room.apply_state({'on': False})
                 self.state = self.STATE_OFF
@@ -107,6 +95,8 @@ class Routine:
 
         current_period = self.time_span.get_current_period(now)
         if not current_period:
+            # Dieser Fall sollte jetzt kaum noch eintreten, ist aber eine gute Absicherung.
+            self.log.debug(f"Keine gültige Periode für {now.time()}, es wird nichts unternommen.")
             return
             
         period_config = self.config[current_period]
@@ -145,7 +135,14 @@ class Routine:
 
     def get_status(self):
         motion_detected = self.sensor.get_motion() if self.sensor else False
-        brightness = self.sensor.get_brightness() if self.sensor else 'N/A'
+        brightness_value = self.sensor.get_brightness() if self.sensor else 'N/A'
+        
+        # Sicherstellen, dass brightness_value ein numerischer Wert ist für die Anzeige
+        try:
+            brightness = int(brightness_value) if brightness_value != 'N/A' else 'N/A'
+        except (ValueError, TypeError):
+            brightness = 'N/A'
+
         last_scene_name = 'N/A'
         
         current_period_for_status = self.time_span.get_current_period(datetime.now().astimezone())
