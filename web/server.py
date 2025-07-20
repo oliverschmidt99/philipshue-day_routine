@@ -7,6 +7,7 @@ import yaml
 import logging
 import shutil
 import time
+import threading
 from datetime import datetime, timedelta
 
 # Füge das Hauptverzeichnis zum Python-Pfad hinzu
@@ -18,7 +19,6 @@ from phue import Bridge
 
 # Globale Dateipfade
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Gehe ein Verzeichnis nach oben, um im Projekt-Root zu sein
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))
 CONFIG_FILE = os.path.join(PROJECT_ROOT, 'config.yaml')
 CONFIG_LOCK_FILE = os.path.join(PROJECT_ROOT, 'config.yaml.lock')
@@ -26,7 +26,8 @@ CONFIG_BACKUP_FILE = os.path.join(PROJECT_ROOT, 'config.backup.yaml')
 STATUS_FILE = os.path.join(PROJECT_ROOT, 'status.json')
 LOG_FILE = os.path.join(PROJECT_ROOT, 'info.log')
 DB_FILE = os.path.join(PROJECT_ROOT, 'sensor_data.db')
-README_FILE = os.path.join(PROJECT_ROOT, 'readme.md')
+# Korrekter Pfad zur Hilfedatei
+HELP_FILE = os.path.join(BASE_DIR, 'templates', 'hilfe.html')
 
 # Initialisiere Flask App und Logger
 app = Flask(__name__)
@@ -127,9 +128,12 @@ def get_status():
 def get_log():
     try:
         with open(LOG_FILE, 'r', encoding='utf-8') as f:
-            return "".join(f.readlines()[-500:])
+            lines = f.readlines()
+            return "".join(lines[-500:])
     except FileNotFoundError:
         return "Log-Datei nicht gefunden.", 404
+    except Exception as e:
+        return f"Fehler beim Lesen der Log-Datei: {e}", 500
 
 @app.route('/api/data/history')
 def get_data_history():
@@ -207,14 +211,23 @@ def get_data_history():
         if 'con' in locals() and con:
             con.close()
 
-
-@app.route('/api/readme')
-def get_readme():
+# Diese Route stellt den Inhalt der Hilfedatei bereit.
+@app.route('/api/help', methods=['GET'])
+def get_help():
+    """Liest die hilfe.html und gibt ihren Inhalt als JSON zurück."""
     try:
-        with open(README_FILE, 'r', encoding='utf-8') as f:
-            return markdown.markdown(f.read())
+        with open(HELP_FILE, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return jsonify(content=content)
     except FileNotFoundError:
-        return "<p>README.md nicht gefunden.</p>", 404
+        log.error(f"Hilfedatei nicht gefunden unter: {HELP_FILE}")
+        return jsonify(error="hilfe.html nicht gefunden"), 404
+    except Exception as e:
+        log.error(f"Fehler beim Lesen der Hilfedatei: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Hinzugefügte Log-Meldung zur Verifizierung, dass die Route geladen wird.
+log.info("Route /api/help wurde erfolgreich registriert.")
 
 @app.route('/api/system/restart', methods=['POST'])
 def restart_app():
@@ -222,7 +235,8 @@ def restart_app():
     try:
         def restart_later():
             time.sleep(1)
-            os.execv(sys.executable, ['python3'] + sys.argv)
+            python_executable = sys.executable
+            os.execv(python_executable, [python_executable] + sys.argv)
         
         threading.Thread(target=restart_later).start()
         
@@ -236,7 +250,7 @@ def backup_config():
     log.info("Backup der Konfiguration über API ausgelöst.")
     try:
         shutil.copy(CONFIG_FILE, CONFIG_BACKUP_FILE)
-        return jsonify({"message": f"Konfiguration wurde als '{CONFIG_BACKUP_FILE}' gesichert."})
+        return jsonify({"message": f"Konfiguration wurde als '{os.path.basename(CONFIG_BACKUP_FILE)}' gesichert."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

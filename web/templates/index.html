@@ -44,56 +44,15 @@
             white-space: pre-wrap;
         }
 
-        .readme-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        /* Styles for FAQ Accordion */
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
         }
 
-        .readme-content h1,
-        .readme-content h2,
-        .readme-content h3 {
-            font-weight: bold;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .readme-content h1 {
-            font-size: 1.875rem;
-        }
-
-        .readme-content h2 {
-            font-size: 1.5rem;
-        }
-
-        .readme-content h3 {
-            font-size: 1.25rem;
-        }
-
-        .readme-content p {
-            margin-bottom: 1rem;
-        }
-
-        .readme-content ul {
-            list-style-type: disc;
-            margin-left: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .readme-content code {
-            background-color: #e5e7eb;
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-        }
-
-        .readme-content pre {
-            background-color: #1f2937;
-            color: #d1d5db;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            margin-bottom: 1rem;
+        .faq-question i {
+            transition: transform 0.3s ease-in-out;
         }
     </style>
 </head>
@@ -295,8 +254,8 @@
             </div>
 
             <div id="content-hilfe" class="hidden">
-                <div id="readme-content" class="readme-content">
-                    <p class="text-center">Lade README.md...</p>
+                <div id="help-content-container">
+                    <p class="text-center">Lade Hilfe...</p>
                 </div>
             </div>
         </main>
@@ -1037,15 +996,40 @@
                 });
             };
 
-            const loadReadme = async () => {
-                const readmeContainer = document.getElementById('readme-content');
+            const loadHelpContent = async () => {
+                const helpContainer = document.getElementById('help-content-container');
                 try {
-                    const response = await fetch('/api/readme');
-                    const html = await response.text();
-                    readmeContainer.innerHTML = html;
+                    const response = await fetch('/api/help');
+                    if (!response.ok) {
+                        throw new Error(`Server-Fehler: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    if (data.content) {
+                        helpContainer.innerHTML = data.content;
+
+                        // Event-Listener für das neue Akkordeon hinzufügen
+                        const faqButtons = helpContainer.querySelectorAll('.faq-question');
+                        faqButtons.forEach(button => {
+                            button.addEventListener('click', () => {
+                                const answer = button.nextElementSibling;
+                                const icon = button.querySelector('i');
+
+                                if (answer.style.maxHeight) {
+                                    answer.style.maxHeight = null;
+                                    icon.style.transform = 'rotate(0deg)';
+                                } else {
+                                    answer.style.maxHeight = answer.scrollHeight + "px";
+                                    icon.style.transform = 'rotate(180deg)';
+                                }
+                            });
+                        });
+
+                    } else {
+                        throw new Error("Hilfe-Inhalt ist leer oder fehlerhaft.");
+                    }
                 } catch (error) {
-                    readmeContainer.innerHTML = '<p class="text-red-500">Fehler beim Laden der Hilfe-Datei.</p>';
-                    console.error("Fehler beim Laden der README:", error);
+                    helpContainer.innerHTML = '<p class="text-red-500">Fehler beim Laden der Hilfe-Datei.</p>';
+                    console.error("Fehler beim Laden der Hilfe:", error);
                 }
             };
 
@@ -1165,7 +1149,7 @@
                 { btn: 'tab-status', content: 'content-status' },
                 { btn: 'tab-analyse', content: 'content-analyse', init: setupAnalyseTab },
                 { btn: 'tab-einstellungen', content: 'content-einstellungen', init: loadSettings },
-                { btn: 'tab-hilfe', content: 'content-hilfe', init: loadReadme }
+                { btn: 'tab-hilfe', content: 'content-hilfe', init: loadHelpContent }
             ];
             tabs.forEach(tabInfo => {
                 document.getElementById(tabInfo.btn).addEventListener('click', () => {
