@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!-- Main Application Container -->
+<div id="main-app" class="hidden">
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900">Hue Editor</h1>
+                <p class="text-lg text-gray-600">Verwalte deine Routinen und Lichtszenen.</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="sun-times" class="text-right text-gray-600 text-sm p-2 bg-yellow-200 rounded-lg">
+                </div>
+                <div id="clock" class="text-2xl font-semibold text-gray-700 bg-white px-4 py-2 rounded-lg shadow">
+                    --:--:--
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button type="button" id="tab-routines"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Routinen</button>
+                <button type="button" id="tab-scenes"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
+                <button type="button" id="tab-status"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Status</button>
+                <button type="button" id="tab-analyse"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-500 hover:text-blue-700 hover:border-blue-300">Analyse</button>
+                <button type="button" id="tab-einstellungen"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-green-500 hover:text-green-700 hover:border-green-300">Einstellungen</button>
+                <button type="button" id="tab-hilfe"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-yellow-500 hover:text-yellow-700 hover:border-yellow-300">Hilfe</button>
+            </nav>
+        </div>
+
+        <!-- Tab-Inhalte -->
+        <main>
+            <div id="content-routines">
+                <div class="flex justify-end mb-4">
+                    <button type="button" id="btn-new-routine"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        + Neue Routine
+                    </button>
+                </div>
+                <div id="routines-container" class="space-y-6"></div>
+            </div>
+            <div id="content-scenes" class="hidden">
+                <div class="flex justify-end mb-4">
+                    <button type="button" id="btn-new-scene"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        + Neue Szene
+                    </button>
+                </div>
+                <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+            <div id="content-status" class="hidden space-y-8">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-semibold">Live-Zustand der Routinen</h2>
+                        <button type="button" id="btn-refresh-status"
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm">
+                            Jetzt aktualisieren
+                        </button>
+                    </div>
+                    <div id="status-container" class="space-y-4"></div>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-semibold mb-4">Log-Datei (info.log)</h2>
+                    <pre id="log-container" class="log-container"></pre>
+                </div>
+            </div>
+
+            <div id="content-analyse" class="hidden space-y-6">
+                <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <select id="analyse-sensor"
+                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                        <select id="analyse-period"
+                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="day">Tag</option>
+                            <option value="week">Woche</option>
+                        </select>
+                        <input type="date" id="analyse-date-picker"
+                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="week" id="analyse-week-picker"
+                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            style="display: none;">
+                        <button type="button" id="btn-fetch-data"
+                            class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600">
+                            <i class="fas fa-sync-alt mr-2"></i>Daten laden
+                        </button>
+                    </div>
+                    <canvas id="sensor-chart"></canvas>
+                </div>
+            </div>
+
+            <div id="content-einstellungen" class="hidden space-y-6">
+                <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Bridge-Verbindung</h3>
+                            <label for="setting-bridge-ip" class="block text-sm font-medium text-gray-700">IP-Adresse
+                                der Hue Bridge</label>
+                            <input type="text" id="setting-bridge-ip"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Standort für Sonnenzeiten</h3>
+                            <div class="grid grid-cols-1 gap-y-4">
+                                <div>
+                                    <label for="setting-latitude"
+                                        class="block text-sm font-medium text-gray-700">Breitengrad (Latitude)</label>
+                                    <input type="number" step="any" id="setting-latitude"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="setting-longitude"
+                                        class="block text-sm font-medium text-gray-700">Längengrad (Longitude)</label>
+                                    <input type="number" step="any" id="setting-longitude"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Regelung &amp; Logging</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="setting-hysteresis"
+                                        class="block text-sm font-medium text-gray-700">Hysterese für Helligkeits-Check
+                                        (%)</label>
+                                    <input type="number" id="setting-hysteresis"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <p class="mt-1 text-xs text-gray-500">Verhindert Flackern. Standard: 25%</p>
+                                </div>
+                                <div>
+                                    <label for="setting-datalogger-interval"
+                                        class="block text-sm font-medium text-gray-700">Datenlogger Intervall
+                                        (Minuten)</label>
+                                    <input type="number" id="setting-datalogger-interval"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="setting-loglevel"
+                                        class="block text-sm font-medium text-gray-700">Log-Level</label>
+                                    <select id="setting-loglevel"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                        <option value="INFO">Standard (Info)</option>
+                                        <option value="DEBUG">Detailliert (Debug)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Daten und System-Aktionen</h3>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <button type="button" id="btn-backup"
+                                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center">
+                                <i class="fas fa-download mr-2"></i> Backup erstellen
+                            </button>
+                            <button type="button" id="btn-new-series"
+                                class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center">
+                                <i class="fas fa-plus-circle mr-2"></i> Neue Messreihe
+                            </button>
+                            <button type="button" id="btn-merge-series"
+                                class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center">
+                                <i class="fas fa-code-merge mr-2"></i> Messreihen verbinden
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <button type="button" id="btn-restart-app"
+                                class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
+                                neu starten</button>
+                            <button type="button" id="btn-backup-config"
+                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+                                disabled>Konfiguration sichern</button>
+                            <button type="button" id="btn-restore-config"
+                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+                                disabled>Konfiguration wiederherstellen</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="button" id="btn-save-settings"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">Einstellungen
+                        speichern</button>
+                </div>
+            </div>
+            <div id="content-hilfe" class="hidden">
+                <div id="help-content-container"></div>
+            </div>
+        </main>
+
+        <footer class="mt-12 text-center">
+            <button type="button" id="save-button"
+                class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                Speichern und Alle Routinen neu starten
+            </button>
+        </footer>
+    </div>
+</div>
