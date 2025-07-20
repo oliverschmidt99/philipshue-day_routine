@@ -209,7 +209,7 @@ routines:
       min: 0
       sec: 0
     x_scene_name: warm_max
-  enabled: false
+  enabled: true
   evening:
     bri_check: false
     do_not_disturb: true
