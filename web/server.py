@@ -8,6 +8,7 @@ import logging
 import shutil
 import time
 import threading
+import requests
 from datetime import datetime, timedelta
 
 # Füge das Hauptverzeichnis zum Python-Pfad hinzu
@@ -26,7 +27,6 @@ CONFIG_BACKUP_FILE = os.path.join(PROJECT_ROOT, 'config.backup.yaml')
 STATUS_FILE = os.path.join(PROJECT_ROOT, 'status.json')
 LOG_FILE = os.path.join(PROJECT_ROOT, 'info.log')
 DB_FILE = os.path.join(PROJECT_ROOT, 'sensor_data.db')
-# Korrekter Pfad zur Hilfedatei
 HELP_FILE = os.path.join(BASE_DIR, 'templates', 'hilfe.html')
 
 # Initialisiere Flask App und Logger
@@ -42,12 +42,96 @@ def get_bridge():
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
         bridge_ip = config.get('bridge_ip')
-        if not bridge_ip:
+        app_key = config.get('app_key')
+        if not bridge_ip or not app_key:
             return None
-        return Bridge(bridge_ip)
+        return Bridge(bridge_ip, username=app_key)
     except Exception as e:
         log.error(f"Fehler beim Verbinden mit der Bridge im Webserver: {e}")
         return None
+
+# --- SETUP API ENDPOINTS ---
+
+@app.route('/api/setup/status')
+def get_setup_status():
+    """Prüft, ob die Anwendung bereits konfiguriert ist."""
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+        if config and config.get('bridge_ip') and config.get('app_key'):
+            return jsonify({'setup_needed': False})
+        return jsonify({'setup_needed': True})
+    except Exception:
+        return jsonify({'setup_needed': True})
+
+@app.route('/api/setup/discover')
+def discover_bridges():
+    """Sucht nach Hue Bridges im Netzwerk."""
+    try:
+        response = requests.get('https://discovery.meethue.com/')
+        response.raise_for_status()
+        bridges = response.json()
+        return jsonify([b['internalipaddress'] for b in bridges])
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/setup/connect', methods=['POST'])
+def connect_to_bridge():
+    """Versucht, sich mit der Bridge zu verbinden und einen App-Key zu erhalten."""
+    data = request.get_json()
+    ip_address = data.get('ip')
+    if not ip_address:
+        return jsonify({"error": "IP-Adresse fehlt."}), 400
+
+    try:
+        bridge = Bridge(ip_address)
+        # Dieser Aufruf löst den Link-Button-Prozess aus
+        bridge.connect()
+        app_key = bridge.username
+        return jsonify({"app_key": app_key})
+    except Exception as e:
+        # Extrahieren der relevanten Fehlermeldung
+        error_message = str(e)
+        if '101' in error_message:
+            error_message = "Der Link-Button auf der Bridge wurde nicht gedrückt."
+        return jsonify({"error": error_message}), 500
+
+@app.route('/api/setup/save', methods=['POST'])
+def save_setup_config():
+    """Speichert die Erstkonfiguration."""
+    try:
+        data = request.get_json()
+        
+        # Erstelle eine vollständige Konfigurationsstruktur
+        new_config = {
+            'bridge_ip': data.get('bridge_ip'),
+            'app_key': data.get('app_key'),
+            'location': {
+                'latitude': float(data.get('latitude')),
+                'longitude': float(data.get('longitude'))
+            },
+            'global_settings': {
+                'datalogger_interval_minutes': 15,
+                'hysteresis_percent': 25,
+                'log_level': 'INFO',
+                'times': {'morning': '06:30', 'day': '', 'evening': '', 'night': '23:00'}
+            },
+            'rooms': [], 'routines': [],
+            'scenes': {'off': {'status': False, 'bri': 0}, 'on': {'status': True, 'bri': 254}}
+        }
+
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            yaml.dump(new_config, f, allow_unicode=True, sort_keys=False)
+        
+        # KORREKTUR: Der Neustart wird jetzt von der main.py-Schleife gehandhabt.
+        # Wir müssen hier nichts mehr tun, außer eine Erfolgsmeldung zurückzugeben.
+        
+        return jsonify({"message": "Konfiguration erfolgreich gespeichert. Die Anwendung lädt im Hintergrund neu."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# --- REGULAR API ENDPOINTS ---
 
 @app.route('/')
 def index():
@@ -211,8 +295,7 @@ def get_data_history():
         if 'con' in locals() and con:
             con.close()
 
-# Diese Route stellt den Inhalt der Hilfedatei bereit.
-@app.route('/api/help', methods=['GET'])
+@app.route('/api/help')
 def get_help():
     """Liest die hilfe.html und gibt ihren Inhalt als JSON zurück."""
     try:
@@ -226,13 +309,11 @@ def get_help():
         log.error(f"Fehler beim Lesen der Hilfedatei: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Hinzugefügte Log-Meldung zur Verifizierung, dass die Route geladen wird.
-log.info("Route /api/help wurde erfolgreich registriert.")
-
 @app.route('/api/system/restart', methods=['POST'])
 def restart_app():
     log.info("Neustart der Anwendung über API ausgelöst.")
     try:
+        # Dieser Neustart ist für den normalen Betrieb gedacht, nicht für das Setup
         def restart_later():
             time.sleep(1)
             python_executable = sys.executable

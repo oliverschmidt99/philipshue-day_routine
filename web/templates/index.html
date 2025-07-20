@@ -59,213 +59,295 @@
 
 <body class="bg-gray-50 text-gray-800">
 
-    <div class="container mx-auto p-4 md:p-8">
-        <header class="mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-4xl font-bold text-gray-900">Hue Editor</h1>
-                <p class="text-lg text-gray-600">Verwalte deine Routinen und Lichtszenen.</p>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div id="sun-times" class="text-right text-gray-600 text-sm p-2 bg-yellow-200 rounded-lg">
-                    <!-- Sonnenzeiten werden hier via JS eingefügt -->
-                </div>
-                <div id="clock" class="text-2xl font-semibold text-gray-700 bg-white px-4 py-2 rounded-lg shadow">
-                    --:--:--
-                </div>
-            </div>
-        </header>
+    <!-- Setup Wizard Container -->
+    <div id="setup-wizard" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-2xl bg-white rounded-xl shadow-2xl p-8 space-y-6">
+            <h1 class="text-3xl font-bold text-center text-gray-800">Willkommen! Richten wir alles ein.</h1>
 
-        <!-- Tab Navigation -->
-        <div class="border-b border-gray-200 mb-6">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button type="button" id="tab-routines"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Routinen</button>
-                <button type="button" id="tab-scenes"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
-                <button type="button" id="tab-status"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Status</button>
-                <button type="button" id="tab-analyse"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-500 hover:text-blue-700 hover:border-blue-300">Analyse</button>
-                <button type="button" id="tab-einstellungen"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-green-500 hover:text-green-700 hover:border-green-300">Einstellungen</button>
-                <button type="button" id="tab-hilfe"
-                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-yellow-500 hover:text-yellow-700 hover:border-yellow-300">Hilfe</button>
-            </nav>
+            <!-- Step 1: Discover Bridge -->
+            <div id="setup-step-1">
+                <h2 class="text-xl font-semibold text-gray-700">Schritt 1: Hue Bridge finden</h2>
+                <p class="text-gray-500 mt-2">Wir suchen nach Hue Bridges in deinem Netzwerk. Wähle deine Bridge aus
+                    oder gib die IP-Adresse manuell ein.</p>
+                <div id="setup-loader-1" class="mt-4 text-center">
+                    <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
+                    <p class="mt-2">Suche läuft...</p>
+                </div>
+                <div id="setup-bridge-list" class="mt-4 space-y-3"></div>
+                <input id="setup-manual-ip" type="text" placeholder="Oder IP-Adresse manuell eingeben"
+                    class="w-full mt-3 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <p id="setup-error-1" class="text-red-500 mt-2"></p>
+            </div>
+
+            <!-- Step 2: Connect -->
+            <div id="setup-step-2" class="hidden">
+                <h2 class="text-xl font-semibold text-gray-700">Schritt 2: Bridge verbinden</h2>
+                <div class="mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+                    <p class="font-bold">Aktion erforderlich!</p>
+                    <p>Bitte drücke jetzt den großen, runden Link-Button auf deiner Hue Bridge (<span
+                            id="setup-selected-ip" class="font-mono"></span>).</p>
+                </div>
+                <div class="mt-6 text-center">
+                    <button type="button" id="btn-connect-bridge"
+                        class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 disabled:bg-gray-400">
+                        <span class="btn-connect-bridge-text">Ich habe den Button gedrückt</span>
+                        <i class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                    </button>
+                </div>
+                <p id="setup-error-2" class="text-red-500 mt-4 text-center"></p>
+            </div>
+
+            <!-- Step 3: Location -->
+            <div id="setup-step-3" class="hidden">
+                <h2 class="text-xl font-semibold text-gray-700">Schritt 3: Standort festlegen</h2>
+                <p class="text-gray-500 mt-2">Für die dynamische Anpassung an Sonnenauf- und -untergang benötigen wir
+                    deinen Standort. Du kannst ihn z.B. über Google Maps herausfinden (Rechtsklick auf deinen Ort).</p>
+                <div class="mt-4 space-y-4">
+                    <div>
+                        <label for="setup-latitude" class="block font-medium">Breitengrad (Latitude)</label>
+                        <input id="setup-latitude" type="text" value="53.58" placeholder="z.B. 53.58"
+                            class="w-full p-3 border border-gray-300 rounded-lg mt-1">
+                    </div>
+                    <div>
+                        <label for="setup-longitude" class="block font-medium">Längengrad (Longitude)</label>
+                        <input id="setup-longitude" type="text" value="7.25" placeholder="z.B. 7.25"
+                            class="w-full p-3 border border-gray-300 rounded-lg mt-1">
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <button type="button" id="btn-save-config"
+                        class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 disabled:bg-gray-400">
+                        <span class="btn-save-config-text">Einrichtung abschließen</span>
+                        <i class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                    </button>
+                </div>
+                <p id="setup-error-3" class="text-red-500 mt-4 text-center"></p>
+            </div>
+
+            <!-- Step 4: Finishing -->
+            <div id="setup-step-4" class="hidden text-center">
+                <i class="fas fa-check-circle text-5xl text-green-500"></i>
+                <h2 class="text-2xl font-semibold text-gray-800 mt-4">Einrichtung abgeschlossen!</h2>
+                <p class="text-gray-600 mt-2">Die Anwendung wird in wenigen Sekunden neu gestartet und ist dann
+                    einsatzbereit.</p>
+            </div>
         </div>
+    </div>
 
-        <!-- Tab-Inhalte -->
-        <main>
-            <div id="content-routines">
-                <div class="flex justify-end mb-4">
-                    <button type="button" id="btn-new-routine"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                        + Neue Routine
-                    </button>
-                </div>
-                <div id="routines-container" class="space-y-6"></div>
-            </div>
-            <div id="content-scenes" class="hidden">
-                <div class="flex justify-end mb-4">
-                    <button type="button" id="btn-new-scene"
-                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                        + Neue Szene
-                    </button>
-                </div>
-                <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
-            <div id="content-status" class="hidden space-y-8">
+    <!-- Main Application Container -->
+    <div id="main-app" class="hidden">
+        <div class="container mx-auto p-4 md:p-8">
+            <header class="mb-6 flex justify-between items-center">
                 <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-semibold">Live-Zustand der Routinen</h2>
-                        <button type="button" id="btn-refresh-status"
-                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm">
-                            Jetzt aktualisieren
+                    <h1 class="text-4xl font-bold text-gray-900">Hue Editor</h1>
+                    <p class="text-lg text-gray-600">Verwalte deine Routinen und Lichtszenen.</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="sun-times" class="text-right text-gray-600 text-sm p-2 bg-yellow-200 rounded-lg">
+                    </div>
+                    <div id="clock" class="text-2xl font-semibold text-gray-700 bg-white px-4 py-2 rounded-lg shadow">
+                        --:--:--
+                    </div>
+                </div>
+            </header>
+
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200 mb-6">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button type="button" id="tab-routines"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Routinen</button>
+                    <button type="button" id="tab-scenes"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
+                    <button type="button" id="tab-status"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Status</button>
+                    <button type="button" id="tab-analyse"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-500 hover:text-blue-700 hover:border-blue-300">Analyse</button>
+                    <button type="button" id="tab-einstellungen"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-green-500 hover:text-green-700 hover:border-green-300">Einstellungen</button>
+                    <button type="button" id="tab-hilfe"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-yellow-500 hover:text-yellow-700 hover:border-yellow-300">Hilfe</button>
+                </nav>
+            </div>
+
+            <!-- Tab-Inhalte -->
+            <main>
+                <div id="content-routines">
+                    <div class="flex justify-end mb-4">
+                        <button type="button" id="btn-new-routine"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                            + Neue Routine
                         </button>
                     </div>
-                    <div id="status-container" class="space-y-4"></div>
+                    <div id="routines-container" class="space-y-6"></div>
                 </div>
-                <div>
-                    <h2 class="text-2xl font-semibold mb-4">Log-Datei (info.log)</h2>
-                    <div id="log-container" class="log-container"></div>
-                </div>
-            </div>
-
-            <div id="content-analyse" class="hidden space-y-6">
-                <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <div class="flex items-center space-x-4 mb-4">
-                        <select id="analyse-sensor"
-                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
-                        <select id="analyse-period"
-                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="day">Tag</option>
-                            <option value="week">Woche</option>
-                        </select>
-                        <input type="date" id="analyse-date-picker"
-                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="week" id="analyse-week-picker"
-                            class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            style="display: none;">
-                        <button type="button" id="btn-fetch-data"
-                            class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600">
-                            <i class="fas fa-sync-alt mr-2"></i>Daten laden
+                <div id="content-scenes" class="hidden">
+                    <div class="flex justify-end mb-4">
+                        <button type="button" id="btn-new-scene"
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                            + Neue Szene
                         </button>
                     </div>
-                    <canvas id="sensor-chart"></canvas>
+                    <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
-            </div>
-
-            <div id="content-einstellungen" class="hidden space-y-6">
-                <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-6">
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Bridge-Verbindung</h3>
-                            <label for="setting-bridge-ip" class="block text-sm font-medium text-gray-700">IP-Adresse
-                                der Hue Bridge</label>
-                            <input type="text" id="setting-bridge-ip"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                <div id="content-status" class="hidden space-y-8">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-semibold">Live-Zustand der Routinen</h2>
+                            <button type="button" id="btn-refresh-status"
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm">
+                                Jetzt aktualisieren
+                            </button>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Standort für Sonnenzeiten</h3>
-                            <div class="grid grid-cols-1 gap-y-4">
-                                <div>
-                                    <label for="setting-latitude"
-                                        class="block text-sm font-medium text-gray-700">Breitengrad (Latitude)</label>
-                                    <input type="number" step="any" id="setting-latitude"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <div id="status-container" class="space-y-4"></div>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">Log-Datei (info.log)</h2>
+                        <div id="log-container" class="log-container"></div>
+                    </div>
+                </div>
+
+                <div id="content-analyse" class="hidden space-y-6">
+                    <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <select id="analyse-sensor"
+                                class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            <select id="analyse-period"
+                                class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="day">Tag</option>
+                                <option value="week">Woche</option>
+                            </select>
+                            <input type="date" id="analyse-date-picker"
+                                class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="week" id="analyse-week-picker"
+                                class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style="display: none;">
+                            <button type="button" id="btn-fetch-data"
+                                class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600">
+                                <i class="fas fa-sync-alt mr-2"></i>Daten laden
+                            </button>
+                        </div>
+                        <canvas id="sensor-chart"></canvas>
+                    </div>
+                </div>
+
+                <div id="content-einstellungen" class="hidden space-y-6">
+                    <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Bridge-Verbindung</h3>
+                                <label for="setting-bridge-ip"
+                                    class="block text-sm font-medium text-gray-700">IP-Adresse
+                                    der Hue Bridge</label>
+                                <input type="text" id="setting-bridge-ip"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Standort für Sonnenzeiten
+                                </h3>
+                                <div class="grid grid-cols-1 gap-y-4">
+                                    <div>
+                                        <label for="setting-latitude"
+                                            class="block text-sm font-medium text-gray-700">Breitengrad
+                                            (Latitude)</label>
+                                        <input type="number" step="any" id="setting-latitude"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="setting-longitude"
+                                            class="block text-sm font-medium text-gray-700">Längengrad
+                                            (Longitude)</label>
+                                        <input type="number" step="any" id="setting-longitude"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label for="setting-longitude"
-                                        class="block text-sm font-medium text-gray-700">Längengrad (Longitude)</label>
-                                    <input type="number" step="any" id="setting-longitude"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Regelung &amp; Logging</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="setting-hysteresis"
+                                            class="block text-sm font-medium text-gray-700">Hysterese für
+                                            Helligkeits-Check
+                                            (%)</label>
+                                        <input type="number" id="setting-hysteresis"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                        <p class="mt-1 text-xs text-gray-500">Verhindert Flackern. Standard: 25%</p>
+                                    </div>
+                                    <div>
+                                        <label for="setting-datalogger-interval"
+                                            class="block text-sm font-medium text-gray-700">Datenlogger Intervall
+                                            (Minuten)</label>
+                                        <input type="number" id="setting-datalogger-interval"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="setting-loglevel"
+                                            class="block text-sm font-medium text-gray-700">Log-Level</label>
+                                        <select id="setting-loglevel"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                            <option value="INFO">Standard (Info)</option>
+                                            <option value="DEBUG">Detailliert (Debug)</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-6">
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Regelung &amp; Logging</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label for="setting-hysteresis"
-                                        class="block text-sm font-medium text-gray-700">Hysterese für Helligkeits-Check
-                                        (%)</label>
-                                    <input type="number" id="setting-hysteresis"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                                    <p class="mt-1 text-xs text-gray-500">Verhindert Flackern. Standard: 25%</p>
-                                </div>
-                                <div>
-                                    <label for="setting-datalogger-interval"
-                                        class="block text-sm font-medium text-gray-700">Datenlogger Intervall
-                                        (Minuten)</label>
-                                    <input type="number" id="setting-datalogger-interval"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-                                <div>
-                                    <label for="setting-loglevel"
-                                        class="block text-sm font-medium text-gray-700">Log-Level</label>
-                                    <select id="setting-loglevel"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                                        <option value="INFO">Standard (Info)</option>
-                                        <option value="DEBUG">Detailliert (Debug)</option>
-                                    </select>
-                                </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Daten und System-Aktionen</h3>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <button type="button" id="btn-backup"
+                                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center">
+                                    <i class="fas fa-download mr-2"></i> Backup erstellen
+                                </button>
+                                <button type="button" id="btn-new-series"
+                                    class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center">
+                                    <i class="fas fa-plus-circle mr-2"></i> Neue Messreihe
+                                </button>
+                                <button type="button" id="btn-merge-series"
+                                    class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center">
+                                    <i class="fas fa-code-merge mr-2"></i> Messreihen verbinden
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <button type="button" id="btn-restart-app"
+                                    class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
+                                    neu starten</button>
+                                <button type="button" id="btn-backup-config"
+                                    class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+                                    disabled>Konfiguration sichern</button>
+                                <button type="button" id="btn-restore-config"
+                                    class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+                                    disabled>Konfiguration wiederherstellen</button>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Daten und System-Aktionen</h3>
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <button type="button" id="btn-backup"
-                                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center">
-                                <i class="fas fa-download mr-2"></i> Backup erstellen
-                            </button>
-                            <button type="button" id="btn-new-series"
-                                class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center">
-                                <i class="fas fa-plus-circle mr-2"></i> Neue Messreihe
-                            </button>
-                            <button type="button" id="btn-merge-series"
-                                class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center">
-                                <i class="fas fa-code-merge mr-2"></i> Messreihen verbinden
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <button type="button" id="btn-restart-app"
-                                class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
-                                neu starten</button>
-                            <button type="button" id="btn-backup-config"
-                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
-                                disabled>Konfiguration sichern</button>
-                            <button type="button" id="btn-restore-config"
-                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
-                                disabled>Konfiguration wiederherstellen</button>
-                        </div>
+                    <div class="mt-6 flex justify-end">
+                        <button type="button" id="btn-save-settings"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">Einstellungen
+                            speichern</button>
                     </div>
                 </div>
-                <div class="mt-6 flex justify-end">
-                    <button type="button" id="btn-save-settings"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">Einstellungen
-                        speichern</button>
-                </div>
-            </div>
 
-            <div id="content-hilfe" class="hidden">
-                <div id="help-content-container">
-                    <p class="text-center">Lade Hilfe...</p>
+                <div id="content-hilfe" class="hidden">
+                    <div id="help-content-container">
+                        <p class="text-center">Lade Hilfe...</p>
+                    </div>
                 </div>
-            </div>
-        </main>
+            </main>
 
-        <footer class="mt-12 text-center">
-            <button type="button" id="save-button"
-                class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                Speichern und Alle Routinen neu starten
-            </button>
-        </footer>
+            <footer class="mt-12 text-center">
+                <button type="button" id="save-button"
+                    class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Speichern und Alle Routinen neu starten
+                </button>
+            </footer>
+        </div>
     </div>
 
     <!-- Modals (Pop-ups) -->
@@ -280,7 +362,150 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- Main Application Logic ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/setup/status');
+                const data = await response.json();
+
+                if (data.setup_needed) {
+                    document.getElementById('setup-wizard').classList.remove('hidden');
+                    document.getElementById('setup-wizard').classList.add('flex');
+                    document.getElementById('main-app').classList.add('hidden');
+                    runSetupWizard();
+                } else {
+                    document.getElementById('setup-wizard').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+                    runMainApp();
+                }
+            } catch (error) {
+                document.body.innerHTML = `<div class="text-red-500 text-center p-8">Fehler bei der Verbindung zum Server. Läuft das Python-Skript?</div>`;
+            }
+        });
+
+        // --- Setup Wizard Logic ---
+        function runSetupWizard() {
+            let selectedIp = '';
+            let appKey = '';
+
+            const step1 = document.getElementById('setup-step-1');
+            const step2 = document.getElementById('setup-step-2');
+            const step3 = document.getElementById('setup-step-3');
+            const step4 = document.getElementById('setup-step-4');
+
+            const loader1 = document.getElementById('setup-loader-1');
+            const bridgeList = document.getElementById('setup-bridge-list');
+            const manualIpInput = document.getElementById('setup-manual-ip');
+            const error1 = document.getElementById('setup-error-1');
+
+            const selectedIpSpan = document.getElementById('setup-selected-ip');
+            const connectBtn = document.getElementById('btn-connect-bridge');
+            const error2 = document.getElementById('setup-error-2');
+
+            const latInput = document.getElementById('setup-latitude');
+            const lonInput = document.getElementById('setup-longitude');
+            const saveBtn = document.getElementById('btn-save-config');
+            const error3 = document.getElementById('setup-error-3');
+
+            const showStep = (step) => {
+                [step1, step2, step3, step4].forEach(s => s.style.display = 'none');
+                document.getElementById(`setup-step-${step}`).style.display = 'block';
+            };
+
+            const discoverBridges = async () => {
+                loader1.style.display = 'block';
+                error1.textContent = '';
+                try {
+                    const res = await fetch('/api/setup/discover');
+                    const ips = await res.json();
+                    bridgeList.innerHTML = '';
+                    if (ips.length > 0) {
+                        ips.forEach(ip => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'w-full text-left p-3 bg-gray-100 rounded-lg hover:bg-blue-100 border-2 border-transparent focus:border-blue-500 focus:outline-none';
+                            btn.textContent = ip;
+                            btn.onclick = () => selectBridge(ip);
+                            bridgeList.appendChild(btn);
+                        });
+                    } else {
+                        bridgeList.innerHTML = '<p class="text-gray-500">Keine Bridges automatisch gefunden.</p>';
+                    }
+                } catch (e) {
+                    error1.textContent = 'Fehler bei der Bridge-Suche.';
+                } finally {
+                    loader1.style.display = 'none';
+                }
+            };
+
+            const selectBridge = (ip) => {
+                if (!ip) return;
+                selectedIp = ip;
+                selectedIpSpan.textContent = ip;
+                showStep(2);
+            };
+
+            manualIpInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    selectBridge(manualIpInput.value.trim());
+                }
+            });
+
+            connectBtn.addEventListener('click', async () => {
+                connectBtn.disabled = true;
+                connectBtn.querySelector('i').classList.remove('hidden');
+                error2.textContent = '';
+                try {
+                    const res = await fetch('/api/setup/connect', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ip: selectedIp })
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error);
+                    appKey = data.app_key;
+                    showStep(3);
+                } catch (e) {
+                    error2.textContent = e.message;
+                } finally {
+                    connectBtn.disabled = false;
+                    connectBtn.querySelector('i').classList.add('hidden');
+                }
+            });
+
+            saveBtn.addEventListener('click', async () => {
+                saveBtn.disabled = true;
+                saveBtn.querySelector('i').classList.remove('hidden');
+                error3.textContent = '';
+                try {
+                    const payload = {
+                        bridge_ip: selectedIp,
+                        app_key: appKey,
+                        latitude: latInput.value,
+                        longitude: lonInput.value
+                    };
+                    const res = await fetch('/api/setup/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error);
+                    showStep(4);
+                    setTimeout(() => window.location.reload(), 5000);
+                } catch (e) {
+                    error3.textContent = e.message;
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.querySelector('i').classList.add('hidden');
+                }
+            });
+
+            discoverBridges();
+        }
+
+        // --- Main App Logic ---
+        function runMainApp() {
             let config = {};
             let bridgeData = { groups: [], sensors: [] };
             let statusInterval;
@@ -325,6 +550,7 @@
                     bridgeData.sensors = await sensorsRes.json();
 
                     renderAll();
+                    setupEventListeners();
                 } catch (error) {
                     console.error("Initialisierungsfehler:", error);
                     const errorMsg = `Fehler beim Initialisieren: ${error.message}. Ist der Server erreichbar?`;
@@ -860,8 +1086,9 @@
             };
 
             const updateClock = () => {
-                const now = new Date();
-                clockElement.textContent = now.toLocaleTimeString('de-DE');
+                if (clockElement) {
+                    clockElement.textContent = new Date().toLocaleTimeString('de-DE');
+                }
             };
 
             const setupAnalyseTab = () => {
@@ -1007,7 +1234,6 @@
                     if (data.content) {
                         helpContainer.innerHTML = data.content;
 
-                        // Event-Listener für das neue Akkordeon hinzufügen
                         const faqButtons = helpContainer.querySelectorAll('.faq-question');
                         faqButtons.forEach(button => {
                             button.addEventListener('click', () => {
@@ -1090,90 +1316,85 @@
                 }
             }
 
-            const showToast = (message, isError = false) => {
-                toastElement.textContent = message;
-                toastElement.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300 ${isError ? 'bg-red-600' : 'bg-gray-900'}`;
-                toastElement.classList.remove('hidden');
-                setTimeout(() => toastElement.classList.add('hidden'), 4000);
-            };
+            const setupEventListeners = () => {
+                document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
+                document.getElementById('btn-restart-app').addEventListener('click', () => systemAction('/api/system/restart', 'Möchtest du die Anwendung wirklich neu starten?'));
+                document.getElementById('btn-backup').addEventListener('click', downloadBackup);
+                document.getElementById('btn-new-series').addEventListener('click', () => systemAction('/api/database/new_series', 'Möchtest du wirklich eine neue Messreihe starten? Die alte wird archiviert.'));
+                document.getElementById('btn-merge-series').addEventListener('click', () => systemAction('/api/database/merge_series', 'Möchtest du die neueste archivierte Messreihe mit der aktuellen zusammenführen?'));
 
-            document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
-            document.getElementById('btn-restart-app').addEventListener('click', () => systemAction('/api/system/restart', 'Möchtest du die Anwendung wirklich neu starten?'));
-            document.getElementById('btn-backup').addEventListener('click', downloadBackup);
-            document.getElementById('btn-new-series').addEventListener('click', () => systemAction('/api/database/new_series', 'Möchtest du wirklich eine neue Messreihe starten? Die alte wird archiviert.'));
-            document.getElementById('btn-merge-series').addEventListener('click', () => systemAction('/api/database/merge_series', 'Möchtest du die neueste archivierte Messreihe mit der aktuellen zusammenführen?'));
+                document.body.addEventListener('click', (e) => {
+                    const action = e.target.dataset.action;
+                    const target = e.target;
+                    if (!action) return;
 
-            document.body.addEventListener('click', (e) => {
-                const action = e.target.dataset.action;
-                const target = e.target;
-                if (!action) return;
+                    const routineIndex = target.closest('[data-index]')?.dataset.index;
 
-                const routineIndex = target.closest('[data-index]')?.dataset.index;
-
-                switch (action) {
-                    case 'toggle-routine':
-                        config.routines[routineIndex].enabled = target.checked;
-                        showToast(`Routine '${config.routines[routineIndex].name}' ${target.checked ? 'aktiviert' : 'deaktiviert'}.`);
-                        break;
-                    case 'delete-scene':
-                        if (confirm(`Möchtest du die Szene "${target.dataset.name}" wirklich löschen?`)) {
-                            delete config.scenes[target.dataset.name];
-                            renderAll();
-                            showToast("Szene gelöscht.");
-                        }
-                        break;
-                    case 'delete-routine':
-                        if (confirm(`Möchtest du die Routine "${config.routines[routineIndex].name}" wirklich löschen?`)) {
-                            config.routines.splice(routineIndex, 1);
-                            renderAll();
-                            showToast("Routine gelöscht.");
-                        }
-                        break;
-                    case 'edit-scene': openSceneModal(target.dataset.name); break;
-                    case 'edit-routine': openEditRoutineModal(routineIndex); break;
-                    case 'save-scene': handleSaveScene(); break;
-                    case 'save-routine': handleSaveEditedRoutine(); break;
-                    case 'create-routine': handleCreateNewRoutine(); break;
-                    case 'cancel-modal': closeModal(); break;
-                }
-            });
-
-            document.getElementById('btn-new-scene').addEventListener('click', () => openSceneModal());
-            document.getElementById('btn-new-routine').addEventListener('click', () => openCreateRoutineModal());
-            saveButton.addEventListener('click', saveFullConfig);
-            refreshButton.addEventListener('click', updateStatus);
-
-            const tabs = [
-                { btn: 'tab-routines', content: 'content-routines' },
-                { btn: 'tab-scenes', content: 'content-scenes' },
-                { btn: 'tab-status', content: 'content-status' },
-                { btn: 'tab-analyse', content: 'content-analyse', init: setupAnalyseTab },
-                { btn: 'tab-einstellungen', content: 'content-einstellungen', init: loadSettings },
-                { btn: 'tab-hilfe', content: 'content-hilfe', init: loadHelpContent }
-            ];
-            tabs.forEach(tabInfo => {
-                document.getElementById(tabInfo.btn).addEventListener('click', () => {
-                    tabs.forEach(t => {
-                        document.getElementById(t.btn).classList.remove('tab-active');
-                        document.getElementById(t.content).classList.add('hidden');
-                    });
-                    document.getElementById(tabInfo.btn).classList.add('tab-active');
-                    document.getElementById(tabInfo.content).classList.remove('hidden');
-
-                    if (tabInfo.btn === 'tab-status') {
-                        startStatusUpdates();
-                    } else {
-                        if (statusInterval) clearInterval(statusInterval);
-                    }
-
-                    if (tabInfo.init) {
-                        tabInfo.init();
+                    switch (action) {
+                        case 'toggle-routine':
+                            config.routines[routineIndex].enabled = target.checked;
+                            showToast(`Routine '${config.routines[routineIndex].name}' ${target.checked ? 'aktiviert' : 'deaktiviert'}.`);
+                            break;
+                        case 'delete-scene':
+                            if (confirm(`Möchtest du die Szene "${target.dataset.name}" wirklich löschen?`)) {
+                                delete config.scenes[target.dataset.name];
+                                renderAll();
+                                showToast("Szene gelöscht.");
+                            }
+                            break;
+                        case 'delete-routine':
+                            if (confirm(`Möchtest du die Routine "${config.routines[routineIndex].name}" wirklich löschen?`)) {
+                                config.routines.splice(routineIndex, 1);
+                                renderAll();
+                                showToast("Routine gelöscht.");
+                            }
+                            break;
+                        case 'edit-scene': openSceneModal(target.dataset.name); break;
+                        case 'edit-routine': openEditRoutineModal(routineIndex); break;
+                        case 'save-scene': handleSaveScene(); break;
+                        case 'save-routine': handleSaveEditedRoutine(); break;
+                        case 'create-routine': handleCreateNewRoutine(); break;
+                        case 'cancel-modal': closeModal(); break;
                     }
                 });
-            });
+
+                document.getElementById('btn-new-scene').addEventListener('click', () => openSceneModal());
+                document.getElementById('btn-new-routine').addEventListener('click', () => openCreateRoutineModal());
+                saveButton.addEventListener('click', saveFullConfig);
+                refreshButton.addEventListener('click', updateStatus);
+
+                const tabs = [
+                    { btn: 'tab-routines', content: 'content-routines' },
+                    { btn: 'tab-scenes', content: 'content-scenes' },
+                    { btn: 'tab-status', content: 'content-status' },
+                    { btn: 'tab-analyse', content: 'content-analyse', init: setupAnalyseTab },
+                    { btn: 'tab-einstellungen', content: 'content-einstellungen', init: loadSettings },
+                    { btn: 'tab-hilfe', content: 'content-hilfe', init: loadHelpContent }
+                ];
+                tabs.forEach(tabInfo => {
+                    document.getElementById(tabInfo.btn).addEventListener('click', () => {
+                        tabs.forEach(t => {
+                            document.getElementById(t.btn).classList.remove('tab-active');
+                            document.getElementById(t.content).classList.add('hidden');
+                        });
+                        document.getElementById(tabInfo.btn).classList.add('tab-active');
+                        document.getElementById(tabInfo.content).classList.remove('hidden');
+
+                        if (tabInfo.btn === 'tab-status') {
+                            startStatusUpdates();
+                        } else {
+                            if (statusInterval) clearInterval(statusInterval);
+                        }
+
+                        if (tabInfo.init) {
+                            tabInfo.init();
+                        }
+                    });
+                });
+            };
 
             init();
-        });
+        }
     </script>
 </body>
 

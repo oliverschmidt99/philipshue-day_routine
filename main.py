@@ -8,7 +8,7 @@ import sqlite3
 import threading
 import logging
 import sys
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from phue import Bridge, PhueRequestTimeout
 from astral.sun import sun
 from astral import LocationInfo
@@ -35,6 +35,30 @@ SERVER_SCRIPT = os.path.join(BASE_DIR, 'web', 'server.py')
 server_process = None
 data_logger_thread = None
 stop_event = threading.Event()
+
+def manage_config_file(log):
+    """
+    Stellt sicher, dass eine config.yaml existiert. Wenn nicht, wird eine
+    minimale Standardkonfiguration erstellt, damit der Webserver starten kann.
+    """
+    if os.path.exists(CONFIG_FILE):
+        log.info("config.yaml gefunden.")
+        return
+
+    log.warning("Keine config.yaml gefunden. Erstelle eine neue Datei mit Standardwerten.")
+    try:
+        default_config = {
+            'bridge_ip': '', 'app_key': '',
+            'location': {}, 'global_settings': {},
+            'rooms': [], 'routines': [], 'scenes': {}
+        }
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            yaml.dump(default_config, f, allow_unicode=True, sort_keys=False)
+        log.info("Leere config.yaml wurde erstellt. Die Konfiguration erfolgt über die Web-UI.")
+    except Exception as e:
+        log.error(f"Kritischer Fehler: Konnte keine neue config.yaml erstellen: {e}")
+        sys.exit(1)
+
 
 def init_database(log):
     """Initialisiert die SQLite-Datenbank und erstellt die Tabelle, falls sie nicht existiert."""
@@ -115,12 +139,13 @@ def load_config(log):
         log.error(f"Fehler beim Laden der Konfiguration: {e}")
         return None
 
-def connect_bridge(ip, log):
+def connect_bridge(ip, app_key, log):
     """Stellt die Verbindung zur Hue Bridge her."""
     log.info(f"Versuche, eine Verbindung zur Bridge unter {ip} herzustellen...")
     try:
-        b = Bridge(ip)
-        b.connect()
+        b = Bridge(ip, username=app_key)
+        # Teste die Verbindung, indem eine harmlose Anfrage gesendet wird
+        b.get_api()
         log.info("Verbindung zur Hue Bridge erfolgreich hergestellt.")
         return b
     except (PhueRequestTimeout, ConnectionError) as e:
@@ -132,8 +157,8 @@ def connect_bridge(ip, log):
 
 def get_sun_times(location_config, log):
     """Berechnet die Sonnenauf- und -untergangszeiten."""
-    if not location_config:
-        log.warning("Keine Standort-Informationen in config.yaml gefunden.")
+    if not location_config or 'latitude' not in location_config or 'longitude' not in location_config:
+        log.warning("Keine vollständigen Standort-Informationen in config.yaml gefunden.")
         return None
     try:
         loc = LocationInfo("Home", "Germany", "Europe/Berlin", location_config['latitude'], location_config['longitude'])
@@ -167,20 +192,22 @@ def run_logic(log):
     global data_logger_thread
     log.info("Lade Konfiguration und starte Hue-Logik...")
     config = load_config(log)
-    if not config:
+    if config is None:
         log.error("Laden der Konfiguration fehlgeschlagen. Breche ab.")
         return False
 
     bridge_ip = config.get('bridge_ip')
-    if not bridge_ip:
-        log.error("Keine 'bridge_ip' in der Konfiguration gefunden. Breche ab.")
-        return False
+    app_key = config.get('app_key')
+    bridge = None
 
-    bridge = connect_bridge(bridge_ip, log)
-    if not bridge:
-        log.warning("Verbindung zur Bridge fehlgeschlagen. Versuche es in 30 Sekunden erneut...")
-        time.sleep(30)
-        return True
+    if not bridge_ip or not app_key:
+        log.warning("Keine 'bridge_ip' oder 'app_key' in der Konfiguration gefunden. Die Lichtsteuerung ist pausiert.")
+    else:
+        bridge = connect_bridge(bridge_ip, app_key, log)
+        if not bridge:
+            log.warning("Verbindung zur Bridge fehlgeschlagen. Versuche es in 30 Sekunden erneut...")
+            time.sleep(30)
+            return True
 
     try:
         global_settings = config.get('global_settings', {})
@@ -190,38 +217,42 @@ def run_logic(log):
         sun_times = get_sun_times(config.get('location'), log)
         
         scenes = {name: Scene(**params) for name, params in config.get('scenes', {}).items()}
+        routines = []
         
-        all_sensors_data = bridge.get_sensor()
-        all_motion_sensor_ids = [int(sid) for sid, data in all_sensors_data.items() if data.get('type') == 'ZLLPresence']
-        all_sensor_objects_for_logger = [Sensor(bridge, sensor_id, log) for sensor_id in all_motion_sensor_ids]
+        if bridge:
+            all_sensors_data = bridge.get_sensor()
+            all_motion_sensor_ids = [int(sid) for sid, data in all_sensors_data.items() if data.get('type') == 'ZLLPresence']
+            all_sensor_objects_for_logger = [Sensor(bridge, sensor_id, log) for sensor_id in all_motion_sensor_ids]
 
-        unique_sensor_ids_in_routines = {room.get('sensor_id') for room in config.get('rooms', []) if room.get('sensor_id')}
-        sensors_for_routines = {sensor_id: Sensor(bridge, sensor_id, log) for sensor_id in unique_sensor_ids_in_routines}
-        
-        room_to_sensor_map = {
-            room_conf['name']: sensors_for_routines.get(room_conf.get('sensor_id'))
-            for room_conf in config.get('rooms', [])
-        }
+            unique_sensor_ids_in_routines = {room.get('sensor_id') for room in config.get('rooms', []) if room.get('sensor_id')}
+            sensors_for_routines = {sensor_id: Sensor(bridge, sensor_id, log) for sensor_id in unique_sensor_ids_in_routines}
+            
+            room_to_sensor_map = {
+                room_conf['name']: sensors_for_routines.get(room_conf.get('sensor_id'))
+                for room_conf in config.get('rooms', [])
+            }
 
-        rooms = {room_conf['name']: Room(bridge, log, **room_conf) for room_conf in config.get('rooms', [])}
+            rooms = {room_conf['name']: Room(bridge, log, **room_conf) for room_conf in config.get('rooms', [])}
 
-        routines = [
-            Routine(
-                name=r_conf['name'], room=rooms.get(r_conf['room_name']),
-                sensor=room_to_sensor_map.get(r_conf['room_name']),
-                routine_config=r_conf, scenes=scenes, sun_times=sun_times,
-                log=log, global_settings=global_settings
-            )
-            for r_conf in config.get('routines', []) if rooms.get(r_conf['room_name'])
-        ]
-        
-        log.info(f"{len(routines)} Routine(n) erfolgreich geladen.")
+            routines = [
+                Routine(
+                    name=r_conf['name'], room=rooms.get(r_conf['room_name']),
+                    sensor=room_to_sensor_map.get(r_conf['room_name']),
+                    routine_config=r_conf, scenes=scenes, sun_times=sun_times,
+                    log=log, global_settings=global_settings
+                )
+                for r_conf in config.get('routines', []) if rooms.get(r_conf['room_name'])
+            ]
+            
+            log.info(f"{len(routines)} Routine(n) erfolgreich geladen.")
 
-        if all_sensor_objects_for_logger and (data_logger_thread is None or not data_logger_thread.is_alive()):
-            stop_event.clear()
-            data_logger_thread = threading.Thread(target=data_logger_worker, args=(all_sensor_objects_for_logger, datalogger_interval, log))
-            data_logger_thread.daemon = True
-            data_logger_thread.start()
+            if all_sensor_objects_for_logger and (data_logger_thread is None or not data_logger_thread.is_alive()):
+                stop_event.clear()
+                data_logger_thread = threading.Thread(target=data_logger_worker, args=(all_sensor_objects_for_logger, datalogger_interval, log))
+                data_logger_thread.daemon = True
+                data_logger_thread.start()
+        else:
+            log.info("Keine Bridge-Verbindung, Routinen und Datenlogger werden nicht initialisiert.")
 
         log.info("Initialisierung abgeschlossen. Starte Hauptschleife.")
         last_status_write = time.time()
@@ -243,12 +274,13 @@ def run_logic(log):
                     log.info("Konfiguration freigegeben. Starte die Logik neu...")
                     return True
 
-            # Routinen ausführen
-            now = datetime.now().astimezone()
-            for routine in routines:
-                routine.run(now)
+            # Routinen nur ausführen, wenn eine Bridge verbunden ist
+            if bridge:
+                now = datetime.now().astimezone()
+                for routine in routines:
+                    routine.run(now)
             
-            # Status schreiben
+            # Status immer schreiben, auch ohne Bridge, damit die UI funktioniert
             if time.time() - last_status_write > status_interval:
                 write_status(routines, sun_times)
                 last_status_write = time.time()
@@ -294,6 +326,11 @@ def cleanup():
 
 if __name__ == "__main__":
     log = Logger(LOG_FILE, level=logging.INFO)
+    
+    # Sicherstellen, dass eine Konfigurationsdatei existiert, bevor irgendetwas anderes passiert
+    manage_config_file(log)
+    init_database(log)
+
     atexit.register(cleanup)
     start_server(log)
     
