@@ -1,18 +1,6 @@
-phue
-Flask
-PyYAML
-requests
-astral
+# Dependencies for testing
 pytest
 pytest-mock
-pytest
-pytest-mock
-selenium
-pytest-selenium
-pytest
-pytest-mock
-pytest
-pytest-mock
-selenium
-pytest-selenium
 pytest-flask
+selenium
+pytest-selenium
