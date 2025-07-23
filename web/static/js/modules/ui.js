@@ -100,62 +100,130 @@ export function populateAnalyseSensors(sensors) {
   });
 }
 
-export function renderChart(chartInstance, data, period, selectedDate) {
+export function renderChart(chartInstance, data, period) {
   const ctx = document.getElementById("sensor-chart")?.getContext("2d");
   if (!ctx) return null;
   if (chartInstance) chartInstance.destroy();
-  const xAxisOptions =
-    period === "day"
-      ? {
-          type: "time",
-          time: {
-            unit: "hour",
-            tooltipFormat: "HH:mm",
-            displayFormats: { hour: "HH:mm" },
-          },
-          min: `${selectedDate}T00:00:00`,
-          max: `${selectedDate}T23:59:59`,
-          title: { display: true, text: "Uhrzeit" },
-        }
-      : { type: "category", title: { display: true, text: "Wochentag" } };
+
+  const getMinMax = (arr, forceMinZero = false) => {
+    const validValues = arr.filter((v) => v !== null && isFinite(v));
+    if (validValues.length === 0) return {};
+
+    let minVal = Math.min(...validValues);
+    let maxVal = Math.max(...validValues);
+
+    if (minVal === maxVal) {
+      minVal -= 5;
+      maxVal += 5;
+    }
+
+    const padding = (maxVal - minVal) * 0.1;
+    let finalMin = minVal - padding;
+    if (forceMinZero) {
+      finalMin = Math.max(0, finalMin);
+    }
+    return { min: finalMin, max: maxVal + padding };
+  };
+
+  const brightnessRange = getMinMax(data.brightness, true);
+  const temperatureRange = getMinMax(data.temperature);
+
+  const datasets = [
+    {
+      label: "Helligkeit",
+      data: data.brightness,
+      borderColor: "rgba(251, 191, 36, 0.5)",
+      yAxisID: "y",
+      tension: 0.1,
+      pointRadius: 1,
+      borderWidth: 1.5,
+      spanGaps: true,
+    },
+    {
+      label: "Temperatur (°C)",
+      data: data.temperature,
+      borderColor: "rgba(59, 130, 246, 0.5)",
+      yAxisID: "y1",
+      tension: 0.1,
+      pointRadius: 1,
+      borderWidth: 1.5,
+      spanGaps: true,
+    },
+  ];
+
+  if (data.brightness_avg && data.brightness_avg.some((v) => v !== null)) {
+    datasets.push({
+      label: "Helligkeit (Ø)",
+      data: data.brightness_avg,
+      borderColor: "rgba(234, 179, 8, 1)",
+      yAxisID: "y",
+      tension: 0.2,
+      pointRadius: 0,
+      borderWidth: 2.5,
+    });
+  }
+  if (data.temperature_avg && data.temperature_avg.some((v) => v !== null)) {
+    datasets.push({
+      label: "Temperatur (Ø)",
+      data: data.temperature_avg,
+      borderColor: "rgba(37, 99, 235, 1)",
+      yAxisID: "y1",
+      tension: 0.2,
+      pointRadius: 0,
+      borderWidth: 2.5,
+    });
+  }
+
   return new Chart(ctx, {
     type: "line",
     data: {
       labels: data.labels,
-      datasets: [
-        {
-          label: "Helligkeit",
-          data: data.brightness,
-          borderColor: "rgba(251, 191, 36, 1)",
-          yAxisID: "y",
-          tension: 0.1,
-          spanGaps: true,
-        },
-        {
-          label: "Temperatur (°C)",
-          data: data.temperature,
-          borderColor: "rgba(59, 130, 246, 1)",
-          yAxisID: "y1",
-          tension: 0.1,
-          spanGaps: true,
-        },
-      ],
+      datasets: datasets.map((ds) => ({
+        ...ds,
+        data: ds.data.map((val, i) => ({ x: data.labels[i], y: val })),
+      })),
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
-        x: xAxisOptions,
+        x: {
+          type: "time",
+          time: {
+            unit: period === "week" ? "day" : "hour",
+            tooltipFormat: "dd.MM.yyyy HH:mm",
+            displayFormats: { hour: "HH:mm", day: "EEE dd.MM" },
+          },
+          title: { display: true, text: "Zeit" },
+        },
         y: {
           type: "linear",
           position: "left",
-          title: { display: true, text: "Helligkeit" },
+          title: {
+            display: true,
+            text: "Helligkeit (lightlevel)",
+            color: "#b45309",
+          },
+          min: brightnessRange.min,
+          max: brightnessRange.max,
+          ticks: { color: "#b45309" },
         },
         y1: {
           type: "linear",
           position: "right",
-          title: { display: true, text: "Temperatur (°C)" },
+          title: { display: true, text: "Temperatur (°C)", color: "#2563eb" },
           grid: { drawOnChartArea: false },
+          min: temperatureRange.min,
+          max: temperatureRange.max,
+          ticks: { color: "#2563eb" },
         },
+      },
+      plugins: {
+        tooltip: { mode: "index", intersect: false },
+      },
+      interaction: {
+        intersect: false,
+        mode: "index",
       },
     },
   });

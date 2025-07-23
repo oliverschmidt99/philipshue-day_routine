@@ -3,8 +3,8 @@
  * @returns {Promise<Object>} Ein Promise, das ein Objekt mit { setup_needed: boolean } zurückgibt.
  */
 export async function checkSetupStatus() {
-    const response = await fetch('/api/setup/status');
-    return response.json();
+  const response = await fetch("/api/setup/status");
+  return response.json();
 }
 
 /**
@@ -12,8 +12,8 @@ export async function checkSetupStatus() {
  * @returns {Promise<Array<string>>} Ein Promise, das eine Liste von IP-Adressen zurückgibt.
  */
 export async function discoverBridges() {
-    const response = await fetch('/api/setup/discover');
-    return response.json();
+  const response = await fetch("/api/setup/discover");
+  return response.json();
 }
 
 /**
@@ -22,14 +22,15 @@ export async function discoverBridges() {
  * @returns {Promise<Object>} Ein Promise, das ein Objekt mit dem app_key zurückgibt.
  */
 export async function connectToBridge(ip) {
-    const response = await fetch('/api/setup/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ip: ip })
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Unbekannter Verbindungsfehler');
-    return data;
+  const response = await fetch("/api/setup/connect", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ip: ip }),
+  });
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.error || "Unbekannter Verbindungsfehler");
+  return data;
 }
 
 /**
@@ -38,14 +39,14 @@ export async function connectToBridge(ip) {
  * @returns {Promise<Object>} Das Ergebnis vom Server.
  */
 export async function saveSetupConfig(configData) {
-    const response = await fetch('/api/setup/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(configData)
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Fehler beim Speichern');
-    return data;
+  const response = await fetch("/api/setup/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(configData),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Fehler beim Speichern");
+  return data;
 }
 
 /**
@@ -53,9 +54,10 @@ export async function saveSetupConfig(configData) {
  * @returns {Promise<Object>} Die Konfiguration als JSON-Objekt.
  */
 export async function loadConfig() {
-    const response = await fetch('/api/config');
-    if (!response.ok) throw new Error('Konfiguration konnte nicht geladen werden');
-    return response.json();
+  const response = await fetch("/api/config");
+  if (!response.ok)
+    throw new Error("Konfiguration konnte nicht geladen werden");
+  return response.json();
 }
 
 /**
@@ -63,15 +65,16 @@ export async function loadConfig() {
  * @returns {Promise<Object>} Ein Objekt mit `groups` und `sensors`.
  */
 export async function loadBridgeData() {
-    const [groupsRes, sensorsRes] = await Promise.all([
-        fetch('/api/bridge/groups'),
-        fetch('/api/bridge/sensors')
-    ]);
-    if (!groupsRes.ok || !sensorsRes.ok) throw new Error('Bridge-Daten konnten nicht geladen werden');
-    return {
-        groups: await groupsRes.json(),
-        sensors: await sensorsRes.json()
-    };
+  const [groupsRes, sensorsRes] = await Promise.all([
+    fetch("/api/bridge/groups"),
+    fetch("/api/bridge/sensors"),
+  ]);
+  if (!groupsRes.ok || !sensorsRes.ok)
+    throw new Error("Bridge-Daten konnten nicht geladen werden");
+  return {
+    groups: await groupsRes.json(),
+    sensors: await sensorsRes.json(),
+  };
 }
 
 /**
@@ -80,14 +83,15 @@ export async function loadBridgeData() {
  * @returns {Promise<Object>} Die Antwort vom Server.
  */
 export async function saveFullConfig(config) {
-    const response = await fetch('/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Unbekannter Fehler beim Speichern');
-    return result;
+  const response = await fetch("/api/config", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  });
+  const result = await response.json();
+  if (!response.ok)
+    throw new Error(result.error || "Unbekannter Fehler beim Speichern");
+  return result;
 }
 
 /**
@@ -95,32 +99,36 @@ export async function saveFullConfig(config) {
  * @returns {Promise<Object>} Ein Objekt mit `statusData` und `logText`.
  */
 export async function updateStatus() {
-    const [statusRes, logRes] = await Promise.all([
-        fetch('/api/status'),
-        fetch('/api/log')
-    ]);
-    return {
-        statusData: await statusRes.json(),
-        logText: await logRes.text()
-    };
+  const [statusRes, logRes] = await Promise.all([
+    fetch("/api/status"),
+    fetch("/api/log"),
+  ]);
+  return {
+    statusData: await statusRes.json(),
+    logText: await logRes.text(),
+  };
 }
 
 /**
  * Holt historische Daten für die Analyse-Diagramme.
  * @param {number} sensorId - Die ID des Sensors.
  * @param {string} period - Der Zeitraum ('day' oder 'week').
- * @param {string} date - Das Datum.
+ * @param {string} date - Das Datum (für Wochenansicht).
+ * @param {number} range - Der Zeitraum in Stunden (für Tagesansicht).
+ * @param {number} avg - Das Fenster für den gleitenden Mittelwert.
  * @returns {Promise<Object>} Die Diagrammdaten.
  */
-export async function loadChartData(sensorId, period, date) {
-    const response = await fetch(`/api/data/history?sensor_id=${sensorId}&period=${period}&date=${date}`);
-    if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Daten konnten nicht geladen werden.');
-    }
-    const data = await response.json();
-    if (data.error) throw new Error(data.error);
-    return data;
+export async function loadChartData(sensorId, period, date, range, avg) {
+  const response = await fetch(
+    `/api/data/history?sensor_id=${sensorId}&period=${period}&date=${date}&range=${range}&avg=${avg}`
+  );
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || "Daten konnten nicht geladen werden.");
+  }
+  const data = await response.json();
+  if (data.error) throw new Error(data.error);
+  return data;
 }
 
 /**
@@ -128,11 +136,11 @@ export async function loadChartData(sensorId, period, date) {
  * @returns {Promise<string>} Der HTML-Inhalt der Hilfeseite.
  */
 export async function loadHelpContent() {
-    const response = await fetch('/api/help');
-    if (!response.ok) throw new Error(`Server-Fehler: ${response.statusText}`);
-    const data = await response.json();
-    if (!data.content) throw new Error("Hilfe-Inhalt ist leer oder fehlerhaft.");
-    return data.content;
+  const response = await fetch("/api/help");
+  if (!response.ok) throw new Error(`Server-Fehler: ${response.statusText}`);
+  const data = await response.json();
+  if (!data.content) throw new Error("Hilfe-Inhalt ist leer oder fehlerhaft.");
+  return data.content;
 }
 
 /**
@@ -142,11 +150,11 @@ export async function loadHelpContent() {
  * @returns {Promise<Object|null>} Die Server-Antwort oder null bei Abbruch.
  */
 export async function systemAction(url, confirmMsg) {
-    if (confirm(confirmMsg)) {
-        const response = await fetch(url, { method: 'POST' });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || result.message);
-        return result;
-    }
-    return null;
+  if (confirm(confirmMsg)) {
+    const response = await fetch(url, { method: "POST" });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || result.message);
+    return result;
+  }
+  return null;
 }

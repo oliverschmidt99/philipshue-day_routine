@@ -25,7 +25,7 @@ function runMainApp() {
   let bridgeData = {};
   let colorPicker = null;
   let statusInterval;
-  let chartInstance = null;
+  let chartInstance = null; // **ÄNDERUNG: Korrekte Initialisierung als null**
   let clockAnimationInterval;
 
   const init = async () => {
@@ -40,6 +40,7 @@ function runMainApp() {
       setupEventListeners();
     } catch (error) {
       ui.showToast(`Initialisierungsfehler: ${error.message}`, true);
+      console.error(error);
     }
   };
 
@@ -49,21 +50,28 @@ function runMainApp() {
   };
 
   const setupEventListeners = () => {
-    document
-      .getElementById("save-button")
-      .addEventListener("click", saveFullConfig);
-    document
-      .getElementById("btn-new-routine")
-      .addEventListener("click", () => ui.openCreateRoutineModal(bridgeData));
-    document.getElementById("btn-new-scene").addEventListener("click", () => {
+    const addListener = (id, event, handler) => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener(event, handler);
+      } else {
+        console.warn(
+          `Element with ID '${id}' not found. Cannot attach event listener.`
+        );
+      }
+    };
+
+    addListener("save-button", "click", saveFullConfig);
+    addListener("btn-new-routine", "click", () =>
+      ui.openCreateRoutineModal(bridgeData)
+    );
+    addListener("btn-new-scene", "click", () => {
       colorPicker = ui.openSceneModal(
         { status: true, bri: 128, ct: 366 },
         null
       );
     });
-    document
-      .getElementById("btn-save-settings")
-      .addEventListener("click", saveSettings);
+
     document.body.addEventListener("click", (e) => {
       const button = e.target.closest("[data-action]");
       if (!button) return;
@@ -115,6 +123,7 @@ function runMainApp() {
       };
       if (actions[action]) actions[action]();
     });
+
     const tabs = [
       { btn: "tab-routines", content: "content-routines" },
       { btn: "tab-scenes", content: "content-scenes" },
@@ -133,30 +142,26 @@ function runMainApp() {
     ];
     tabs.forEach((tabInfo) => {
       const btn = document.getElementById(tabInfo.btn);
-      if (!btn) return;
-      btn.addEventListener("click", () => {
-        tabs.forEach((t) => {
-          document.getElementById(t.btn)?.classList.remove("tab-active");
-          document.getElementById(t.content)?.classList.add("hidden");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          tabs.forEach((t) => {
+            document.getElementById(t.btn)?.classList.remove("tab-active");
+            document.getElementById(t.content)?.classList.add("hidden");
+          });
+          btn.classList.add("tab-active");
+          document.getElementById(tabInfo.content)?.classList.remove("hidden");
+          if (statusInterval) clearInterval(statusInterval);
+          if (clockAnimationInterval) clearInterval(clockAnimationInterval);
+          if (tabInfo.init) tabInfo.init();
         });
-        btn.classList.add("tab-active");
-        document.getElementById(tabInfo.content)?.classList.remove("hidden");
-        if (statusInterval) clearInterval(statusInterval);
-        if (clockAnimationInterval) clearInterval(clockAnimationInterval);
-        if (tabInfo.init) tabInfo.init();
-      });
+      }
     });
   };
 
   const updateStatus = async () => {
     try {
       const { statusData, logText } = await api.updateStatus();
-      const currentSunTimes = JSON.stringify(statusData.sun_times);
-      const sunTimesDiv = document.getElementById("sun-times");
-      if (sunTimesDiv && sunTimesDiv.dataset.last !== currentSunTimes) {
-        ui.renderSunTimes(statusData.sun_times || null);
-        sunTimesDiv.dataset.last = currentSunTimes;
-      }
+      ui.renderSunTimes(statusData.sun_times || null);
       ui.renderStatus(statusData.routines || [], statusData.sun_times);
       ui.renderLog(logText);
       animateTimeIndicators();
@@ -178,24 +183,18 @@ function runMainApp() {
 
       if (nowMins >= sunriseMins && nowMins <= sunsetMins) {
         sun.style.display = "block";
-
         const dayDuration = sunsetMins - sunriseMins;
         const timeIntoDay = nowMins - sunriseMins;
         const progress = dayDuration > 0 ? timeIntoDay / dayDuration : 0;
-
         const arcStartX = parseFloat(svg.dataset.arcStartX);
         const arcEndX = parseFloat(svg.dataset.arcEndX);
         const centerX = parseFloat(svg.dataset.centerX);
         const arcRadiusX = parseFloat(svg.dataset.radiusX);
         const arcRadiusY = parseFloat(svg.dataset.radiusY);
-
         const sunX = arcStartX + progress * (arcEndX - arcStartX);
-
         let term = 1 - Math.pow(sunX - centerX, 2) / Math.pow(arcRadiusX, 2);
         term = Math.max(0, term);
-
         const sunY = 180 - arcRadiusY * Math.sqrt(term);
-
         sun.setAttribute("transform", `translate(${sunX}, ${sunY})`);
       } else {
         sun.style.display = "none";
@@ -215,8 +214,31 @@ function runMainApp() {
   const setupAnalyseTab = () => {
     ui.populateAnalyseSensors(bridgeData.sensors);
     const periodSelect = document.getElementById("analyse-period");
-    const datePicker = document.getElementById("analyse-date-picker");
+    const dayOptions = document.getElementById("day-options");
+    const weekOptions = document.getElementById("week-options");
     const weekPicker = document.getElementById("analyse-week-picker");
+    const rangeButtons = dayOptions.querySelectorAll(".analyse-range-btn");
+
+    const togglePeriodView = () => {
+      const isWeek = periodSelect.value === "week";
+      dayOptions.classList.toggle("hidden", isWeek);
+      weekOptions.classList.toggle("hidden", !isWeek);
+    };
+
+    periodSelect.addEventListener("change", togglePeriodView);
+
+    rangeButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        rangeButtons.forEach((b) => {
+          b.classList.remove("bg-blue-600", "text-white");
+          b.classList.add("bg-white", "text-gray-900", "border");
+        });
+        btn.classList.add("bg-blue-600", "text-white");
+        btn.classList.remove("bg-white", "text-gray-900", "border");
+        loadChartData();
+      });
+    });
+
     const getWeekNumber = (d) => {
       d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
       d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -224,44 +246,62 @@ function runMainApp() {
       const weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
       return [d.getUTCFullYear(), weekNo];
     };
-    datePicker.value = new Date().toISOString().split("T")[0];
     const [year, weekNo] = getWeekNumber(new Date());
     weekPicker.value = `${year}-W${String(weekNo).padStart(2, "0")}`;
-    periodSelect.addEventListener("change", () => {
-      datePicker.style.display =
-        periodSelect.value === "week" ? "none" : "block";
-      weekPicker.style.display =
-        periodSelect.value === "week" ? "block" : "none";
-    });
+
+    togglePeriodView();
     document
       .getElementById("btn-fetch-data")
       .addEventListener("click", loadChartData);
+
     if (bridgeData.sensors && bridgeData.sensors.length > 0) {
       loadChartData();
     }
   };
+
   const loadChartData = async () => {
     const sensorId = document.getElementById("analyse-sensor").value;
     const period = document.getElementById("analyse-period").value;
-    let date;
+    const avgWindow = document.getElementById("analyse-avg-window").value;
+    let date = new Date().toISOString().split("T")[0];
+    let range = 24;
+
     if (period === "week") {
-      const [year, weekNum] = document
-        .getElementById("analyse-week-picker")
-        .value.split("-W");
-      const d = new Date(year, 0, 1 + (weekNum - 1) * 7);
-      d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-      date = d.toISOString().split("T")[0];
+      const weekPicker = document.getElementById("analyse-week-picker");
+      if (weekPicker.value) {
+        const [year, weekNum] = weekPicker.value.split("-W");
+        const d = new Date(Date.UTC(year, 0, 1 + (weekNum - 1) * 7));
+        d.setUTCDate(d.getUTCDate() - (d.getUTCDay() || 7) + 1);
+        date = d.toISOString().split("T")[0];
+      }
     } else {
-      date = document.getElementById("analyse-date-picker").value;
+      const selectedButton = document.querySelector(
+        ".analyse-range-btn.bg-blue-600"
+      );
+      if (selectedButton) {
+        range = selectedButton.dataset.range;
+      }
     }
-    if (!sensorId || !date) return;
+
+    if (!sensorId) {
+      ui.showToast("Bitte einen Sensor auswählen.", true);
+      return;
+    }
+
     try {
-      const data = await api.loadChartData(sensorId, period, date);
-      chartInstance = ui.renderChart(chartInstance, data, period, date);
+      const data = await api.loadChartData(
+        sensorId,
+        period,
+        date,
+        range,
+        avgWindow
+      );
+      chartInstance = ui.renderChart(chartInstance, data, period);
     } catch (error) {
       ui.showToast(error.message, true);
     }
   };
+
   const loadHelp = async () => {
     const helpContainer = document.getElementById("help-content-container");
     try {
@@ -282,19 +322,24 @@ function runMainApp() {
       helpContainer.innerHTML = `<p class="text-red-500">Hilfe konnte nicht geladen werden.</p>`;
     }
   };
+
   const loadSettings = () => {
     const settings = config.global_settings || {};
     const location = config.location || {};
-    document.getElementById("setting-bridge-ip").value = config.bridge_ip || "";
-    document.getElementById("setting-latitude").value = location.latitude || "";
-    document.getElementById("setting-longitude").value =
-      location.longitude || "";
-    document.getElementById("setting-hysteresis").value =
-      settings.hysteresis_percent || 25;
-    document.getElementById("setting-datalogger-interval").value =
-      settings.datalogger_interval_minutes || 15;
-    document.getElementById("setting-loglevel").value =
-      settings.log_level || "INFO";
+    const ipInput = document.getElementById("setting-bridge-ip");
+    const latInput = document.getElementById("setting-latitude");
+    const lonInput = document.getElementById("setting-longitude");
+    const hysInput = document.getElementById("setting-hysteresis");
+    const dataLogInput = document.getElementById("setting-datalogger-interval");
+    const logLevelInput = document.getElementById("setting-loglevel");
+
+    if (ipInput) ipInput.value = config.bridge_ip || "";
+    if (latInput) latInput.value = location.latitude || "";
+    if (lonInput) lonInput.value = location.longitude || "";
+    if (hysInput) hysInput.value = settings.hysteresis_percent || 25;
+    if (dataLogInput)
+      dataLogInput.value = settings.datalogger_interval_minutes || 15;
+    if (logLevelInput) logLevelInput.value = settings.log_level || "INFO";
   };
 
   const saveFullConfig = async () => {
@@ -311,6 +356,7 @@ function runMainApp() {
       btn.textContent = "Speichern und Alle Routinen neu starten";
     }
   };
+
   const saveSettings = async () => {
     const newConfig = JSON.parse(JSON.stringify(config));
     newConfig.bridge_ip = document.getElementById("setting-bridge-ip").value;
@@ -335,6 +381,7 @@ function runMainApp() {
       ui.showToast(`Fehler: ${e.message}`, true);
     }
   };
+
   const handleSaveScene = () => {
     const form = document.getElementById("form-scene");
     const originalName = form.querySelector("#scene-original-name").value;

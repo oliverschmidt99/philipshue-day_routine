@@ -79,3 +79,13 @@ body {
     border: 2px solid #6b7280;
     cursor: pointer;
 }
+
+/* **ÄNDERUNG: Feste Höhe für Diagramm-Container angepasst** */
+.chart-container {
+    height: 600px;
+}
+
+.chart-inner-wrapper {
+    min-width: 1200px;
+    padding: 0.5rem;
+}
