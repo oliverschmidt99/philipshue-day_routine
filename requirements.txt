@@ -1,7 +1,7 @@
-# Core application dependencies
 Flask
 phue
 PyYAML
 requests
 astral
 Markdown
+pandas
