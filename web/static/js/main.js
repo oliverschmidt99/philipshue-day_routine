@@ -73,9 +73,60 @@ function runMainApp() {
         tabs.forEach(tabInfo => { const btn = document.getElementById(tabInfo.btn); if (!btn) return; btn.addEventListener('click', () => { tabs.forEach(t => { document.getElementById(t.btn)?.classList.remove('tab-active'); document.getElementById(t.content)?.classList.add('hidden'); }); btn.classList.add('tab-active'); document.getElementById(tabInfo.content)?.classList.remove('hidden'); if (statusInterval) clearInterval(statusInterval); if(clockAnimationInterval) clearInterval(clockAnimationInterval); if (tabInfo.init) tabInfo.init(); }); });
     };
     
-    const updateStatus = async () => { try { const { statusData, logText } = await api.updateStatus(); ui.renderStatus(statusData.routines || [], statusData.sun_times); ui.renderSunTimes(statusData.sun_times || null); ui.renderLog(logText); } catch (error) { console.error("Fehler beim Abrufen des Status:", error); } };
-    const animateClockIndicator = () => { const indicators = document.querySelectorAll('.current-time-indicator'); if (indicators.length === 0) return; const now = new Date(); const timeToPercent = (h, m) => ((h * 60 + m) / 1440) * 100; const nowPercent = timeToPercent(now.getHours(), now.getMinutes()); indicators.forEach(indicator => { indicator.style.transform = `translateX(${nowPercent}%)`; }); };
-    const startStatusUpdates = () => { if (statusInterval) clearInterval(statusInterval); if (clockAnimationInterval) clearInterval(clockAnimationInterval); updateStatus(); statusInterval = setInterval(updateStatus, 5000); animateClockIndicator(); clockAnimationInterval = setInterval(animateClockIndicator, 1000); };
+    const updateStatus = async () => {
+        try {
+            const { statusData, logText } = await api.updateStatus();
+            const currentSunTimes = JSON.stringify(statusData.sun_times);
+            const sunTimesDiv = document.getElementById('sun-times');
+            if (sunTimesDiv && sunTimesDiv.dataset.last !== currentSunTimes) {
+                ui.renderSunTimes(statusData.sun_times || null);
+                sunTimesDiv.dataset.last = currentSunTimes;
+            }
+            ui.renderStatus(statusData.routines || [], statusData.sun_times);
+            ui.renderLog(logText);
+            // Nach dem Neuzeichnen den Uhrzeiger sofort an die richtige Stelle setzen
+            animateTimeIndicators();
+        } catch (error) { console.error("Fehler beim Abrufen des Status:", error); }
+    };
+    
+    const animateTimeIndicators = () => {
+        const now = new Date();
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+        
+        document.querySelectorAll('.sun-emoji-indicator').forEach(sun => {
+            const sunriseMins = parseInt(sun.dataset.sunriseMins);
+            const sunsetMins = parseInt(sun.dataset.sunsetMins);
+            if (nowMins >= sunriseMins && nowMins <= sunsetMins) {
+                sun.style.display = 'block';
+                const dayDuration = sunsetMins - sunriseMins;
+                const timeIntoDay = nowMins - sunriseMins;
+                const angle = (timeIntoDay / dayDuration) * 180;
+                const rad = (180 - angle) * (Math.PI / 180);
+                const sunrisePercent = (sunriseMins / 1439) * 100;
+                const sunsetPercent = (sunsetMins / 1439) * 100;
+                const arcStartX = sunrisePercent * 10;
+                const arcEndX = sunsetPercent * 10;
+                const arcRadiusX = (arcEndX - arcStartX) / 2;
+                const arcRadiusY = Math.min(150, arcRadiusX * 0.9);
+                const centerX = arcStartX + arcRadiusX;
+                const sunX = centerX + Math.cos(rad) * arcRadiusX;
+                const sunY = 180 - Math.sin(rad) * arcRadiusY;
+                sun.setAttribute('transform', `translate(${sunX}, ${sunY})`);
+            } else {
+                sun.style.display = 'none';
+            }
+        });
+    };
+
+    const startStatusUpdates = () => {
+        if (statusInterval) clearInterval(statusInterval);
+        if (clockAnimationInterval) clearInterval(clockAnimationInterval);
+        updateStatus();
+        statusInterval = setInterval(updateStatus, 10000);
+        animateTimeIndicators();
+        clockAnimationInterval = setInterval(animateTimeIndicators, 15 * 60 * 1000); // Alle 15 Minuten
+    };
+
     const setupAnalyseTab = () => { ui.populateAnalyseSensors(bridgeData.sensors); const periodSelect = document.getElementById('analyse-period'); const datePicker = document.getElementById('analyse-date-picker'); const weekPicker = document.getElementById('analyse-week-picker'); const getWeekNumber = (d) => { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7); return [d.getUTCFullYear(), weekNo]; }; datePicker.value = new Date().toISOString().split('T')[0]; const [year, weekNo] = getWeekNumber(new Date()); weekPicker.value = `${year}-W${String(weekNo).padStart(2, '0')}`; periodSelect.addEventListener('change', () => { datePicker.style.display = (periodSelect.value === 'week') ? 'none' : 'block'; weekPicker.style.display = (periodSelect.value === 'week') ? 'block' : 'none'; }); document.getElementById('btn-fetch-data').addEventListener('click', loadChartData); if (bridgeData.sensors && bridgeData.sensors.length > 0) { loadChartData(); } };
     const loadChartData = async () => { const sensorId = document.getElementById('analyse-sensor').value; const period = document.getElementById('analyse-period').value; let date; if (period === 'week') { const [year, weekNum] = document.getElementById('analyse-week-picker').value.split('-W'); const d = new Date(year, 0, 1 + (weekNum - 1) * 7); d.setDate(d.getDate() - (d.getDay() + 6) % 7); date = d.toISOString().split('T')[0]; } else { date = document.getElementById('analyse-date-picker').value; } if (!sensorId || !date) return; try { const data = await api.loadChartData(sensorId, period, date); chartInstance = ui.renderChart(chartInstance, data, period, date); } catch (error) { ui.showToast(error.message, true); } };
     const loadHelp = async () => { const helpContainer = document.getElementById('help-content-container'); try { const content = await api.loadHelpContent(); helpContainer.innerHTML = content; helpContainer.querySelectorAll('.faq-question').forEach(btn => { btn.addEventListener('click', () => { const answer = btn.nextElementSibling; const icon = btn.querySelector('i'); const isOpening = !answer.style.maxHeight; answer.style.maxHeight = isOpening ? answer.scrollHeight + "px" : null; icon.style.transform = isOpening ? 'rotate(180deg)' : 'rotate(0deg)'; }); }); } catch(e) { helpContainer.innerHTML = `<p class="text-red-500">Hilfe konnte nicht geladen werden.</p>`; } };
