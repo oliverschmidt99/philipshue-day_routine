@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hue Routine und Scene Editor</title>
-    <!-- Externe Bibliotheken -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,23 +12,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
-    <!-- Eigene CSS-Datei -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-100 text-gray-800">
 
-    <!-- Setup Wizard Container (wird bei Bedarf angezeigt) -->
     {% include 'setup_wizard.html' %}
-
-    <!-- Main Application Container (wird nach dem Setup angezeigt) -->
     {% include 'main_app.html' %}
-
-    <!-- Modals und Toast-Nachrichten -->
     {% include 'modals.html' %}
 
-    <!-- Eigene JavaScript-Datei (am Ende des Body-Tags mit defer) -->
-    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
 </body>
 
 </html>

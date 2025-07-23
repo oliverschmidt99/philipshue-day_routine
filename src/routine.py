@@ -96,31 +96,24 @@ class Routine:
             self.log.debug(f"Keine gültige Periode für {now.time()}, es wird nichts unternommen.")
             return
             
-        period_config = self.config[current_period]
+        period_config = self.config.get(current_period)
+        if not period_config:
+            return
 
         if self.sensor and period_config.get('motion_check', False):
             if self.sensor.get_motion():
-                
-                # *** HIER IST DIE KORREKTUR ***
-                # Prüfe auf "Bitte nicht stören", BEVOR die Bewegungsszene aktiviert wird.
                 if period_config.get('do_not_disturb', False):
-                    # Finde heraus, ob das Licht an oder aus sein sollte.
                     normal_scene = self.scenes.get(period_config.get('scene_name'))
                     if normal_scene:
                         expected_state_on = normal_scene.status
                         actual_state_on = self.room.is_any_light_on()
-
-                        # Wenn der Zustand abweicht (z.B. Licht ist an, sollte aber aus sein),
-                        # dann ignoriere die Bewegung.
                         if actual_state_on is not None and actual_state_on != expected_state_on:
-                            self.log.debug(f"[{self.name}] 'Bitte nicht stören' aktiv. Erwartet: {'An' if expected_state_on else 'Aus'}, Realität: {'An' if actual_state_on else 'Aus'}. Ignoriere Bewegung.")
-                            # Wichtig: Wir aktualisieren trotzdem die last_motion_time, damit der Timeout-Timer nicht abläuft.
+                            self.log.debug(f"[{self.name}] 'Bitte nicht stören' aktiv. Ignoriere Bewegung.")
                             self.last_motion_time = now
                             return
-
-                # Wenn "Bitte nicht stören" nicht aktiv ist oder die Zustände übereinstimmen:
+                
                 if self.state != self.STATE_MOTION:
-                    self.log.info(f"[{self.name}] Bewegung erkannt. Aktiviere Bewegungs-Szene: '{period_config['x_scene_name']}'.")
+                    self.log.info(f"[{self.name}] Bewegung erkannt. Aktiviere Szene: '{period_config['x_scene_name']}'.")
                     scene_to_set = self.scenes.get(period_config['x_scene_name'])
                     if scene_to_set:
                         self.room.apply_state(scene_to_set.get_state())
@@ -131,7 +124,7 @@ class Routine:
         if self.state == self.STATE_MOTION:
             wait_time_conf = period_config.get('wait_time', {'min': 0, 'sec': 5})
             timeout_seconds = (wait_time_conf.get('min', 0) * 60) + wait_time_conf.get('sec', 5)
-            if now - self.last_motion_time > timedelta(seconds=timeout_seconds):
+            if self.last_motion_time and now - self.last_motion_time > timedelta(seconds=timeout_seconds):
                 self.log.info(f"[{self.name}] Keine Bewegung für {timeout_seconds}s. Kehre zum Normalzustand zurück.")
                 self.state = self.STATE_RESET 
             else:
@@ -141,25 +134,19 @@ class Routine:
             return
 
         if self.state != current_period:
-            self.log.info(f"---------- Zustands-Wechsel für Routine '{self.name}' zu '{current_period}' ----------")
-            self.log.info(f"Setze Normal-Szene: '{period_config['scene_name']}'.")
+            self.log.info(f"---------- Zustands-Wechsel für '{self.name}' zu '{current_period}' ----------")
             scene_to_set = self.scenes.get(period_config['scene_name'])
             if scene_to_set:
+                self.log.info(f"Setze Normal-Szene: '{period_config['scene_name']}'.")
                 self.room.apply_state(scene_to_set.get_state())
             self.state = current_period
             self.is_brightness_control_active = False
 
     def get_status(self):
+        # **NEU: Erweitere die Status-Informationen**
         motion_detected = self.sensor.get_motion() if self.sensor else False
-        brightness_value = self.sensor.get_brightness() if self.sensor else 'N/A'
         
-        try:
-            brightness = int(brightness_value) if brightness_value != 'N/A' else 'N/A'
-        except (ValueError, TypeError):
-            brightness = 'N/A'
-
         last_scene_name = 'N/A'
-        
         current_period_for_status = self.time_span.get_current_period(datetime.now().astimezone())
         if self.state == self.STATE_MOTION and current_period_for_status:
             last_scene_name = self.config[current_period_for_status]['x_scene_name']
@@ -172,7 +159,11 @@ class Routine:
             "name": self.name,
             "enabled": self.enabled,
             "period": current_period_for_status,
-            "motion_status": f"{'Bewegung erkannt' if motion_detected else 'Keine Bewegung'}",
+            "motion_status": 'Bewegung erkannt' if motion_detected else 'Keine Bewegung',
             "last_scene": last_scene_name,
-            "brightness": brightness 
+            "brightness": self.sensor.get_brightness() if self.sensor else 'N/A',
+            # **NEUE FELDER**
+            "temperature": self.sensor.get_temperature() if self.sensor else 'N/A',
+            "last_motion_iso": self.last_motion_time.isoformat() if self.last_motion_time else None,
+            "daily_time": self.config.get('daily_time', {})
         }

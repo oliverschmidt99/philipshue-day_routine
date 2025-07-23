@@ -1,0 +1,81 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5; /* Ein leichtes Grau als Hintergrund */
+}
+
+.tab-active {
+    border-bottom-color: #3b82f6; /* Tailwind blue-500 */
+    color: #3b82f6;
+    font-weight: 600; /* semi-bold */
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.log-container {
+    background-color: #1f2937; /* Tailwind gray-800 */
+    color: #d1d5db; /* Tailwind gray-300 */
+    font-family: monospace;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+/* Styles for FAQ Accordion in der Hilfe-Seite */
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+}
+
+.faq-question i {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Stile für die interaktive Zeitleiste */
+.timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 32px;
+    background: #3b82f6; border-radius: 4px;
+    cursor: pointer; pointer-events: auto;
+    margin-top: -12px;
+}
+.timeline-slider::-moz-range-thumb {
+    width: 16px; height: 32px;
+    background: #3b82f6; border-radius: 4px;
+    cursor: pointer; pointer-events: auto;
+}
+
+/* Stile für den Helligkeits-Slider */
+.brightness-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #1f2937, #fde047); /* von Dunkelgrau zu Gelb */
+    outline: none;
+    opacity: 0.8;
+    transition: opacity .2s;
+}
+.brightness-slider:hover {
+    opacity: 1;
+}
+.brightness-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #6b7280; /* grauer Rand */
+    cursor: pointer;
+}
+.brightness-slider::-moz-range-thumb {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #6b7280;
+    cursor: pointer;
+}
