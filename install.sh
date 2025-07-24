@@ -46,7 +46,6 @@ log_success "Systemabhängigkeiten sind installiert."
 VENV_DIR=".venv"
 if [ ! -d "$VENV_DIR" ]; then
     log_info "Erstelle Python Virtual Environment in '$VENV_DIR'..."
-    # Verwende 'python3' als Befehl, da dies auf den meisten modernen Systemen Standard ist.
     python3 -m venv $VENV_DIR
     if [ $? -ne 0 ]; then
         log_error "Erstellung des Virtual Environments fehlgeschlagen."
@@ -72,15 +71,15 @@ log_success "Alle Python-Pakete sind installiert."
 # 4. systemd Service einrichten
 SERVICE_NAME="hue_controller.service"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
-# realpath stellt sicher, dass wir immer absolute Pfade haben
-SCRIPT_PATH=$(realpath main.py)
-VENV_PYTHON_PATH=$(realpath $VENV_DIR/bin/python)
+# Wichtig: Absolute Pfade verwenden, damit systemd sie findet.
 WORKING_DIRECTORY=$(pwd)
+VENV_PYTHON_PATH="$WORKING_DIRECTORY/$VENV_DIR/bin/python"
+SCRIPT_PATH="$WORKING_DIRECTORY/main.py"
 
-log_info "Erstelle systemd Service-Datei..."
+log_info "Erstelle systemd Service-Datei mit korrekten Pfaden..."
 
 # Service-Datei-Inhalt mit heredoc erstellen
-# Dies schreibt den Block zwischen <<EOF und EOF in die Zieldatei.
+# Die Variablen werden hier direkt mit ihren absoluten Pfaden eingesetzt.
 sudo tee $SERVICE_FILE > /dev/null <<EOF
 [Unit]
 Description=Philips Hue Advanced Routine Controller
@@ -101,13 +100,13 @@ EOF
 log_info "systemd Service-Datei unter $SERVICE_FILE erstellt."
 
 # 5. systemd neu laden und Service starten/aktivieren
-log_info "Lade systemd neu und aktiviere/starte den Service..."
+log_info "Lade systemd neu und starte den Service neu..."
 sudo systemctl daemon-reload
 sudo systemctl enable $SERVICE_NAME
-sudo systemctl restart $SERVICE_NAME # 'restart' verwenden, um sicherzustellen, dass Änderungen übernommen werden
+sudo systemctl restart $SERVICE_NAME
 
 if sudo systemctl is-active --quiet $SERVICE_NAME; then
-    log_success "Service '$SERVICE_NAME' wurde erfolgreich gestartet und aktiviert."
+    log_success "Service '$SERVICE_NAME' wurde erfolgreich neu gestartet und aktiviert."
     log_info "Der Status kann mit 'systemctl status $SERVICE_NAME' überprüft werden."
 else
     log_error "Service '$SERVICE_NAME' konnte nicht gestartet werden."
