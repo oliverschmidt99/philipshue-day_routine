@@ -1,109 +1,118 @@
 #!/bin/bash
-#
-# Installations- und Einrichtungsskript für den Philips Hue Advanced Routine Controller
-#
 
-# Beendet das Skript sofort, wenn ein Befehl fehlschlägt
-set -e
-
-# --- Globale Variablen ---
-SERVICE_NAME="hue_controller.service"
-VENV_DIR=".venv"
-PROJECT_DIR=$(pwd)
-PYTHON_EXEC="$PROJECT_DIR/$VENV_DIR/bin/python"
-MAIN_SCRIPT="$PROJECT_DIR/main.py"
-CURRENT_USER=$(whoami)
-
-# --- Funktionen ---
-
-# Funktion zur Anzeige von Info-Meldungen
-info() {
+# Funktion für farbige Ausgaben
+log_info() {
     echo -e "\e[34m[INFO]\e[0m $1"
 }
 
-# Funktion zur Anzeige von Erfolgs-Meldungen
-success() {
+log_success() {
     echo -e "\e[32m[ERFOLG]\e[0m $1"
 }
 
-# Funktion zur Anzeige von Warnungen
-warn() {
-    echo -e "\e[33m[WARNUNG]\e[0m $1"
+log_error() {
+    echo -e "\e[31m[FEHLER]\e[0m $1"
 }
 
-# Funktion zur Anzeige von Fehlern und zum Beenden
-fail() {
-    echo -e "\e[31m[FEHLER]\e[0m $1" >&2
-    exit 1
-}
+# --- Skriptstart ---
+log_info "Starte die Einrichtung des Philips Hue Controllers..."
 
-# --- Skript-Ausführung ---
+# 1. Systemabhängigkeiten basierend auf dem verfügbaren Paketmanager installieren
+log_info "Überprüfe und installiere Systemabhängigkeiten (benötigt eventuell sudo-Passwort)..."
 
-info "Starte die Einrichtung des Philips Hue Controllers..."
-
-# 1. Systemabhängigkeiten für Arch Linux installieren
-info "Überprüfe und installiere Systemabhängigkeiten (benötigt eventuell sudo-Passwort)..."
-if ! command -v pacman &> /dev/null; then
-    fail "Dieser Installer ist für Arch-basierte Linux-Distributionen (pacman) ausgelegt."
-fi
-
-sudo pacman -Syu --noconfirm --needed python python-pip python-venv gcc || fail "Installation der Systemabhängigkeiten fehlgeschlagen."
-success "Systemabhängigkeiten sind auf dem neuesten Stand."
-
-# 2. Virtuelle Umgebung (venv) einrichten
-if [ -d "$VENV_DIR" ]; then
-    warn "Das Verzeichnis '$VENV_DIR' existiert bereits. Überspringe die Erstellung."
+# Prüfe auf pacman (Arch Linux, EndeavourOS, etc.)
+if command -v pacman &> /dev/null; then
+    log_info "Paketmanager 'pacman' gefunden (Arch-basiertes System)."
+    PACKAGES="python python-pip gcc"
+    if ! sudo pacman -S --needed --noconfirm $PACKAGES; then
+        log_error "Installation der Systemabhängigkeiten mit pacman fehlgeschlagen."
+        exit 1
+    fi
+# Prüfe auf apt-get (Debian, Ubuntu, Raspberry Pi OS, etc.)
+elif command -v apt-get &> /dev/null; then
+    log_info "Paketmanager 'apt-get' gefunden (Debian-basiertes System)."
+    PACKAGES="python3 python3-pip python3-venv gcc"
+    if ! sudo apt-get update || ! sudo apt-get install -y $PACKAGES; then
+        log_error "Installation der Systemabhängigkeiten mit apt-get fehlgeschlagen."
+        exit 1
+    fi
 else
-    info "Erstelle eine neue virtuelle Python-Umgebung in '$VENV_DIR'..."
-    python -m venv $VENV_DIR || fail "Erstellung der venv fehlgeschlagen."
-    success "Virtuelle Umgebung wurde erstellt."
+    log_error "Kein unterstützter Paketmanager (pacman oder apt-get) gefunden."
+    exit 1
 fi
+log_success "Systemabhängigkeiten sind installiert."
 
-# 3. Python-Abhängigkeiten aus requirements.txt installieren
-info "Installiere Python-Abhängigkeiten in der venv..."
-# shellcheck source=/dev/null
-source "$VENV_DIR/bin/activate"
-pip install --upgrade pip
-pip install -r requirements.txt || fail "Installation der Python-Abhängigkeiten fehlgeschlagen."
+
+# 2. Python Virtual Environment erstellen
+VENV_DIR=".venv"
+if [ ! -d "$VENV_DIR" ]; then
+    log_info "Erstelle Python Virtual Environment in '$VENV_DIR'..."
+    # Verwende 'python3' als Befehl, da dies auf den meisten modernen Systemen Standard ist.
+    python3 -m venv $VENV_DIR
+    if [ $? -ne 0 ]; then
+        log_error "Erstellung des Virtual Environments fehlgeschlagen."
+        exit 1
+    fi
+else
+    log_info "Virtual Environment existiert bereits."
+fi
+log_success "Virtual Environment ist eingerichtet."
+
+# 3. Python-Pakete installieren
+log_info "Aktiviere Virtual Environment und installiere Pakete aus requirements.txt..."
+source $VENV_DIR/bin/activate
+pip install -r requirements.txt
+if [ $? -ne 0 ]; then
+    log_error "Installation der Python-Pakete fehlgeschlagen."
+    deactivate
+    exit 1
+fi
 deactivate
-success "Alle Python-Abhängigkeiten wurden erfolgreich installiert."
+log_success "Alle Python-Pakete sind installiert."
 
-# 4. systemd-Service für den Autostart einrichten
-info "Richte den systemd-Service für den Autostart ein..."
+# 4. systemd Service einrichten
+SERVICE_NAME="hue_controller.service"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
+# realpath stellt sicher, dass wir immer absolute Pfade haben
+SCRIPT_PATH=$(realpath main.py)
+VENV_PYTHON_PATH=$(realpath $VENV_DIR/bin/python)
+WORKING_DIRECTORY=$(pwd)
 
-# Erstelle den Inhalt für die .service-Datei
-read -r -d '' SERVICE_CONTENT <<EOF
+log_info "Erstelle systemd Service-Datei..."
+
+# Service-Datei-Inhalt mit heredoc erstellen
+# Dies schreibt den Block zwischen <<EOF und EOF in die Zieldatei.
+sudo tee $SERVICE_FILE > /dev/null <<EOF
 [Unit]
 Description=Philips Hue Advanced Routine Controller
 After=network.target
 
 [Service]
-User=$CURRENT_USER
-Group=$(id -gn "$CURRENT_USER")
-WorkingDirectory=$PROJECT_DIR
-ExecStart=$PYTHON_EXEC $MAIN_SCRIPT
+ExecStart=$VENV_PYTHON_PATH $SCRIPT_PATH
+WorkingDirectory=$WORKING_DIRECTORY
+StandardOutput=journal
+StandardError=journal
 Restart=always
-RestartSec=5
+User=$USER
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# Schreibe die Datei mit sudo-Rechten
-echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null || fail "Konnte die systemd-Service-Datei nicht erstellen."
-success "systemd-Service-Datei wurde unter '$SERVICE_FILE' erstellt."
+log_info "systemd Service-Datei unter $SERVICE_FILE erstellt."
 
-# systemd neuladen und den Service aktivieren/starten
-info "Aktiviere und starte den systemd-Service..."
+# 5. systemd neu laden und Service starten/aktivieren
+log_info "Lade systemd neu und aktiviere/starte den Service..."
 sudo systemctl daemon-reload
-sudo systemctl enable "$SERVICE_NAME"
-sudo systemctl restart "$SERVICE_NAME"
-success "Der Service '$SERVICE_NAME' wurde aktiviert und gestartet."
+sudo systemctl enable $SERVICE_NAME
+sudo systemctl restart $SERVICE_NAME # 'restart' verwenden, um sicherzustellen, dass Änderungen übernommen werden
 
-# --- Abschluss ---
-echo
-success "Die Installation und Einrichtung ist abgeschlossen!"
-info "Die Anwendung läuft jetzt als Hintergrund-Service."
-info "Du kannst den Status mit 'systemctl status $SERVICE_NAME' überprüfen."
-info "Die Weboberfläche ist unter http://<deine-ip>:5000 erreichbar."
+if sudo systemctl is-active --quiet $SERVICE_NAME; then
+    log_success "Service '$SERVICE_NAME' wurde erfolgreich gestartet und aktiviert."
+    log_info "Der Status kann mit 'systemctl status $SERVICE_NAME' überprüft werden."
+else
+    log_error "Service '$SERVICE_NAME' konnte nicht gestartet werden."
+    log_info "Überprüfe die Logs mit 'journalctl -u $SERVICE_NAME' für Details."
+    exit 1
+fi
+
+log_success "Einrichtung abgeschlossen! Die Web-UI sollte in Kürze erreichbar sein."
