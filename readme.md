@@ -1,73 +1,105 @@
 # Philips Hue Advanced Routine Controller
 
-Ein Python-basiertes Steuerungssystem für Philips Hue, das zeit- und sensorbasierte Routinen über eine Web-UI ermöglicht. Das System nutzt eine modulare Architektur zur einfachen Erweiterung und Wartung.
+Ein fortschrittliches Steuerungssystem für Philips Hue, das komplexe, zeit- und sensorbasierte Routinen über eine intuitive Web-UI ermöglicht. Die Anwendung zeichnet sich durch eine modulare Architektur aus, die eine einfache Wartung und Erweiterung sicherstellt.
 
-## Core Features
+---
 
-- **Modulare Routine-Engine:** Jede Routine operiert unabhängig und kombiniert Zeitpläne (Morgen, Tag, Abend, Nacht) mit Sensor-Triggern (Bewegung, Helligkeit).
-- **Zustandsbasierte Logik:** Eine robuste State-Machine (Normal, Bewegung, Inaktiv) handhabt Übergänge und sorgt für Systemstabilität und vorhersagbares Verhalten.
-- **Adaptive Helligkeitsregelung:** Implementiert eine inverse lineare Regelung mit einstellbarer Hysterese, um die Beleuchtung an das Umgebungslicht anzupassen und Flackern bei Grenzwerten zu vermeiden.
-- **Dynamische Zeitsteuerung:** Die Zeitabschnitte können an feste Uhrzeiten oder dynamisch an den Sonnenauf- und -untergang gekoppelt werden, basierend auf dem Standort des Nutzers.
-- **Datenpersistenz & Analyse:** Sensorwerte (Helligkeit, Temperatur) werden in einer SQLite-Datenbank gespeichert und über eine `Flask`-basierte API für die Visualisierung mit Chart.js bereitgestellt.
-- **Web-Interface:** Eine auf Vanilla JS und Tailwind CSS basierende Single-Page-Application dient der vollständigen Konfiguration von Routinen, Szenen und globalen Systemeinstellungen.
+## ⭐ Kernfunktionen
 
-## Systemarchitektur
+- **Modulare Routine-Engine:** Jede Routine agiert autonom und kombiniert flexible Zeitpläne (Morgen, Tag, Abend, Nacht) mit Sensor-Auslösern wie Bewegung und Helligkeit.
+- **Zustandsbasierte Logik:** Eine robuste State-Machine (z.B. Normalzustand, Bewegungs-Aktivität, Inaktiv) steuert alle Übergänge und sorgt für ein stabiles und vorhersehbares Systemverhalten.
+- **Adaptive Helligkeitsregelung:** Eine intelligente, inverse Regelung mit einstellbarer Hysterese passt die Beleuchtung dynamisch an das Umgebungslicht an und verhindert unerwünschtes Flackern bei Grenzwerten.
+- **Dynamische Zeitsteuerung:** Die Zeitabschnitte können wahlweise an feste Uhrzeiten oder dynamisch an den Sonnenauf- und -untergang gekoppelt werden, basierend auf dem Standort des Nutzers.
+- **Datenpersistenz & Analyse:** Sensorwerte wie Helligkeit und Temperatur werden in einer SQLite-Datenbank protokolliert und über eine Flask-API zur Visualisierung mit Chart.js im Frontend bereitgestellt.
+- **Modernes Web-Interface:** Eine auf Vanilla JS und Tailwind CSS basierende Single-Page-Application ermöglicht die vollständige Konfiguration von Routinen, Szenen und globalen Systemeinstellungen.
 
-Das Projekt ist in mehrere Kernkomponenten unterteilt:
+---
 
-- `main.py`: Der Einstiegspunkt der Anwendung. Initialisiert die Bridge-Verbindung, startet den Webserver in einem separaten Prozess und die Hauptsteuerungslogik in einer robusten Schleife.
-- `src/`: Enthält die Kernlogik als Python-Paket.
-  - `routine.py`: Implementiert die Logik für einzelne Routinen, inklusive Zustandsmanagement.
-  - `room.py` / `scene.py` / `sensor.py`: Abstraktionsklassen für die Interaktion mit der Hue Bridge API.
-  - `daily_time_span.py`: Verwaltet die zeitliche Logik und die Einteilung der Tagesperioden, inklusive der Berechnung von Sonnenauf- und -untergang.
-- `web/`: Beinhaltet die Flask-Webanwendung.
-  - `server.py`: Stellt die API-Endpunkte (`/api/*`) für die Kommunikation zwischen Frontend und Backend bereit (Konfigurationsmanagement, Statusabfragen, Bridge-Interaktionen).
-  - `templates/index.html`: Die Single-Page-Application, die die gesamte UI rendert.
-- `config.yaml`: Zentrale Konfigurationsdatei für Bridge-IP, Routinen, Szenen und Standorteinstellungen.
+## 🏗️ Systemarchitektur
 
-## Setup & Installation
+Das Projekt ist in logische Kernkomponenten unterteilt:
 
-Voraussetzungen: Python >= 3.8
+- **`main.py`**: Der Haupteinstiegspunkt der Anwendung. Er initialisiert die Bridge-Verbindung, startet den Webserver als separaten Prozess und führt die Hauptsteuerungslogik in einer stabilen Schleife aus.
+- **`src/`**: Enthält die gesamte Kernlogik als Python-Paket.
+  - `routine.py`: Implementiert die Logik für einzelne Routinen, inklusive Zustandsmanagement und Sensor-Interaktion.
+  - `room.py`, `scene.py`, `sensor.py`: Abstraktionsklassen für die saubere Interaktion mit der Hue Bridge API.
+  - `daily_time_span.py`: Kapselt die komplexe Zeitlogik zur Einteilung der Tagesperioden unter Berücksichtigung der Sonnenzeiten.
+- **`web/`**: Beinhaltet die Flask-Webanwendung für die Benutzeroberfläche und API.
+  - `server.py`: Stellt alle API-Endpunkte (`/api/*`) für die nahtlose Kommunikation zwischen Frontend und Backend bereit.
+  - `templates/` & `static/`: Enthalten die HTML-Struktur sowie CSS- und JavaScript-Dateien für die interaktive UI.
+- **`config.yaml`**: Die zentrale Konfigurationsdatei für alle Einstellungen, von der Bridge-IP über Routinen bis zu den Szenen.
+
+---
+
+## 🚀 Installation & Inbetriebnahme
+
+Die Installation erfolgt komfortabel über das mitgelieferte Skript, welches alle notwendigen Schritte automatisiert.
+
+**Voraussetzungen:**
+
+- Ein Arch-basiertes Linux-System (z.B. Arch Linux, EndeavourOS). Da du, wie du mir gesagt hast, EndeavourOS nutzt, ist das perfekt.
+- `git` zur Versionsverwaltung.
+
+**Schritte:**
 
 1.  **Repository klonen:**
 
     ```bash
-    git clone [https://github.com/dein-repo/philipshue-day_routine.git](https://github.com/dein-repo/philipshue-day_routine.git)
+    git clone [https://github.com/oliverschmidt99/philipshue-day_routine.git](https://github.com/oliverschmidt99/philipshue-day_routine.git)
     cd philipshue-day_routine
     ```
 
-2.  **Abhängigkeiten installieren:**
-    Es wird empfohlen, eine virtuelle Umgebung zu verwenden.
+2.  **Installationsskript ausführen:**
+    Das Skript macht sich selbst ausführbar und startet die Installation. Du wirst eventuell zur Eingabe deines `sudo`-Passworts aufgefordert.
 
     ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # unter Linux/macOS
-    # .\.venv\Scripts\activate  # unter Windows
-    pip install -r requirements.txt
+    chmod +x install.sh
+    ./install.sh
     ```
 
-3.  **Hue Bridge verbinden:**
-    a. `config.example.yaml` zu `config.yaml` kopieren.
-    b. Die `bridge_ip` in `config.yaml` eintragen.
-    c. `main.py` einmalig ausführen und den Anweisungen folgen, um die App durch Drücken des Link-Buttons auf der Bridge zu autorisieren. Der generierte App-Key wird automatisch in die `config.yaml` geschrieben.
+    Das Skript erledigt Folgendes:
 
-4.  **Anwendung starten:**
-    ```bash
-    python main.py
-    ```
-    Die Weboberfläche ist unter `http://<deine-ip>:5000` erreichbar.
+    - Installiert Systemabhängigkeiten über `pacman`.
+    - Richtet eine isolierte Python-Umgebung (`.venv`) ein.
+    - Installiert Python-Pakete aus `requirements.txt`.
+    - Erstellt, aktiviert und startet einen `systemd`-Service für den Autostart.
 
-## API Endpunkte
+3.  **Anwendung konfigurieren:**
+    Nach der Installation läuft die Anwendung als Hintergrunddienst. Öffne einen Webbrowser und navigiere zu `http://<IP-DEINES-SERVERS>:5000`. Ein Einrichtungsassistent führt dich durch die Verbindung mit deiner Hue Bridge.
 
-Die `web/server.py` stellt folgende Haupt-Endpunkte bereit:
+---
 
-- `GET /api/config`: Lädt die aktuelle `config.yaml`.
-- `POST /api/config`: Speichert die übermittelte Konfiguration in die `config.yaml`.
-- `GET /api/status`: Gibt den Live-Zustand aller Routinen und die berechneten Sonnenzeiten zurück.
-- `GET /api/bridge/groups`: Listet alle Räume/Zonen von der Hue Bridge.
-- `GET /api/bridge/sensors`: Listet alle Bewegungssensoren von der Hue Bridge.
-- `POST /api/system/restart`: Startet die Anwendung neu.
+## 🛠️ Service-Verwaltung (systemd)
 
-## Contribution
+- **Status prüfen:**
+  Zeigt an, ob der Dienst aktiv ist und listet die letzten Logeinträge.
+  ```bash
+  systemctl status hue_controller.service
+  ```
+- **Dienst starten:**
+  Startet den Hue Controller Service.
+  ```bash
+  systemctl start hue_controller.service
+  ```
+- **Dienst stoppen:**
+  Stoppt den Hue Controller Service.
+  ```bash
+  systemctl stop hue_controller.service
+  ```
+- **Dienst neu starten:**
+  Startet den Dienst neu, um Änderungen zu übernehmen.
+  ```bash
+  systemctl restart hue_controller.service
+  ```
+- **Logs anzeigen:**
+  Zeigt die letzten Logeinträge des Dienstes an.
+  ```bash
+  journalctl -u hue_controller.service -f
+  ```
 
-Contributions sind willkommen. Bitte erstelle einen Fork des Repositories und reiche einen Pull Request ein. Halte dich dabei an den bestehenden Code-Stil und stelle sicher, dass alle Tests erfolgreich durchlaufen.
+**Contribution:**
+Beiträge sind willkommen! Bitte erstellt Pull-Requests für neue Features oder Bugfixes. Für größere Änderungen erstelle bitte ein Issue, um die Änderungen zu diskutieren.
+
+## 📄 Lizenz
+
+Dieses Projekt ist Lizenzfrei und steht unter der MIT-Lizenz. Du kannst es frei verwenden, modifizieren und verteilen, solange du die ursprünglichen Urheberrechte anerkennst.  
