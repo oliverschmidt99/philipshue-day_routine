@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const status = await api.checkSetupStatus();
     if (status.setup_needed) {
       document.getElementById("main-app").classList.add("hidden");
+      document.getElementById("setup-wizard").classList.remove("hidden"); // KORREKTUR HIER
       document.getElementById("setup-wizard").classList.add("flex");
       runSetupWizard();
     } else {
@@ -25,7 +26,7 @@ function runMainApp() {
   let bridgeData = {};
   let colorPicker = null;
   let statusInterval;
-  let chartInstance = null; // **ÄNDERUNG: Korrekte Initialisierung als null**
+  let chartInstance = null;
   let clockAnimationInterval;
 
   const init = async () => {
