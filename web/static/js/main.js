@@ -62,7 +62,6 @@ function runMainApp() {
       }
     };
 
-    addListener("btn-save-settings", "click", saveSettings);
     addListener("save-button", "click", saveFullConfig);
     addListener("btn-new-routine", "click", () =>
       ui.openCreateRoutineModal(bridgeData)
@@ -74,7 +73,6 @@ function runMainApp() {
       );
     });
 
-    // Event listeners for system actions
     addListener("btn-update-app", "click", () => {
       api.systemAction(
         "/api/system/update_app",
@@ -195,6 +193,7 @@ function runMainApp() {
   const updateStatus = async () => {
     try {
       const { statusData, logText } = await api.updateStatus();
+      console.log("Empfangene Status-Daten:", statusData); // Debug-Ausgabe
       ui.renderSunTimes(statusData.sun_times || null);
       ui.renderStatus(statusData.routines || [], statusData.sun_times);
       ui.renderLog(logText);
@@ -207,14 +206,11 @@ function runMainApp() {
   const animateTimeIndicators = () => {
     const now = new Date();
     const nowMins = now.getHours() * 60 + now.getMinutes();
-
     document.querySelectorAll(".sun-emoji-indicator").forEach((sun) => {
       const svg = sun.closest(".timeline-svg");
       if (!svg) return;
-
       const sunriseMins = parseInt(sun.dataset.sunriseMins);
       const sunsetMins = parseInt(sun.dataset.sunsetMins);
-
       if (nowMins >= sunriseMins && nowMins <= sunsetMins) {
         sun.style.display = "block";
         const dayDuration = sunsetMins - sunriseMins;
@@ -252,29 +248,9 @@ function runMainApp() {
     const periodSelect = document.getElementById("analyse-period");
     const dayOptions = document.getElementById("day-options");
     const weekOptions = document.getElementById("week-options");
+    const dayPicker = document.getElementById("analyse-day-picker");
     const weekPicker = document.getElementById("analyse-week-picker");
-    const rangeButtons = dayOptions.querySelectorAll(".analyse-range-btn");
-
-    const togglePeriodView = () => {
-      const isWeek = periodSelect.value === "week";
-      dayOptions.classList.toggle("hidden", isWeek);
-      weekOptions.classList.toggle("hidden", !isWeek);
-    };
-
-    periodSelect.addEventListener("change", togglePeriodView);
-
-    rangeButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        rangeButtons.forEach((b) => {
-          b.classList.remove("bg-blue-600", "text-white");
-          b.classList.add("bg-white", "text-gray-900", "border");
-        });
-        btn.classList.add("bg-blue-600", "text-white");
-        btn.classList.remove("bg-white", "text-gray-900", "border");
-        loadChartData();
-      });
-    });
-
+    dayPicker.value = new Date().toISOString().split("T")[0];
     const getWeekNumber = (d) => {
       d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
       d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -284,12 +260,16 @@ function runMainApp() {
     };
     const [year, weekNo] = getWeekNumber(new Date());
     weekPicker.value = `${year}-W${String(weekNo).padStart(2, "0")}`;
-
+    const togglePeriodView = () => {
+      const isWeek = periodSelect.value === "week";
+      dayOptions.classList.toggle("hidden", isWeek);
+      weekOptions.classList.toggle("hidden", !isWeek);
+    };
+    periodSelect.addEventListener("change", togglePeriodView);
     togglePeriodView();
     document
       .getElementById("btn-fetch-data")
       .addEventListener("click", loadChartData);
-
     if (bridgeData.sensors && bridgeData.sensors.length > 0) {
       loadChartData();
     }
@@ -299,9 +279,7 @@ function runMainApp() {
     const sensorId = document.getElementById("analyse-sensor").value;
     const period = document.getElementById("analyse-period").value;
     const avgWindow = document.getElementById("analyse-avg-window").value;
-    let date = new Date().toISOString().split("T")[0];
-    let range = 24;
-
+    let date;
     if (period === "week") {
       const weekPicker = document.getElementById("analyse-week-picker");
       if (weekPicker.value) {
@@ -311,25 +289,22 @@ function runMainApp() {
         date = d.toISOString().split("T")[0];
       }
     } else {
-      const selectedButton = document.querySelector(
-        ".analyse-range-btn.bg-blue-600"
-      );
-      if (selectedButton) {
-        range = selectedButton.dataset.range;
-      }
+      date = document.getElementById("analyse-day-picker").value;
     }
-
     if (!sensorId) {
       ui.showToast("Bitte einen Sensor auswählen.", true);
       return;
     }
-
+    if (!date) {
+      ui.showToast("Bitte ein Datum auswählen.", true);
+      return;
+    }
     try {
       const data = await api.loadChartData(
         sensorId,
         period,
         date,
-        range,
+        null,
         avgWindow
       );
       chartInstance = ui.renderChart(chartInstance, data, period);
@@ -378,41 +353,7 @@ function runMainApp() {
       settings.log_level || "INFO";
   };
 
-  const saveSettings = async () => {
-    const newConfig = JSON.parse(JSON.stringify(config));
-    newConfig.bridge_ip = document.getElementById("setting-bridge-ip").value;
-    newConfig.location = {
-      latitude: parseFloat(document.getElementById("setting-latitude").value),
-      longitude: parseFloat(document.getElementById("setting-longitude").value),
-    };
-    newConfig.global_settings = {
-      hysteresis_percent: parseInt(
-        document.getElementById("setting-hysteresis").value
-      ),
-      datalogger_interval_minutes: parseInt(
-        document.getElementById("setting-datalogger-interval").value
-      ),
-      loop_interval_s: parseFloat(
-        document.getElementById("setting-loop-interval").value
-      ),
-      status_interval_s: parseInt(
-        document.getElementById("setting-status-interval").value
-      ),
-      log_level: document.getElementById("setting-loglevel").value,
-    };
-    try {
-      await api.saveFullConfig(newConfig);
-      config = newConfig;
-      ui.showToast(
-        "Einstellungen gespeichert. 'Speichern und Neustarten' klicken, um sie anzuwenden."
-      );
-    } catch (e) {
-      ui.showToast(`Fehler: ${e.message}`, true);
-    }
-  };
-
   const saveFullConfig = async () => {
-    // Zuerst die Einstellungen aus den Feldern in das config-Objekt übernehmen
     const settings = config.global_settings || {};
     settings.loop_interval_s = parseFloat(
       document.getElementById("setting-loop-interval").value
@@ -428,8 +369,6 @@ function runMainApp() {
     );
     settings.log_level = document.getElementById("setting-loglevel").value;
     config.global_settings = settings;
-
-    // Jetzt die gesamte Konfiguration speichern
     const btn = document.getElementById("save-button");
     btn.disabled = true;
     btn.textContent = "Speichere...";
@@ -474,6 +413,7 @@ function runMainApp() {
     renderAll();
     ui.closeModal();
   };
+
   const handleCreateNewRoutine = () => {
     const name = document.getElementById("new-routine-name").value;
     const [groupId, groupName] = document
@@ -541,6 +481,7 @@ function runMainApp() {
         do_not_disturb: el.querySelector(".section-do-not-disturb").checked,
         bri_check: el.querySelector(".section-bri-check").checked,
         max_light_level: parseInt(el.querySelector(".brightness-slider").value),
+        bri_ct: parseInt(el.querySelector(".section-bri-ct").value),
       };
     });
     renderAll();
