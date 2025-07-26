@@ -193,7 +193,7 @@ function runMainApp() {
   const updateStatus = async () => {
     try {
       const { statusData, logText } = await api.updateStatus();
-      console.log("Empfangene Status-Daten:", statusData); // Debug-Ausgabe
+      console.log("Empfangene Status-Daten:", statusData);
       ui.renderSunTimes(statusData.sun_times || null);
       ui.renderStatus(statusData.routines || [], statusData.sun_times);
       ui.renderLog(logText);
@@ -355,20 +355,29 @@ function runMainApp() {
 
   const saveFullConfig = async () => {
     const settings = config.global_settings || {};
-    settings.loop_interval_s = parseFloat(
-      document.getElementById("setting-loop-interval").value
-    );
-    settings.status_interval_s = parseInt(
-      document.getElementById("setting-status-interval").value
-    );
+    // Alle Felder auslesen, auch das neue
     settings.hysteresis_percent = parseInt(
       document.getElementById("setting-hysteresis").value
     );
     settings.datalogger_interval_minutes = parseInt(
       document.getElementById("setting-datalogger-interval").value
     );
+    settings.loop_interval_s = parseFloat(
+      document.getElementById("setting-loop-interval").value
+    );
+    settings.status_interval_s = parseInt(
+      document.getElementById("setting-status-interval").value
+    );
     settings.log_level = document.getElementById("setting-loglevel").value;
     config.global_settings = settings;
+
+    // Speichern der allgemeinen Einstellungen
+    config.bridge_ip = document.getElementById("setting-bridge-ip").value;
+    config.location = {
+      latitude: parseFloat(document.getElementById("setting-latitude").value),
+      longitude: parseFloat(document.getElementById("setting-longitude").value),
+    };
+
     const btn = document.getElementById("save-button");
     btn.disabled = true;
     btn.textContent = "Speichere...";
