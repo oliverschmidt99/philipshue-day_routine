@@ -2,15 +2,10 @@
 <html lang="de">
 
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <title>Hue Editor</title>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .tab-active {
-            @apply border-blue-500 text-blue-600;
-        }
-    </style>
     <script defer>
         document.addEventListener('DOMContentLoaded', () => {
             // App sichtbar machen
@@ -68,7 +63,6 @@
             </div>
 
             <main>
-                <!-- Routinen -->
                 <div id="content-routines">
                     <div class="flex justify-end mb-4">
                         <button type="button" id="btn-new-routine"
@@ -79,7 +73,6 @@
                     <div id="routines-container" class="space-y-6"></div>
                 </div>
 
-                <!-- Szenen -->
                 <div id="content-scenes" class="hidden">
                     <div class="flex justify-end mb-4">
                         <button type="button" id="btn-new-scene"
@@ -90,7 +83,6 @@
                     <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
 
-                <!-- Status -->
                 <div id="content-status" class="hidden space-y-8">
                     <div>
                         <div class="flex justify-between items-center mb-4">
@@ -107,7 +99,6 @@
                     </div>
                 </div>
 
-                <!-- Analyse -->
                 <div id="content-analyse" class="hidden space-y-6">
                     <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
                     <div class="bg-white p-6 rounded-lg shadow-lg">
@@ -155,7 +146,6 @@
                     </div>
                 </div>
 
-                <!-- Einstellungen -->
                 <div id="content-einstellungen" class="hidden space-y-6">
                     <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -227,7 +217,13 @@
 
                     <div class="bg-white p-6 rounded-lg shadow-md mt-6">
                         <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">System-Aktionen</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <button type="button" id="btn-update-app"
+                                class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700">Anwendung
+                                aktualisieren (Git)</button>
+                            <button type="button" id="btn-update-system"
+                                class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">Betriebssystem
+                                aktualisieren</button>
                             <button type="button" id="btn-restart-app"
                                 class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
                                 neu starten</button>
@@ -247,7 +243,6 @@
                     </div>
                 </div>
 
-                <!-- Hilfe -->
                 <div id="content-hilfe" class="hidden">
                     <div id="help-content-container"></div>
                 </div>

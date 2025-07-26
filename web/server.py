@@ -9,6 +9,7 @@ import shutil
 import time
 import threading
 import requests
+import subprocess
 from datetime import datetime, timedelta
 import pandas as pd
 
@@ -257,8 +258,8 @@ def get_data_history():
             end_iso = now.isoformat()
 
         query = """
-            SELECT timestamp, value, measurement_type FROM measurements 
-            WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp <= ? 
+            SELECT timestamp, value, measurement_type FROM measurements
+            WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp <= ?
             ORDER BY timestamp
         """
         df = pd.read_sql_query(
@@ -372,5 +373,70 @@ def restore_config():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/system/update_app", methods=["POST"])
+def update_app():
+    log.info("Anwendungs-Update über API ausgelöst.")
+    try:
+        # Führe 'git pull' im Projektverzeichnis aus
+        process = subprocess.run(
+            ["git", "pull"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        log.info(f"Git pull output: {process.stdout}")
+        return jsonify(
+            {"message": f"Anwendung erfolgreich aktualisiert:\n{process.stdout}"}
+        )
+    except subprocess.CalledProcessError as e:
+        log.error(f"Fehler beim 'git pull': {e.stderr}")
+        return jsonify({"error": f"Fehler beim Update:\n{e.stderr}"}), 500
+    except Exception as e:
+        log.error(f"Allgemeiner Fehler beim Anwendungs-Update: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/system/update_os", methods=["POST"])
+def update_os():
+    log.info("Betriebssystem-Update über API ausgelöst.")
+    try:
+        # Prüfen, welcher Paketmanager verfügbar ist, wie im install.sh Skript
+        if shutil.which("pacman"):
+            command = ["sudo", "pacman", "-Syu", "--noconfirm"]
+        elif shutil.which("apt-get"):
+            command = [
+                "sudo",
+                "apt-get",
+                "update",
+                "&&",
+                "sudo",
+                "apt-get",
+                "upgrade",
+                "-y",
+            ]
+        else:
+            return (
+                jsonify(
+                    {
+                        "error": "Kein unterstützter Paketmanager (pacman, apt-get) gefunden."
+                    }
+                ),
+                400,
+            )
+
+        process = subprocess.run(command, capture_output=True, text=True, check=True)
+        log.info(f"OS Update output: {process.stdout}")
+        return jsonify(
+            {"message": f"System-Update erfolgreich gestartet:\n{process.stdout}"}
+        )
+    except subprocess.CalledProcessError as e:
+        log.error(f"Fehler beim System-Update: {e.stderr}")
+        return jsonify({"error": f"Fehler beim System-Update:\n{e.stderr}"}), 500
+    except Exception as e:
+        log.error(f"Allgemeiner Fehler beim System-Update: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
-    app.run(debug=False, port=5000, host="0.0.0.0")
+    app.run(debug=True, port=5000, host="0.0.0.0")

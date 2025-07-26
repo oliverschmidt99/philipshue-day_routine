@@ -151,10 +151,39 @@ export async function loadHelpContent() {
  */
 export async function systemAction(url, confirmMsg) {
   if (confirm(confirmMsg)) {
-    const response = await fetch(url, { method: "POST" });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || result.message);
-    return result;
+    // Find toast in a more robust way
+    const showToast = (message, isError = false) => {
+      const toastElement = document.getElementById("toast");
+      if (!toastElement) return;
+      toastElement.textContent = message;
+      toastElement.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300 ${
+        isError ? "bg-red-600" : "bg-gray-900"
+      }`;
+      toastElement.classList.remove("hidden");
+      setTimeout(() => toastElement.classList.add("hidden"), 5000);
+    };
+
+    showToast("Aktion wird ausgeführt...", false);
+    try {
+      const response = await fetch(url, { method: "POST" });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          result.error || result.message || "Unbekannter Serverfehler"
+        );
+      }
+      alert(
+        "Ergebnis:\n\n" +
+          (result.message ||
+            "Aktion ohne detaillierte Rückmeldung abgeschlossen.")
+      );
+      showToast("Aktion erfolgreich!", false);
+      return result;
+    } catch (e) {
+      alert("Fehler:\n\n" + e.message);
+      showToast("Aktion fehlgeschlagen.", true);
+      return null;
+    }
   }
   return null;
 }

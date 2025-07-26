@@ -74,6 +74,38 @@ function runMainApp() {
       );
     });
 
+    // Event listeners for system actions
+    addListener("btn-update-app", "click", () => {
+      api.systemAction(
+        "/api/system/update_app",
+        "Möchtest du die Anwendung wirklich via 'git pull' aktualisieren?"
+      );
+    });
+    addListener("btn-update-system", "click", () => {
+      api.systemAction(
+        "/api/system/update_os",
+        "Möchtest du das Betriebssystem wirklich aktualisieren? Dies kann einige Zeit dauern."
+      );
+    });
+    addListener("btn-restart-app", "click", () => {
+      api.systemAction(
+        "/api/system/restart",
+        "Möchtest du die Anwendung wirklich neu starten?"
+      );
+    });
+    addListener("btn-backup-config", "click", () => {
+      api.systemAction(
+        "/api/config/backup",
+        "Möchtest du die aktuelle Konfiguration sichern?"
+      );
+    });
+    addListener("btn-restore-config", "click", () => {
+      api.systemAction(
+        "/api/config/restore",
+        "Möchtest du die Konfiguration aus dem Backup wiederherstellen? Ungespeicherte Änderungen gehen verloren."
+      );
+    });
+
     document.body.addEventListener("click", (e) => {
       const button = e.target.closest("[data-action]");
       if (!button) return;
