@@ -6,278 +6,132 @@
         musst, einfach und klar erklärt.
     </p>
 
-    <!-- FAQ Section -->
+    <div class="mt-10">
+        <h3 class="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">Anleitung: Eine neue Routine erstellen</h3>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
+            <p class="text-gray-700">Eine <strong>Routine</strong> ist ein Regelwerk, das festlegt, wie sich das Licht
+                in einem Raum über den Tag verhält. Folge diesen Schritten, um deine erste Routine einzurichten:</p>
+            <ol class="list-decimal list-inside space-y-3 text-gray-800">
+                <li>
+                    <strong>Neue Routine starten:</strong> Klicke im Tab "Routinen" auf den Knopf <span
+                        class="bg-blue-600 text-white font-bold py-1 px-2 rounded-md text-sm">+ Neue Routine</span>.
+                </li>
+                <li>
+                    <strong>Grundlagen festlegen:</strong> Gib der Routine einen Namen (z.B. "Wohnzimmer Steuerung"),
+                    wähle den passenden Raum (Zone) und optional einen Bewegungsmelder aus.
+                </li>
+                <li>
+                    <strong>Zeitplan definieren:</strong> Im Bearbeitungsfenster kannst du mit den Schiebereglern oder
+                    per Tastatureingabe den täglichen Gesamtzeitraum festlegen, in dem die Routine aktiv sein soll.
+                </li>
+                <li>
+                    <strong>Tagesabschnitte konfigurieren:</strong> Für jeden der vier Abschnitte (Morgen, Tag, Abend,
+                    Nacht) legst du nun die gewünschten Aktionen fest:
+                    <ul class="list-disc list-inside mt-2 pl-4 space-y-1">
+                        <li><strong>Normal-Szene:</strong> Das Licht, das standardmäßig leuchten soll, wenn keine
+                            Bewegung erkannt wird. Wähle `off`, wenn das Licht aus sein soll.</li>
+                        <li><strong>Bewegungs-Szene:</strong> Das Licht, das angehen soll, wenn der Sensor eine Bewegung
+                            meldet.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Spezialfunktionen aktivieren:</strong> Nun kommen die intelligenten Optionen ins Spiel.
+                </li>
+            </ol>
+        </div>
+    </div>
+
     <div class="mt-8">
-        <h3 class="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">Häufig gestellte Fragen (FAQ)</h3>
+        <h3 class="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">Die intelligenten Funktionen erklärt</h3>
         <div class="space-y-3">
 
-            <!-- FAQ Item -->
             <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <button type="button"
                     class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
-                    <span>F: Was ist der Unterschied zwischen "Normal-Szene" und "Bewegungs-Szene"?</span>
+                    <span>Auf Bewegung reagieren</span>
                     <i class="fas fa-chevron-down transition-transform duration-300"></i>
                 </button>
                 <div class="faq-answer">
                     <p class="text-gray-600 px-4 pb-4">
-                        A: Die <strong>Normal-Szene</strong> ist der Standardzustand für einen Zeitbereich, solange
-                        <strong>keine Bewegung</strong> erkannt wird (z.B. gedimmtes Licht am Abend). Die
-                        <strong>Bewegungs-Szene</strong> wird nur dann aktiviert, wenn der Bewegungsmelder auslöst (z.B.
-                        helleres Licht zum Lesen). Nachdem die eingestellte Zeit abgelaufen ist, schaltet das System
-                        zurück zur Normal-Szene.
+                        Wenn dieser Haken gesetzt ist, wird bei Bewegung die "Bewegungs-Szene" aktiviert. Unter
+                        "Minuten" und "Sekunden" legst du fest, wie lange das Licht anbleiben soll, nachdem die letzte
+                        Bewegung erkannt wurde.
                     </p>
                 </div>
             </div>
 
-            <!-- FAQ Item -->
             <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <button type="button"
                     class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
-                    <span>F: Wie finde ich den richtigen Wert für den Helligkeits-Check?</span>
+                    <span>Bitte nicht stören</span>
                     <i class="fas fa-chevron-down transition-transform duration-300"></i>
                 </button>
                 <div class="faq-answer">
                     <p class="text-gray-600 px-4 pb-4">
-                        A: Der beste Weg ist, den <strong>Status-Tab</strong> zu beobachten. Dort siehst du den live vom
-                        Sensor gemessenen Helligkeitswert. Gehe zu einer Tageszeit, bei der das Licht gerade so angehen
-                        soll, und merke dir den angezeigten Wert. Diesen Wert kannst du dann als "Max. Helligkeit" in
-                        deiner Routine eintragen. Alternativ hilft auch der <strong>Analyse-Tab</strong>, um die
-                        typischen Helligkeitsverläufe über den Tag zu sehen.
+                        Diese Funktion ist ideal, wenn du nicht willst, dass die Automatik dich überstimmt. Wenn du das
+                        Licht manuell änderst (z.B. per App oder Schalter), merkt sich das System das und pausiert die
+                        Routine, bis der Zustand wieder der Automatik entspricht.
+                        <br><strong class="text-red-600 mt-2 block">Bedingung:</strong> Funktioniert nur zusammen mit
+                        "Auf Bewegung reagieren".
                     </p>
                 </div>
             </div>
 
-            <!-- FAQ Item -->
             <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <button type="button"
                     class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
-                    <span>F: Passen sich die Zeiten für Morgen &amp; Abend an den Sonnenauf- und untergang an?</span>
+                    <span>Helligkeits-Check (Adaptive Helligkeit)</span>
+                    <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="text-gray-600 px-4 pb-4">
+                        <p>Das ist die intelligenteste Funktion. Wenn sie aktiv ist, passiert Folgendes:</p>
+                        <ul class="list-disc list-inside mt-2 space-y-1">
+                            <li><strong>Wenn es hell genug ist:</strong> Liegt der vom Sensor gemessene Helligkeitswert
+                                über dem Schwellenwert, den du mit dem "Max. Helligkeit"-Regler einstellst, bleibt das
+                                Licht aus.</li>
+                            <li><strong>Wenn es zu dunkel wird:</strong> Fällt der Wert unter den Schwellenwert,
+                                schaltet sich das Licht ein und wird automatisch umso heller, je dunkler die Umgebung
+                                ist.</li>
+                            <li><strong>Eigene Lichtfarbe:</strong> Mit dem "Lichtfarbe für Regelung"-Regler legst du
+                                eine eigene Farbtemperatur (von Kalt- bis Warmweiß) nur für diese Funktion fest.</li>
+                        </ul>
+                        <p><strong class="text-red-600 mt-2 block">Bedingung:</strong> Diese Funktion kann nicht
+                            gleichzeitig mit "Bitte nicht stören" im selben Zeitabschnitt aktiv sein.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <button type="button"
+                    class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
+                    <span>Wie finde ich den richtigen Wert für den Helligkeits-Check?</span>
                     <i class="fas fa-chevron-down transition-transform duration-300"></i>
                 </button>
                 <div class="faq-answer">
                     <p class="text-gray-600 px-4 pb-4">
-                        A: Ja, das ist eine Kernfunktion! Du kannst in den Einstellungen feste Uhrzeiten für die
-                        Tagesperioden eintragen (z.B. "Morgen" beginnt immer um 06:00 Uhr). Alternativ kannst du die
-                        Felder leer lassen. Dann beginnt "Morgen" automatisch mit dem <strong>Sonnenaufgang</strong> und
-                        "Abend" mit dem <strong>Sonnenuntergang</strong>. So passt sich deine Beleuchtung dynamisch an
-                        die Jahreszeiten an.
+                        Der beste Weg ist der <strong>Analyse-Tab</strong>. Schau dir dort den Helligkeitsverlauf eines
+                        typischen Tages an. So kannst du den perfekten Schwellenwert finden, bei dem das Licht angehen
+                        soll (z.B. in der Dämmerung).
                     </p>
                 </div>
             </div>
 
-            <!-- FAQ Item -->
             <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <button type="button"
                     class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
-                    <span>F: Kann eine Routine auch ohne Bewegungsmelder funktionieren?</span>
+                    <span>Was passiert, wenn ich auf "Speichern und alle Routinen neu starten" klicke?</span>
                     <i class="fas fa-chevron-down transition-transform duration-300"></i>
                 </button>
                 <div class="faq-answer">
                     <p class="text-gray-600 px-4 pb-4">
-                        A: Ja. Wenn du beim Erstellen einer Routine keinen Bewegungsmelder auswählst, arbeitet sie rein
-                        zeitgesteuert. Sie schaltet dann zu Beginn jedes Zeitraums (Morgen, Tag, etc.) die jeweilige
-                        "Normal-Szene" ein. Die "Bewegungs-Szene" und Optionen wie "Helligkeits-Check" werden in diesem
-                        Fall ignoriert.
-                    </p>
-                </div>
-            </div>
-
-            <!-- FAQ Item -->
-            <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <button type="button"
-                    class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
-                    <span>F: Ich habe das Licht manuell ausgeschaltet, aber es geht immer wieder an. Was tun?</span>
-                    <i class="fas fa-chevron-down transition-transform duration-300"></i>
-                </button>
-                <div class="faq-answer">
-                    <p class="text-gray-600 px-4 pb-4">
-                        A: Aktiviere die Funktion <strong>"Bitte nicht stören"</strong> in den Routine-Einstellungen für
-                        den jeweiligen Zeitraum. Wenn diese Option aktiv ist, merkt sich das System, wenn du das Licht
-                        manuell änderst (z.B. über die Hue App oder einen Schalter), und wird die Automatik für eine
-                        Weile pausieren, um dich nicht zu nerven.
-                    </p>
-                </div>
-            </div>
-
-            <!-- FAQ Item -->
-            <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <button type="button"
-                    class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
-                    <span>F: Wofür ist die Einstellung "Log-Level"?</span>
-                    <i class="fas fa-chevron-down transition-transform duration-300"></i>
-                </button>
-                <div class="faq-answer">
-                    <p class="text-gray-600 px-4 pb-4">
-                        A: Der Log-Level steuert, wie detailliert die Log-Datei im <strong>Status-Tab</strong> ist.
-                        <strong>Standard (Info)</strong> zeigt nur die wichtigsten Ereignisse. <strong>Detailliert
-                            (Debug)</strong> ist sehr technisch und nützlich für die Fehlersuche, da es jeden einzelnen
-                        Schritt des Programms protokolliert.
-                    </p>
-                </div>
-            </div>
-
-            <!-- FAQ Item -->
-            <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <button type="button"
-                    class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
-                    <span>F: Wie finde ich meinen Breiten- und Längengrad heraus?</span>
-                    <i class="fas fa-chevron-down transition-transform duration-300"></i>
-                </button>
-                <div class="faq-answer">
-                    <p class="text-gray-600 px-4 pb-4">
-                        A: Ganz einfach! Öffne eine Kartenanwendung wie Google Maps in deinem Browser. Klicke mit der
-                        rechten Maustaste auf deinen Wohnort auf der Karte. Im Menü, das erscheint, siehst du die
-                        Koordinaten als zwei Zahlen. Die erste Zahl ist der Breitengrad (Latitude), die zweite der
-                        Längengrad (Longitude). Klicke darauf, um sie in die Zwischenablage zu kopieren und in die
-                        Einstellungen einzufügen.
-                    </p>
-                </div>
-            </div>
-
-            <!-- FAQ Item -->
-            <div class="faq-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <button type="button"
-                    class="faq-question w-full text-left flex justify-between items-center p-4 font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
-                    <span>F: Was passiert, wenn ich auf "Speichern und Alle Routinen neu starten" klicke?</span>
-                    <i class="fas fa-chevron-down transition-transform duration-300"></i>
-                </button>
-                <div class="faq-answer">
-                    <p class="text-gray-600 px-4 pb-4">
-                        A: Dieser Knopf ist der wichtigste auf der Seite. Er speichert alle deine Änderungen an
-                        Routinen, Szenen und Einstellungen in der `config.yaml`-Datei und startet dann das
+                        Dieser Knopf ist der wichtigste auf der Seite. Er speichert alle deine Änderungen an Routinen,
+                        Szenen und globalen Einstellungen in der `config.yaml`-Datei und startet dann das
                         Steuerungsprogramm im Hintergrund neu, damit alle Änderungen sofort wirksam werden.
                     </p>
                 </div>
             </div>
 
-        </div>
-    </div>
-
-    <!-- Routine Erklärung Section -->
-    <div class="mt-10">
-        <h3 class="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">Erklärung der Zeitsteuerung im Programm</h3>
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-
-            <!-- SVG Timeline Graphic -->
-            <div class="w-full my-4 h-72"> <!-- h-72 = 18rem = 288px -->
-                <svg class="h-full w-full" viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg"
-                    font-family="Inter, sans-serif" font-size="12px">
-
-                    <!-- Timeline -->
-                    <line x1="20" y1="140" x2="980" y2="140" stroke="#4b5563" stroke-width="2" />
-
-                    <!-- Arrow -->
-                    <path d="M 975 135 L 985 140 L 975 145 Z" fill="#4b5563" />
-
-                    <!-- Ticks -->
-                    <line x1="50" y1="135" x2="50" y2="145" stroke="#4b5563" stroke-width="2" />
-                    <line x1="180" y1="135" x2="180" y2="145" stroke="#4b5563" stroke-width="2" />
-                    <line x1="350" y1="135" x2="350" y2="145" stroke="#4b5563" stroke-width="2" />
-                    <line x1="650" y1="135" x2="650" y2="145" stroke="#4b5563" stroke-width="2" />
-                    <line x1="820" y1="135" x2="820" y2="145" stroke="#4b5563" stroke-width="2" />
-                    <line x1="950" y1="135" x2="950" y2="145" stroke="#4b5563" stroke-width="2" />
-
-                    <!-- Time Labels -->
-                    <text x="50" y="165" text-anchor="middle" fill="#4b5563">00:00</text>
-                    <text x="180" y="165" text-anchor="middle" fill="#4b5563">06:30</text>
-                    <text x="350" y="165" text-anchor="middle" font-weight="bold" fill="#4b5563">Sonnenaufgang</text>
-                    <text x="650" y="165" text-anchor="middle" font-weight="bold" fill="#4b5563">Sonnenuntergang</text>
-                    <text x="820" y="165" text-anchor="middle" fill="#4b5563">21:30</text>
-                    <text x="950" y="165" text-anchor="middle" fill="#4b5563">23:59</text>
-
-                    <!-- Sun Arc -->
-                    <path d="M 350 140 A 150 110 0 0 1 650 140" stroke="#f97316" stroke-width="2" fill="none" />
-
-                    <!-- Period Labels -->
-                    <text x="115" y="85" text-anchor="middle" fill="#4b5563">🌔 Nacht</text>
-                    <text x="265" y="85" text-anchor="middle" fill="#4b5563">🌅 Morgen</text>
-                    <text x="500" y="85" text-anchor="middle" fill="#4b5563">☀️ Tag</text>
-                    <text x="735" y="85" text-anchor="middle" fill="#4b5563">🌇 Abend</text>
-                    <text x="885" y="85" text-anchor="middle" fill="#4b5563">🌕 Nacht</text>
-                </svg>
-            </div>
-
-            <p class="text-gray-600 mb-4">Dieses Programm teilt den Tagesverlauf in vier Zeitabschnitte ein: Morgen,
-                Tag, Abend und Nacht. Die Einteilung basiert auf einer Kombination aus festen Uhrzeiten und aktuellen
-                Sonnenzeiten (Sonnenaufgang und Sonnenuntergang). So lässt sich der Tagesablauf sowohl dynamisch
-                (abhängig vom Sonnenstand) als auch mit festen Grenzen steuern. Die Übergänge folgen einer klar
-                definierten Prioritätslogik:</p>
-            <ul class="list-none space-y-4 text-gray-700">
-                <li class="flex items-start"><span class="text-2xl mr-3">🌅</span>
-                    <div><strong>Morgen</strong> beginnt zu einer festgelegten Uhrzeit (z.B. 6:00 Uhr) und dauert bis
-                        zum Sonnenaufgang. So kann z.B. das Licht frühzeitig eingeschaltet werden, noch bevor es draußen
-                        hell wird.</div>
-                </li>
-                <li class="flex items-start"><span class="text-2xl mr-3">☀️</span>
-                    <div><strong>Tag</strong> beginnt mit dem Sonnenaufgang und endet mit dem Sonnenuntergang. Während
-                        dieses Zeitraums wird angenommen, dass ausreichend Tageslicht vorhanden ist.</div>
-                </li>
-                <li class="flex items-start"><span class="text-2xl mr-3">🌇</span>
-                    <div><strong>Abend</strong> beginnt unmittelbar nach dem Sonnenuntergang und endet zu einer frei
-                        festlegbaren Uhrzeit (z.B. 22:00 Uhr). In diesem Zeitraum kann eine abendliche Routine aktiviert
-                        werden, z.B. gedämpftes Licht oder andere Übergänge zur Nacht.</div>
-                </li>
-                <li class="flex items-start"><span class="text-2xl mr-3">🌕</span>
-                    <div><strong>Nacht</strong> ist der Zeitraum außerhalb der anderen drei Phasen, also nach dem
-                        Abendende bis zum Morgenbeginn. In dieser Phase kann z.B. der Nachtmodus aktiv sein (Licht aus,
-                        reduzierte Aktivitäten).</div>
-                </li>
-            </ul>
-            <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h4 class="font-bold text-yellow-800">Wichtiger Hinweis zur Fallback-Logik</h4>
-                <p class="text-sm text-yellow-700 mt-1">Falls keine aktuellen Sonnenzeiten verfügbar sind (z.B. bei
-                    einem Ausfall der Datenquelle), verwendet das Programm definierte Fallback-Zeiten (Standard:
-                    Sonnenaufgang um 6:30 Uhr, Sonnenuntergang um 21:00 Uhr), sodass die Logik weiterhin funktioniert.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Expertentipps Section -->
-    <div class="mt-10">
-        <h3 class="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">Alle Funktionen und Einstellungen im Detail
-        </h3>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 class="text-xl font-bold text-blue-600 mb-2">Routinen &amp; Szenen</h4>
-                <p class="text-gray-600">Das Herzstück der Anwendung. Eine <strong>Routine</strong> kombiniert einen
-                    Raum (z.B. "Wohnzimmer") mit einem optionalen Sensor und einem Zeitplan. Die
-                    <strong>Szenen</strong>, die du hier erstellst, sind die "Lichtrezepte", die von den Routinen zu
-                    bestimmten Zeiten oder bei Bewegung aufgerufen werden.
-                </p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 class="text-xl font-bold text-red-600 mb-2">Status &amp; Fehlersuche</h4>
-                <p class="text-gray-600">Wenn etwas nicht klappt, ist dies dein erster Anlaufpunkt. Du siehst den
-                    <strong>Live-Zustand</strong> jeder Routine und die <strong>Log-Datei</strong>, die alle Aktionen
-                    und eventuelle Fehler protokolliert. Mit "Jetzt aktualisieren" holst du dir die neuesten Daten.
-                </p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 class="text-xl font-bold text-teal-600 mb-2">Analyse</h4>
-                <p class="text-gray-600">Hier werden die Messdaten deiner Sensoren (Helligkeit &amp; Temperatur)
-                    visualisiert. Nutze die Diagramme, um das Verhalten deiner Räume über den Tag oder die Woche zu
-                    verstehen und deine Routinen perfekt abzustimmen.</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 class="text-xl font-bold text-purple-600 mb-2">Hysterese</h4>
-                <p class="text-gray-600">Ein technischer Begriff aus der Regelungstechnik. Die Hysterese (einstellbar in
-                    %) verhindert, dass dein Licht bei schwankender Helligkeit ständig an- und ausgeht (flackert). Sie
-                    schafft einen "Puffer" um den Schaltpunkt.</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 class="text-xl font-bold text-gray-600 mb-2">Backup &amp; Wiederherstellung</h4>
-                <p class="text-gray-600">Unter "Einstellungen" findest du Knöpfe zum Sichern und Wiederherstellen deiner
-                    Konfiguration. Ein <strong>Backup</strong> speichert alle deine Routinen und Szenen in einer
-                    `config.backup.yaml`-Datei. Mit <strong>Wiederherstellen</strong> kannst du diesen gesicherten
-                    Zustand jederzeit zurückladen.</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 class="text-xl font-bold text-yellow-600 mb-2">System-Aktionen</h4>
-                <p class="text-gray-600">Im Einstellungs-Tab kannst du die gesamte Anwendung neu starten oder die
-                    Messreihen für die Analyse verwalten. "Neue Messreihe" archiviert die alten Daten und beginnt eine
-                    neue Aufzeichnung.</p>
-            </div>
         </div>
     </div>
 </div>
