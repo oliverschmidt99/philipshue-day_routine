@@ -37,6 +37,10 @@ class Routine:
         self.last_motion_time = None
         self.is_brightness_control_active = False
         self.do_not_disturb_active = False
+
+        # Speichert den letzten Zustand, den die Automatik gesetzt hat.
+        self.last_automation_state = {"on": False}
+
         self.log.info(f"Routine '{self.name}' für Raum '{self.room.name}' geladen.")
 
     def _create_time_span(self, config):
@@ -47,42 +51,43 @@ class Routine:
         M2 = daily_time_conf.get("M2", 59)
         return DailyTimeSpan(time(H1, M1), time(H2, M2), self.sun_times, self.log)
 
+    def _set_automation_state(self, state):
+        """Eine Hilfsfunktion, die einen Zustand an den Raum sendet und ihn speichert."""
+        self.room.apply_state(state)
+        # Wir speichern nur die für den Vergleich relevanten Teile des Zustands.
+        self.last_automation_state = {
+            k: v for k, v in state.items() if k in ["on", "bri", "ct", "hue", "sat"]
+        }
+
     def _check_do_not_disturb(self, period_config):
         if not period_config.get("do_not_disturb", False):
-            if self.do_not_disturb_active:
-                self.log.info(f"[{self.name}] 'Bitte nicht stören' wird beendet.")
-                self.do_not_disturb_active = False
             return False
 
-        actual_state_on = self.room.is_any_light_on()
-        if actual_state_on is None:
-            return self.do_not_disturb_active
+        if self.do_not_disturb_active:
+            return True
 
-        # Definiere den "erwarteten" Zustand basierend auf der aktuellen Situation
-        expected_state_on = False
-        if self.is_brightness_control_active:
-            expected_state_on = True
-            expected_scene_name = f"Regelung (CT: {period_config.get('bri_ct')})"
-        else:
-            expected_scene_name = period_config.get("scene_name")
-            expected_scene = self.scenes.get(expected_scene_name)
-            if not expected_scene:
-                return False
-            expected_state_on = expected_scene.status
+        current_light_state = self.room.get_current_state()
+        if current_light_state is None:
+            return False
 
-        if actual_state_on != expected_state_on:
-            if not self.do_not_disturb_active:
-                self.log.warning(
-                    f"[{self.name}] Manuelle Änderung erkannt! Erwartet: '{expected_scene_name}' (An: {expected_state_on}), Ist: An: {actual_state_on}. 'Bitte nicht stören' wird aktiviert."
-                )
-                self.do_not_disturb_active = True
-        else:
-            if self.do_not_disturb_active:
-                self.log.info(
-                    f"[{self.name}] Lichtzustand entspricht wieder der Erwartung. 'Bitte nicht stören' wird beendet."
-                )
-                self.do_not_disturb_active = False
-        return self.do_not_disturb_active
+        is_different = False
+        for key, value in self.last_automation_state.items():
+            if key == "bri":
+                if abs(current_light_state.get(key, 0) - value) > 5:
+                    is_different = True
+                    break
+            elif current_light_state.get(key) != value:
+                is_different = True
+                break
+
+        if is_different:
+            self.log.warning(
+                f"[{self.name}] Manuelle Änderung erkannt! Erwartet: {self.last_automation_state}, Ist: {current_light_state}. 'Bitte nicht stören' wird aktiviert."
+            )
+            self.do_not_disturb_active = True
+            return True
+
+        return False
 
     def _handle_brightness_control(self, period_config, current_period):
         if not self.sensor or not period_config.get("bri_check", False):
@@ -91,7 +96,6 @@ class Routine:
             return False
         light_level = self.sensor.get_brightness()
         if light_level is None:
-            self.log.warning(f"[{self.name}] Helligkeitssensor liefert keinen Wert.")
             return self.is_brightness_control_active
         threshold = period_config.get("max_light_level", 0)
         if threshold <= 0:
@@ -106,7 +110,7 @@ class Routine:
                 self.log.info(
                     f"[{self.name}] Helligkeit ({light_level}) > Schwelle ({turn_off_threshold}). Deaktiviere Licht."
                 )
-                self.room.apply_state({"on": False})
+                self._set_automation_state({"on": False})
                 self.is_brightness_control_active = False
             return True
         elif light_level < turn_on_threshold:
@@ -120,23 +124,16 @@ class Routine:
                 self.log.info(
                     f"[{self.name}] Helligkeit ({light_level}) < Schwelle ({turn_on_threshold}). Starte Regelung -> Helligkeit: {bri}, CT: {bri_ct}"
                 )
-            else:
-                self.log.debug(
-                    f"[{self.name}] Update Helligkeitsregelung. Sensor: {light_level} -> Lampe: {bri}"
-                )
-            self.room.apply_state(new_state)
+            self._set_automation_state(new_state)
             self.is_brightness_control_active = True
             return True
         else:
-            self.log.debug(
-                f"[{self.name}] Helligkeit ({light_level}) in Hysterese-Zone. Halte Zustand."
-            )
             return True
 
     def run(self, now):
         if not self.enabled:
             if self.state != self.STATE_OFF:
-                self.room.apply_state({"on": False})
+                self._set_automation_state({"on": False})
                 self.state = self.STATE_OFF
                 self.do_not_disturb_active = False
             return
@@ -147,6 +144,9 @@ class Routine:
         if not period_config:
             return
 
+        if self._check_do_not_disturb(period_config):
+            return
+
         if self.sensor and period_config.get("motion_check", False):
             if self.sensor.get_motion():
                 if self.state != self.STATE_MOTION:
@@ -155,10 +155,9 @@ class Routine:
                     )
                     scene_to_set = self.scenes.get(period_config["x_scene_name"])
                     if scene_to_set:
-                        self.room.apply_state(scene_to_set.get_state())
+                        self._set_automation_state(scene_to_set.get_state())
                     self.state = self.STATE_MOTION
                     self.is_brightness_control_active = False
-                    self.do_not_disturb_active = False
                 self.last_motion_time = now
                 return
 
@@ -177,9 +176,6 @@ class Routine:
             else:
                 return
 
-        if self._check_do_not_disturb(period_config):
-            return
-
         if self._handle_brightness_control(period_config, current_period):
             return
 
@@ -190,7 +186,7 @@ class Routine:
             scene_to_set = self.scenes.get(period_config["scene_name"])
             if scene_to_set:
                 self.log.info(f"Setze Normal-Szene: '{period_config['scene_name']}'.")
-                self.room.apply_state(scene_to_set.get_state())
+                self._set_automation_state(scene_to_set.get_state())
             self.state = current_period
 
     def get_status(self):
