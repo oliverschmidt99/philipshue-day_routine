@@ -103,6 +103,13 @@ function runMainApp() {
         "Möchtest du die Konfiguration aus dem Backup wiederherstellen? Ungespeicherte Änderungen gehen verloren."
       );
     });
+    // HIER IST DER NEUE LISTENER
+    addListener("btn-add-default-scenes", "click", () => {
+      api.systemAction(
+        "/api/scenes/add_defaults",
+        "Möchtest du die Standard-Szenen hinzufügen oder aktualisieren? Deine eigenen Szenen bleiben erhalten."
+      );
+    });
 
     document.body.addEventListener("click", (e) => {
       const button = e.target.closest("[data-action]");
@@ -355,7 +362,6 @@ function runMainApp() {
 
   const saveFullConfig = async () => {
     const settings = config.global_settings || {};
-    // Alle Felder auslesen, auch das neue
     settings.hysteresis_percent = parseInt(
       document.getElementById("setting-hysteresis").value
     );
@@ -370,14 +376,11 @@ function runMainApp() {
     );
     settings.log_level = document.getElementById("setting-loglevel").value;
     config.global_settings = settings;
-
-    // Speichern der allgemeinen Einstellungen
     config.bridge_ip = document.getElementById("setting-bridge-ip").value;
     config.location = {
       latitude: parseFloat(document.getElementById("setting-latitude").value),
       longitude: parseFloat(document.getElementById("setting-longitude").value),
     };
-
     const btn = document.getElementById("save-button");
     btn.disabled = true;
     btn.textContent = "Speichere...";
