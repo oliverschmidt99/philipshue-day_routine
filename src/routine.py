@@ -7,10 +7,11 @@ import copy
 class Routine:
     """Verwaltet die Logik für eine einzelne Tageslicht-Routine in einem Raum."""
 
-    STATE_OFF = "OFF"
-    STATE_MOTION = "MOTION"
-    STATE_BRIGHTNESS_ACTIVE = "BRIGHTNESS_ACTIVE"
-    STATE_RESET = "RESET"
+    # Zustand (State) der Routine
+    STATE_OFF = "OFF"  # Routine ist aus oder außerhalb des Zeitplans
+    STATE_MOTION = "MOTION"  # Bewegungs-Szene ist aktiv
+    STATE_BRIGHTNESS_ACTIVE = "BRIGHTNESS_ACTIVE"  # Helligkeitsregelung ist aktiv
+    STATE_RESET = "RESET"  # Zustand nach Ablauf einer Aktion, leitet Rückkehr zum Normalzustand ein
 
     def __init__(
         self,
@@ -35,9 +36,14 @@ class Routine:
         self.enabled = self.config.get("enabled", True)
         self.time_span = self._create_time_span(self.config)
 
+        # Aktueller Zustand der State-Machine (z.B. "day", "MOTION")
         self.state = self.STATE_OFF
         self.last_motion_time = None
         self.is_brightness_control_active = False
+
+        ### NEU: Zustand für "Bitte nicht stören" ###
+        # Dieser Schalter wird aktiv, wenn eine manuelle Änderung erkannt wird.
+        self.do_not_disturb_active = False
 
         self.log.info(f"Routine '{self.name}' für Raum '{self.room.name}' geladen.")
 
@@ -48,6 +54,52 @@ class Routine:
         end_time = time(daily_time_conf.get("H2", 23), daily_time_conf.get("M2", 59))
 
         return DailyTimeSpan(start_time, end_time, self.sun_times, self.log)
+
+    ### NEU: Eigene Methode für die DnD-Logik ###
+    def _check_do_not_disturb(self, period_config):
+        """
+        Prüft, ob eine manuelle Licht-Änderung vorliegt und aktiviert/deaktiviert den DnD-Modus.
+        Gibt True zurück, wenn die weitere Ausführung der Routine blockiert werden soll.
+        """
+        if not period_config.get("do_not_disturb", False):
+            # Wenn DnD für diesen Zeitraum nicht konfiguriert ist, beenden.
+            if self.do_not_disturb_active:
+                self.log.info(
+                    f"[{self.name}] 'Bitte nicht stören' wird beendet, da für den aktuellen Zeitraum nicht aktiv."
+                )
+                self.do_not_disturb_active = False
+            return False
+
+        # Hol die erwartete Szene und den erwarteten Lichtzustand
+        scene_name = period_config.get("scene_name")
+        expected_scene = self.scenes.get(scene_name)
+        if not expected_scene:
+            return (
+                False  # Ohne erwartete Szene kann keine Abweichung festgestellt werden.
+            )
+
+        expected_state_on = expected_scene.status
+        actual_state_on = self.room.is_any_light_on()
+
+        if actual_state_on is None:  # Fehler beim Abrufen des Lampenstatus
+            return self.do_not_disturb_active  # Behalte den letzten DnD-Status bei
+
+        # Logik zum Aktivieren/Deaktivieren von DnD
+        if actual_state_on != expected_state_on:
+            if not self.do_not_disturb_active:
+                self.log.warning(
+                    f"[{self.name}] Manuelle Änderung erkannt! Erwartet: '{scene_name}' (Licht an: {expected_state_on}), "
+                    f"Ist: Licht an: {actual_state_on}. 'Bitte nicht stören' wird aktiviert."
+                )
+                self.do_not_disturb_active = True
+        else:
+            if self.do_not_disturb_active:
+                self.log.info(
+                    f"[{self.name}] Lichtzustand entspricht wieder der Erwartung. 'Bitte nicht stören' wird beendet."
+                )
+                self.do_not_disturb_active = False
+
+        return self.do_not_disturb_active
 
     def _handle_brightness_control(self, period_config, current_period):
         if not self.sensor or not period_config.get("bri_check", False):
@@ -102,13 +154,17 @@ class Routine:
 
         return self.is_brightness_control_active
 
+    ### GEÄNDERT: Die `run` Methode mit der neuen globalen DnD-Prüfung ###
     def run(self, now):
+        # 1. Routine deaktiviert? -> Licht aus und Abbruch.
         if not self.enabled:
             if self.state != self.STATE_OFF:
                 self.room.apply_state({"on": False})
                 self.state = self.STATE_OFF
+                self.do_not_disturb_active = False  # DnD zurücksetzen
             return
 
+        # 2. Zeitabschnitt und Konfiguration bestimmen
         current_period = self.time_span.get_current_period(now)
         if not current_period:
             return
@@ -117,20 +173,17 @@ class Routine:
         if not period_config:
             return
 
+        # 3. Globale Prüfung auf "Bitte nicht stören"
+        # Diese Prüfung blockiert bei Bedarf die gesamte nachfolgende Logik.
+        if self._check_do_not_disturb(period_config):
+            self.last_motion_time = (
+                now  # Aktualisiere Zeitstempel, um Timeout zu verhindern
+            )
+            return
+
+        # 4. Auf Bewegung reagieren (nur wenn DnD nicht aktiv ist)
         if self.sensor and period_config.get("motion_check", False):
             if self.sensor.get_motion():
-                if period_config.get("do_not_disturb", False):
-                    normal_scene = self.scenes.get(period_config.get("scene_name"))
-                    if normal_scene:
-                        expected_state_on = normal_scene.status
-                        actual_state_on = self.room.is_any_light_on()
-                        if (
-                            actual_state_on is not None
-                            and actual_state_on != expected_state_on
-                        ):
-                            self.last_motion_time = now
-                            return
-
                 if self.state != self.STATE_MOTION:
                     self.log.info(
                         f"[{self.name}] Bewegung erkannt. Aktiviere Szene: '{period_config['x_scene_name']}'."
@@ -140,8 +193,9 @@ class Routine:
                         self.room.apply_state(scene_to_set.get_state())
                     self.state = self.STATE_MOTION
                 self.last_motion_time = now
-                return
+                return  # Direkter Abbruch, da Bewegung Vorrang hat
 
+        # 5. Rückkehr aus dem Bewegungs-Zustand nach Timeout
         if self.state == self.STATE_MOTION:
             wait_time_conf = period_config.get("wait_time", {"min": 0, "sec": 5})
             timeout_seconds = (wait_time_conf.get("min", 0) * 60) + wait_time_conf.get(
@@ -153,13 +207,17 @@ class Routine:
                 self.log.info(
                     f"[{self.name}] Keine Bewegung für {timeout_seconds}s. Kehre zum Normalzustand zurück."
                 )
-                self.state = self.STATE_RESET
+                self.state = (
+                    self.STATE_RESET
+                )  # Löst unten das Setzen der Normal-Szene aus
             else:
-                return
+                return  # Wartezeit noch nicht abgelaufen
 
+        # 6. Adaptive Helligkeitsregelung (nur wenn keine Bewegung aktiv ist)
         if self._handle_brightness_control(period_config, current_period):
             return
 
+        # 7. Normalzustand herstellen (wenn sich der Zeitabschnitt ändert oder nach Reset)
         if self.state != current_period:
             self.log.info(
                 f"---------- Zustands-Wechsel für '{self.name}' zu '{current_period}' ----------"
@@ -168,8 +226,11 @@ class Routine:
             if scene_to_set:
                 self.log.info(f"Setze Normal-Szene: '{period_config['scene_name']}'.")
                 self.room.apply_state(scene_to_set.get_state())
+
             self.state = current_period
-            self.is_brightness_control_active = False
+            self.is_brightness_control_active = (
+                False  # Sicherstellen, dass die Regelung zurückgesetzt ist
+            )
 
     def get_status(self):
         motion_detected = self.sensor.get_motion() if self.sensor else False
@@ -178,7 +239,9 @@ class Routine:
             datetime.now().astimezone()
         )
 
-        if (
+        if self.do_not_disturb_active:
+            last_scene_name = "Manuell (DnD aktiv)"
+        elif (
             self.state == self.STATE_MOTION
             and current_period_for_status
             and self.config.get(current_period_for_status)

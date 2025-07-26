@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const status = await api.checkSetupStatus();
     if (status.setup_needed) {
       document.getElementById("main-app").classList.add("hidden");
-      document.getElementById("setup-wizard").classList.remove("hidden"); // KORREKTUR HIER
+      document.getElementById("setup-wizard").classList.remove("hidden");
       document.getElementById("setup-wizard").classList.add("flex");
       runSetupWizard();
     } else {
@@ -62,6 +62,7 @@ function runMainApp() {
       }
     };
 
+    addListener("btn-save-settings", "click", saveSettings);
     addListener("save-button", "click", saveFullConfig);
     addListener("btn-new-routine", "click", () =>
       ui.openCreateRoutineModal(bridgeData)
@@ -207,7 +208,9 @@ function runMainApp() {
     if (statusInterval) clearInterval(statusInterval);
     if (clockAnimationInterval) clearInterval(clockAnimationInterval);
     updateStatus();
-    statusInterval = setInterval(updateStatus, 10000);
+    const refreshInterval =
+      (config.global_settings?.status_interval_s || 5) * 1000;
+    statusInterval = setInterval(updateStatus, refreshInterval);
     animateTimeIndicators();
     clockAnimationInterval = setInterval(animateTimeIndicators, 60 * 1000);
   };
@@ -327,35 +330,20 @@ function runMainApp() {
   const loadSettings = () => {
     const settings = config.global_settings || {};
     const location = config.location || {};
-    const ipInput = document.getElementById("setting-bridge-ip");
-    const latInput = document.getElementById("setting-latitude");
-    const lonInput = document.getElementById("setting-longitude");
-    const hysInput = document.getElementById("setting-hysteresis");
-    const dataLogInput = document.getElementById("setting-datalogger-interval");
-    const logLevelInput = document.getElementById("setting-loglevel");
-
-    if (ipInput) ipInput.value = config.bridge_ip || "";
-    if (latInput) latInput.value = location.latitude || "";
-    if (lonInput) lonInput.value = location.longitude || "";
-    if (hysInput) hysInput.value = settings.hysteresis_percent || 25;
-    if (dataLogInput)
-      dataLogInput.value = settings.datalogger_interval_minutes || 15;
-    if (logLevelInput) logLevelInput.value = settings.log_level || "INFO";
-  };
-
-  const saveFullConfig = async () => {
-    const btn = document.getElementById("save-button");
-    btn.disabled = true;
-    btn.textContent = "Speichere...";
-    try {
-      await api.saveFullConfig(config);
-      ui.showToast("Konfiguration gespeichert & neu gestartet!");
-    } catch (error) {
-      ui.showToast(`Fehler: ${error.message}`, true);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Speichern und Alle Routinen neu starten";
-    }
+    document.getElementById("setting-bridge-ip").value = config.bridge_ip || "";
+    document.getElementById("setting-latitude").value = location.latitude || "";
+    document.getElementById("setting-longitude").value =
+      location.longitude || "";
+    document.getElementById("setting-hysteresis").value =
+      settings.hysteresis_percent || 25;
+    document.getElementById("setting-datalogger-interval").value =
+      settings.datalogger_interval_minutes || 15;
+    document.getElementById("setting-loop-interval").value =
+      settings.loop_interval_s || 1;
+    document.getElementById("setting-status-interval").value =
+      settings.status_interval_s || 5;
+    document.getElementById("setting-loglevel").value =
+      settings.log_level || "INFO";
   };
 
   const saveSettings = async () => {
@@ -372,14 +360,55 @@ function runMainApp() {
       datalogger_interval_minutes: parseInt(
         document.getElementById("setting-datalogger-interval").value
       ),
+      loop_interval_s: parseFloat(
+        document.getElementById("setting-loop-interval").value
+      ),
+      status_interval_s: parseInt(
+        document.getElementById("setting-status-interval").value
+      ),
       log_level: document.getElementById("setting-loglevel").value,
     };
     try {
       await api.saveFullConfig(newConfig);
       config = newConfig;
-      ui.showToast("Einstellungen gespeichert.");
+      ui.showToast(
+        "Einstellungen gespeichert. 'Speichern und Neustarten' klicken, um sie anzuwenden."
+      );
     } catch (e) {
       ui.showToast(`Fehler: ${e.message}`, true);
+    }
+  };
+
+  const saveFullConfig = async () => {
+    // Zuerst die Einstellungen aus den Feldern in das config-Objekt übernehmen
+    const settings = config.global_settings || {};
+    settings.loop_interval_s = parseFloat(
+      document.getElementById("setting-loop-interval").value
+    );
+    settings.status_interval_s = parseInt(
+      document.getElementById("setting-status-interval").value
+    );
+    settings.hysteresis_percent = parseInt(
+      document.getElementById("setting-hysteresis").value
+    );
+    settings.datalogger_interval_minutes = parseInt(
+      document.getElementById("setting-datalogger-interval").value
+    );
+    settings.log_level = document.getElementById("setting-loglevel").value;
+    config.global_settings = settings;
+
+    // Jetzt die gesamte Konfiguration speichern
+    const btn = document.getElementById("save-button");
+    btn.disabled = true;
+    btn.textContent = "Speichere...";
+    try {
+      await api.saveFullConfig(config);
+      ui.showToast("Konfiguration gespeichert & neu gestartet!");
+    } catch (error) {
+      ui.showToast(`Fehler: ${error.message}`, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Speichern und Alle Routinen neu starten";
     }
   };
 

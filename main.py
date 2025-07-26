@@ -268,9 +268,9 @@ def run_logic(log):
 
     try:
         global_settings = config.get("global_settings", {})
-        # **ÄNDERUNG: Standardintervall auf 1 Minute geändert**
-        datalogger_interval = global_settings.get("datalogger_interval_minutes", 1)
+        loop_interval = global_settings.get("loop_interval_s", 1)
         status_interval = global_settings.get("status_interval_s", 5)
+        datalogger_interval = global_settings.get("datalogger_interval_minutes", 1)
         last_mod_time = os.path.getmtime(CONFIG_FILE)
         sun_times = get_sun_times(config.get("location"), log)
 
@@ -374,7 +374,7 @@ def run_logic(log):
                 write_status(routines, sun_times)
                 last_status_write = time.time()
 
-            time.sleep(1)
+            time.sleep(loop_interval)
 
     except (PhueRequestTimeout, ConnectionError, OSError) as e:
         log.error(f"Netzwerkverbindung zur Bridge verloren: {e}. Starte Logik neu...")
