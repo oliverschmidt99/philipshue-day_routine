@@ -58,6 +58,7 @@ class Routine:
         if actual_state_on is None:
             return self.do_not_disturb_active
 
+        # Definiere den "erwarteten" Zustand basierend auf der aktuellen Situation
         expected_state_on = False
         if self.is_brightness_control_active:
             expected_state_on = True
@@ -109,11 +110,8 @@ class Routine:
                 self.is_brightness_control_active = False
             return True
         elif light_level < turn_on_threshold:
-            # ===== KORRIGIERTE FORMEL FÜR INVERSE HELLIGKEIT =====
             bri = 1 + (253 * (threshold - light_level) / threshold)
             bri = max(1, min(254, int(bri)))
-            # =======================================================
-
             new_state = {"on": True, "bri": bri}
             bri_ct = period_config.get("bri_ct")
             if bri_ct:
