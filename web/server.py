@@ -374,12 +374,18 @@ def update_app():
 @app.route("/api/system/update_os", methods=["POST"])
 def update_os():
     log.info("Betriebssystem-Update über API ausgelöst.")
+    command = []
     try:
         if shutil.which("pacman"):
             command = ["sudo", "pacman", "-Syu", "--noconfirm"]
         elif shutil.which("apt-get"):
-            # KORREKTUR: apt-get Befehle in einer sicheren Form
-            subprocess.run(["sudo", "apt-get", "update"], check=True)
+            # Führe apt-get update und upgrade getrennt aus, da && in subprocess.run schwierig ist.
+            subprocess.run(
+                ["sudo", "apt-get", "update"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
             command = ["sudo", "apt-get", "upgrade", "-y"]
         else:
             return (
