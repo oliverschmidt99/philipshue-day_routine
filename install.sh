@@ -32,7 +32,6 @@ setup_ssh_for_github() {
     read -p "Drücke ENTER, sobald du den Schlüssel zu GitHub hinzugefügt hast..."
     
     log_info "Ändere die Git-URL auf das korrekte SSH-Format..."
-    # ===== HIER IST DIE FINALE KORREKTUR DER URL =====
     if git remote set-url origin git@github.com:oliverschmidt99/philipshue-day_routine.git; then
         log_success "Git-Repository wurde erfolgreich auf SSH umgestellt."
     else
@@ -48,6 +47,12 @@ setup_passwordless_sudo() {
     SUDOERS_FILE="/etc/sudoers.d/010-hue-controller-updates"
     USERNAME=$(whoami)
     
+    # KORREKTUR 1: Sicherstellen, dass das /etc/sudoers.d Verzeichnis überhaupt geladen wird.
+    # Entfernt das Kommentarzeichen '#' vor der Zeile, falls vorhanden.
+    log_info "Aktiviere die Einbindung des 'sudoers.d' Verzeichnisses..."
+    sudo sed -i 's/^#\s*includedir \/etc\/sudoers\.d/includedir \/etc\/sudoers.d/' /etc/sudoers
+
+    # KORREKTUR 2: Exakte Befehle definieren
     if command -v pacman &> /dev/null; then
         COMMAND_PATH="/usr/bin/pacman -Syu --noconfirm"
     elif command -v apt-get &> /dev/null; then

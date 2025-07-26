@@ -108,18 +108,18 @@ def save_setup_config():
                 "datalogger_interval_minutes": 1,
                 "hysteresis_percent": 25,
                 "log_level": "INFO",
-                "times": {
-                    "morning": "06:30",
-                    "day": "",
-                    "evening": "",
-                    "night": "23:00",
-                },
             },
             "rooms": [],
             "routines": [],
             "scenes": {
                 "off": {"status": False, "bri": 0},
-                "on": {"status": True, "bri": 254},
+                "on": {"status": True, "bri": 254, "ct": 366},
+                "entspannen": {"status": True, "bri": 144, "ct": 447},
+                "lesen": {"status": True, "bri": 254, "ct": 343},
+                "konzentrieren": {"status": True, "bri": 254, "ct": 233},
+                "energie_tanken": {"status": True, "bri": 254, "ct": 156},
+                "hell": {"status": True, "bri": 254, "ct": 366},
+                "gedimmt": {"status": True, "bri": 77, "ct": 447},
             },
         }
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -235,31 +235,34 @@ def get_data_history():
         sensor_id = request.args.get("sensor_id", type=int)
         period = request.args.get("period", "day")
         date_str = request.args.get("date")
-        range_hours = request.args.get("range", default=24, type=int)
         avg_window = request.args.get("avg", default=0, type=int)
 
         if not sensor_id:
             return jsonify({"error": "sensor_id ist erforderlich"}), 400
 
+        if not date_str:
+            return jsonify({"error": "Ein Datum ist erforderlich"}), 400
+
         light_sensor_id = sensor_id + 1
         temp_sensor_id = sensor_id + 2
         con = sqlite3.connect(DB_FILE)
 
+        start_date = datetime.fromisoformat(date_str)
         if period == "week":
-            start_date = datetime.fromisoformat(date_str)
-            start_of_week = start_date - timedelta(days=start_date.weekday())
-            end_of_week = start_of_week + timedelta(days=7)
-            start_iso = start_of_week.isoformat()
-            end_iso = end_of_week.isoformat()
-        else:  # day or custom range
-            now = datetime.now()
-            start_date = now - timedelta(hours=range_hours)
-            start_iso = start_date.isoformat()
-            end_iso = now.isoformat()
+            start_of_period = start_date - timedelta(days=start_date.weekday())
+            end_of_period = start_of_period + timedelta(days=7)
+        else:  # 'day'
+            start_of_period = start_date.replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            end_of_period = start_of_period + timedelta(days=1)
+
+        start_iso = start_of_period.isoformat()
+        end_iso = end_of_period.isoformat()
 
         query = """
-            SELECT timestamp, value, measurement_type FROM measurements
-            WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp <= ?
+            SELECT timestamp, value, measurement_type FROM measurements 
+            WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp < ? 
             ORDER BY timestamp
         """
         df = pd.read_sql_query(
@@ -307,7 +310,6 @@ def get_data_history():
                 "temperature_avg": df["temperature_avg"].tolist(),
             }
         )
-
     except Exception as e:
         import traceback
 
@@ -377,7 +379,6 @@ def restore_config():
 def update_app():
     log.info("Anwendungs-Update über API ausgelöst.")
     try:
-        # Führe 'git pull' im Projektverzeichnis aus
         process = subprocess.run(
             ["git", "pull"],
             cwd=PROJECT_ROOT,
@@ -393,28 +394,24 @@ def update_app():
         log.error(f"Fehler beim 'git pull': {e.stderr}")
         return jsonify({"error": f"Fehler beim Update:\n{e.stderr}"}), 500
     except Exception as e:
-        log.error(f"Allgemeiner Fehler beim Anwendungs-Update: {e}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/system/update_os", methods=["POST"])
 def update_os():
     log.info("Betriebssystem-Update über API ausgelöst.")
+    command = []
     try:
-        # Prüfen, welcher Paketmanager verfügbar ist, wie im install.sh Skript
         if shutil.which("pacman"):
             command = ["sudo", "pacman", "-Syu", "--noconfirm"]
         elif shutil.which("apt-get"):
-            command = [
-                "sudo",
-                "apt-get",
-                "update",
-                "&&",
-                "sudo",
-                "apt-get",
-                "upgrade",
-                "-y",
-            ]
+            subprocess.run(
+                ["sudo", "apt-get", "update"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            command = ["sudo", "apt-get", "upgrade", "-y"]
         else:
             return (
                 jsonify(
@@ -428,13 +425,12 @@ def update_os():
         process = subprocess.run(command, capture_output=True, text=True, check=True)
         log.info(f"OS Update output: {process.stdout}")
         return jsonify(
-            {"message": f"System-Update erfolgreich gestartet:\n{process.stdout}"}
+            {"message": f"System-Update erfolgreich abgeschlossen:\n{process.stdout}"}
         )
     except subprocess.CalledProcessError as e:
         log.error(f"Fehler beim System-Update: {e.stderr}")
         return jsonify({"error": f"Fehler beim System-Update:\n{e.stderr}"}), 500
     except Exception as e:
-        log.error(f"Allgemeiner Fehler beim System-Update: {e}")
         return jsonify({"error": str(e)}), 500
 
 

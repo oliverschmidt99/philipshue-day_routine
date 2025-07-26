@@ -50,16 +50,7 @@ def get_bridge():
         return None
 
 
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
-@app.route("/favicon.ico")
-def favicon():
-    return "", 204
-
-
+# --- SETUP API ENDPOINTS ---
 @app.route("/api/setup/status")
 def get_setup_status():
     try:
@@ -89,6 +80,7 @@ def connect_to_bridge():
     ip_address = data.get("ip")
     if not ip_address:
         return jsonify({"error": "IP-Adresse fehlt."}), 400
+
     try:
         bridge = Bridge(ip_address)
         bridge.connect()
@@ -121,7 +113,13 @@ def save_setup_config():
             "routines": [],
             "scenes": {
                 "off": {"status": False, "bri": 0},
-                "on": {"status": True, "bri": 254},
+                "on": {"status": True, "bri": 254, "ct": 366},
+                "entspannen": {"status": True, "bri": 144, "ct": 447},
+                "lesen": {"status": True, "bri": 254, "ct": 343},
+                "konzentrieren": {"status": True, "bri": 254, "ct": 233},
+                "energie_tanken": {"status": True, "bri": 254, "ct": 156},
+                "hell": {"status": True, "bri": 254, "ct": 366},
+                "gedimmt": {"status": True, "bri": 77, "ct": 447},
             },
         }
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -133,6 +131,12 @@ def save_setup_config():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# --- REGULAR API ENDPOINTS ---
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 @app.route("/api/bridge/groups")
@@ -174,6 +178,7 @@ def handle_config():
             new_config = request.get_json()
             with open(CONFIG_LOCK_FILE, "w") as f:
                 pass
+            log.debug("Config-Lock erstellt.")
             temp_file = CONFIG_FILE + ".tmp"
             with open(temp_file, "w", encoding="utf-8") as f:
                 yaml.dump(new_config, f, allow_unicode=True, sort_keys=False)
@@ -185,6 +190,7 @@ def handle_config():
         finally:
             if os.path.exists(CONFIG_LOCK_FILE):
                 os.remove(CONFIG_LOCK_FILE)
+                log.debug("Config-Lock entfernt.")
     else:
         try:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -230,29 +236,40 @@ def get_data_history():
         period = request.args.get("period", "day")
         date_str = request.args.get("date")
         avg_window = request.args.get("avg", default=0, type=int)
+
         if not sensor_id:
             return jsonify({"error": "sensor_id ist erforderlich"}), 400
+
         if not date_str:
             return jsonify({"error": "Ein Datum ist erforderlich"}), 400
+
         light_sensor_id = sensor_id + 1
         temp_sensor_id = sensor_id + 2
         con = sqlite3.connect(DB_FILE)
+
         start_date = datetime.fromisoformat(date_str)
         if period == "week":
             start_of_period = start_date - timedelta(days=start_date.weekday())
             end_of_period = start_of_period + timedelta(days=7)
-        else:
+        else:  # 'day'
             start_of_period = start_date.replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
             end_of_period = start_of_period + timedelta(days=1)
+
         start_iso = start_of_period.isoformat()
         end_iso = end_of_period.isoformat()
-        query = "SELECT timestamp, value, measurement_type FROM measurements WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp < ? ORDER BY timestamp"
+
+        query = """
+            SELECT timestamp, value, measurement_type FROM measurements 
+            WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp < ? 
+            ORDER BY timestamp
+        """
         df = pd.read_sql_query(
             query, con, params=(light_sensor_id, temp_sensor_id, start_iso, end_iso)
         )
         con.close()
+
         if df.empty:
             return jsonify(
                 {
@@ -263,12 +280,14 @@ def get_data_history():
                     "temperature_avg": [],
                 }
             )
+
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         df = df.pivot(index="timestamp", columns="measurement_type", values="value")
         df.rename(
             columns={"brightness": "brightness", "temperature": "temperature"},
             inplace=True,
         )
+
         if avg_window > 0:
             df["brightness_avg"] = (
                 df["brightness"].rolling(window=avg_window, min_periods=1).mean()
@@ -279,7 +298,9 @@ def get_data_history():
         else:
             df["brightness_avg"] = None
             df["temperature_avg"] = None
+
         df = df.where(pd.notnull(df), None)
+
         return jsonify(
             {
                 "labels": df.index.strftime("%Y-%m-%dT%H:%M:%S").tolist(),
@@ -290,6 +311,9 @@ def get_data_history():
             }
         )
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
     finally:
         if "con" in locals() and con:
@@ -302,8 +326,10 @@ def get_help():
         with open(HELP_FILE, "r", encoding="utf-8") as f:
             return jsonify(content=f.read())
     except FileNotFoundError:
+        log.error(f"Hilfedatei nicht gefunden unter: {HELP_FILE}")
         return jsonify(error="hilfe.html nicht gefunden"), 404
     except Exception as e:
+        log.error(f"Fehler beim Lesen der Hilfedatei: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -379,7 +405,6 @@ def update_os():
         if shutil.which("pacman"):
             command = ["sudo", "pacman", "-Syu", "--noconfirm"]
         elif shutil.which("apt-get"):
-            # Führe apt-get update und upgrade getrennt aus, da && in subprocess.run schwierig ist.
             subprocess.run(
                 ["sudo", "apt-get", "update"],
                 check=True,
