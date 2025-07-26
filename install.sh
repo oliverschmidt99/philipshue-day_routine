@@ -23,7 +23,7 @@ log_warning() {
 
 
 # ================================================================= #
-#            NEUE FUNKTION: SSH-SCHLÜSSEL EINRICHTEN
+#            SSH-SCHLÜSSEL EINRICHTEN
 # ================================================================= #
 
 setup_ssh_for_github() {
@@ -31,14 +31,11 @@ setup_ssh_for_github() {
     SSH_DIR="$HOME/.ssh"
     KEY_PATH="$SSH_DIR/id_ed25519"
 
-    # Erstelle das .ssh-Verzeichnis, falls es nicht existiert
     mkdir -p "$SSH_DIR"
     chmod 700 "$SSH_DIR"
 
-    # Prüfe, ob bereits ein Schlüssel existiert
     if [ ! -f "$KEY_PATH" ]; then
         log_info "Kein SSH-Schlüssel gefunden. Erstelle einen neuen..."
-        # Erstellt einen neuen Schlüssel ohne Passphrase (-N ""), damit Skripte ihn nutzen können
         ssh-keygen -t ed25519 -f "$KEY_PATH" -N "" -C "$(whoami)@$(hostname)-huecontroller"
         log_success "Neuer SSH-Schlüssel wurde unter $KEY_PATH erstellt."
     else
@@ -49,18 +46,15 @@ setup_ssh_for_github() {
     echo "--------------------------------------------------------------------------------"
     echo "1. Markiere und kopiere den gesamten Text zwischen den Linien:"
     echo ""
-    # Zeigt den Schlüssel an
     cat "$KEY_PATH.pub"
     echo ""
     echo "2. Gehe zu GitHub in deinem Browser: https://github.com/settings/keys"
     echo "3. Klicke auf 'New SSH key', gib einen Titel ein (z.B. 'Hue Pi') und füge den Schlüssel ein."
     echo "--------------------------------------------------------------------------------"
     
-    # Wartet auf die Bestätigung des Benutzers
     read -p "Drücke ENTER, sobald du den Schlüssel zu GitHub hinzugefügt hast..."
 
     log_info "Ändere die Git-URL auf das SSH-Format..."
-    # Ersetzt die HTTPS-URL durch die SSH-URL
     if git remote set-url origin git@github.com:oliverschmidt99/philipshue-day-routine.git; then
         log_success "Git-Repository wurde erfolgreich auf SSH umgestellt."
     else
@@ -70,30 +64,30 @@ setup_ssh_for_github() {
 
 
 # ================================================================= #
-#        NEUE FUNKTION: PASSWORTFREIES SUDO EINRICHTEN
+#        PASSWORTFREIES SUDO EINRICHTEN
 # ================================================================= #
 
 setup_passwordless_sudo() {
     log_info "Richte passwortfreies sudo für System-Updates ein..."
     
-    # Sicherer Weg: Eigene Konfig-Datei für unseren Service anlegen
     SUDOERS_FILE="/etc/sudoers.d/010-hue-controller-updates"
     USERNAME=$(whoami)
     
-    # Befehle je nach Paketmanager
+    # ===== HIER IST DIE KORREKTUR =====
+    # Der Befehl in der sudoers-Datei muss exakt dem Befehl entsprechen,
+    # der im Python-Skript ausgeführt wird, inklusive aller Flags.
     if command -v pacman &> /dev/null; then
-        COMMAND_PATH="/usr/bin/pacman -Syu"
+        COMMAND_PATH="/usr/bin/pacman -Syu --noconfirm"
     elif command -v apt-get &> /dev/null; then
-        COMMAND_PATH="/usr/bin/apt-get update, /usr/bin/apt-get upgrade"
+        COMMAND_PATH="/usr/bin/apt-get update, /usr/bin/apt-get -y upgrade"
     else
         log_error "Kein unterstützter Paketmanager für passwortfreies sudo gefunden."
         return 1
     fi
+    # ===================================
 
-    # Fügt die Regel hinzu, damit der Benutzer die Update-Befehle ohne Passwort ausführen kann
     echo "$USERNAME ALL=(ALL) NOPASSWD: $COMMAND_PATH" | sudo tee "$SUDOERS_FILE" > /dev/null
     
-    # Setzt die korrekten Berechtigungen für die Datei
     sudo chmod 440 "$SUDOERS_FILE"
     
     log_success "Passwortfreies sudo für Update-Befehle wurde eingerichtet."
@@ -106,7 +100,7 @@ setup_passwordless_sudo() {
 
 log_info "Starte die Einrichtung des Philips Hue Controllers..."
 
-# 1. Systemabhängigkeiten installieren (unverändert)
+# 1. Systemabhängigkeiten installieren
 log_info "Überprüfe und installiere Systemabhängigkeiten (benötigt eventuell sudo-Passwort)..."
 if command -v pacman &> /dev/null; then
     PACKAGES="python python-pip gcc git"
@@ -123,7 +117,7 @@ else
 fi
 log_success "Systemabhängigkeiten sind installiert."
 
-# 2. Python Virtual Environment erstellen (unverändert)
+# 2. Python Virtual Environment erstellen
 VENV_DIR=".venv"
 if [ ! -d "$VENV_DIR" ]; then
     log_info "Erstelle Python Virtual Environment in '$VENV_DIR'..."
@@ -136,7 +130,7 @@ else
 fi
 log_success "Virtual Environment ist eingerichtet."
 
-# 3. Python-Pakete installieren (unverändert)
+# 3. Python-Pakete installieren
 log_info "Aktiviere Virtual Environment und installiere Pakete aus requirements.txt..."
 source $VENV_DIR/bin/activate
 pip install -r requirements.txt
@@ -146,11 +140,11 @@ fi
 deactivate
 log_success "Alle Python-Pakete sind installiert."
 
-# 4. NEU: SSH und Sudo einrichten
+# 4. SSH und Sudo einrichten
 setup_ssh_for_github
 setup_passwordless_sudo
 
-# 5. systemd Service einrichten (vorher Schritt 4)
+# 5. systemd Service einrichten
 SERVICE_NAME="hue_controller.service"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
 WORKING_DIRECTORY=$(pwd)
@@ -176,7 +170,7 @@ WantedBy=multi-user.target
 EOF
 log_success "systemd Service-Datei unter $SERVICE_FILE erstellt."
 
-# 6. systemd neu laden und Service starten (vorher Schritt 5)
+# 6. systemd neu laden und Service starten
 log_info "Lade systemd neu und starte den Service..."
 sudo systemctl daemon-reload
 sudo systemctl enable $SERVICE_NAME
