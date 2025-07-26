@@ -27,13 +27,13 @@ setup_ssh_for_github() {
     echo "1. Markiere und kopiere den gesamten Text zwischen den Linien:"
     echo ""; cat "$KEY_PATH.pub"; echo ""
     echo "2. Gehe zu GitHub in deinem Browser: https://github.com/settings/keys"
-    echo "3. Klicke auf 'New SSH key', gib einen Titel ein (z.B. 'Hue Pi') und füge den Schlüssel ein."
+    echo "3. Klicke auf 'New SSH key', gib einen Titel ein (z.B. 'Hue Controller') und füge den Schlüssel ein."
     echo "--------------------------------------------------------------------------------"
     read -p "Drücke ENTER, sobald du den Schlüssel zu GitHub hinzugefügt hast..."
     
-    log_info "Ändere die Git-URL auf das SSH-Format..."
-    # ===== HIER IST DIE KORREKTUR DER URL =====
-    if git remote set-url origin git@github.com:oliverschmidt99/privat/philipshue-day-routine.git; then
+    log_info "Ändere die Git-URL auf das korrekte SSH-Format..."
+    # ===== HIER IST DIE FINALE KORREKTUR DER URL =====
+    if git remote set-url origin git@github.com:oliverschmidt99/philipshue-day_routine.git; then
         log_success "Git-Repository wurde erfolgreich auf SSH umgestellt."
     else
         log_error "Konnte das Git-Repository nicht auf SSH umstellen. Bitte manuell prüfen."
