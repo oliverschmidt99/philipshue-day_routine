@@ -30,8 +30,10 @@ setup_ssh_for_github() {
     echo "3. Klicke auf 'New SSH key', gib einen Titel ein (z.B. 'Hue Pi') und füge den Schlüssel ein."
     echo "--------------------------------------------------------------------------------"
     read -p "Drücke ENTER, sobald du den Schlüssel zu GitHub hinzugefügt hast..."
+    
     log_info "Ändere die Git-URL auf das SSH-Format..."
-    if git remote set-url origin git@github.com:oliverschmidt99/philipshue-day-routine.git; then
+    # ===== HIER IST DIE KORREKTUR DER URL =====
+    if git remote set-url origin git@github.com:oliverschmidt99/privat/philipshue-day-routine.git; then
         log_success "Git-Repository wurde erfolgreich auf SSH umgestellt."
     else
         log_error "Konnte das Git-Repository nicht auf SSH umstellen. Bitte manuell prüfen."
@@ -46,11 +48,9 @@ setup_passwordless_sudo() {
     SUDOERS_FILE="/etc/sudoers.d/010-hue-controller-updates"
     USERNAME=$(whoami)
     
-    # KORREKTUR: Wir definieren die exakten Befehle, wie sie auch im Python-Skript aufgerufen werden.
     if command -v pacman &> /dev/null; then
         COMMAND_PATH="/usr/bin/pacman -Syu --noconfirm"
     elif command -v apt-get &> /dev/null; then
-        # Für Debian/Ubuntu brauchen wir zwei separate Einträge.
         COMMAND_PATH="/usr/bin/apt-get update, /usr/bin/apt-get upgrade -y"
     else
         log_error "Kein unterstützter Paketmanager für passwortfreies sudo gefunden."
@@ -95,11 +95,9 @@ if [ $? -ne 0 ]; then log_error "Installation der Python-Pakete fehlgeschlagen."
 deactivate
 log_success "Alle Python-Pakete sind installiert."
 
-# SSH und Sudo einrichten
 setup_ssh_for_github
 setup_passwordless_sudo
 
-# systemd Service einrichten
 SERVICE_NAME="hue_controller.service"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
 WORKING_DIRECTORY=$(pwd)
@@ -124,7 +122,6 @@ WantedBy=multi-user.target
 EOF
 log_success "systemd Service-Datei unter $SERVICE_FILE erstellt."
 
-# systemd neu laden und Service starten
 log_info "Lade systemd neu und starte den Service..."
 sudo systemctl daemon-reload
 sudo systemctl enable $SERVICE_NAME
