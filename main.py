@@ -38,14 +38,9 @@ stop_event = threading.Event()
 
 
 def manage_config_file(log):
-    """
-    Stellt sicher, dass eine config.yaml existiert. Wenn nicht, wird eine
-    minimale Standardkonfiguration erstellt, damit der Webserver starten kann.
-    """
     if os.path.exists(CONFIG_FILE):
         log.info("config.yaml gefunden.")
         return
-
     log.warning(
         "Keine config.yaml gefunden. Erstelle eine neue Datei mit Standardwerten."
     )
@@ -70,20 +65,17 @@ def manage_config_file(log):
 
 
 def init_database(log):
-    """Initialisiert die SQLite-Datenbank und erstellt die Tabelle, falls sie nicht existiert."""
     try:
         con = sqlite3.connect(DB_FILE)
         cur = con.cursor()
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS measurements (
-                timestamp TEXT NOT NULL,
-                sensor_id INTEGER NOT NULL,
-                measurement_type TEXT NOT NULL,
-                value REAL NOT NULL,
+                timestamp TEXT NOT NULL, sensor_id INTEGER NOT NULL,
+                measurement_type TEXT NOT NULL, value REAL NOT NULL,
                 PRIMARY KEY (timestamp, sensor_id, measurement_type)
             )
-        """
+            """
         )
         con.commit()
         con.close()
@@ -93,17 +85,14 @@ def init_database(log):
 
 
 def data_logger_worker(sensors, interval_minutes, log):
-    """Ein Worker-Thread, der periodisch Sensordaten in die DB schreibt."""
     log.info(f"Datenlogger-Thread gestartet. Intervall: {interval_minutes} Minuten.")
     while not stop_event.is_set():
         try:
             now = datetime.now()
-            # **ÄNDERUNG: Intervall auf 1 Minute gesetzt**
             seconds_until_next_log = 60 - (now.second % 60)
             log.debug(
                 f"Datenlogger: Warte {seconds_until_next_log:.0f} Sekunden bis zur nächsten Messung."
             )
-
             stopped = stop_event.wait(seconds_until_next_log)
             if stopped:
                 break
@@ -111,43 +100,35 @@ def data_logger_worker(sensors, interval_minutes, log):
             con = sqlite3.connect(DB_FILE)
             cur = con.cursor()
             timestamp = datetime.now().isoformat()
-
             for sensor in sensors:
                 brightness = sensor.get_brightness()
                 temperature = sensor.get_temperature()
-
                 if brightness is None or temperature is None:
                     log.warning(
-                        f"Konnte keine gültigen Daten von Sensor {sensor.motion_sensor_id} abrufen (Netzwerkproblem?), überspringe DB-Eintrag."
+                        f"Konnte keine gültigen Daten von Sensor {sensor.motion_sensor_id} abrufen, überspringe DB-Eintrag."
                     )
                     continue
-
                 log.debug(
                     f"Datenlogger: Sensor {sensor.motion_sensor_id} -> Helligkeit={brightness}, Temp={temperature}"
                 )
-
                 cur.execute(
                     "INSERT OR IGNORE INTO measurements VALUES (?, ?, ?, ?)",
                     (timestamp, sensor.light_sensor_id, "brightness", brightness),
                 )
-
                 cur.execute(
                     "INSERT OR IGNORE INTO measurements VALUES (?, ?, ?, ?)",
                     (timestamp, sensor.temp_sensor_id, "temperature", temperature),
                 )
-
             con.commit()
             con.close()
             log.debug("Sensordaten erfolgreich in die Datenbank geschrieben.")
         except Exception as e:
             log.error(f"Fehler im Datenlogger-Thread: {e}", exc_info=True)
             stop_event.wait(60)
-
     log.info("Datenlogger-Thread beendet.")
 
 
 def load_config(log):
-    """Lädt die Konfiguration aus der YAML-Datei."""
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
@@ -168,7 +149,6 @@ def load_config(log):
 
 
 def connect_bridge(ip, app_key, log):
-    """Stellt die Verbindung zur Hue Bridge her."""
     log.info(f"Versuche, eine Verbindung zur Bridge unter {ip} herzustellen...")
     try:
         b = Bridge(ip, username=app_key)
@@ -189,7 +169,6 @@ def connect_bridge(ip, app_key, log):
 
 
 def get_sun_times(location_config, log):
-    """Berechnet die Sonnenauf- und -untergangszeiten."""
     if (
         not location_config
         or "latitude" not in location_config
@@ -218,7 +197,6 @@ def get_sun_times(location_config, log):
 
 
 def write_status(routines, sun_times):
-    """Schreibt den aktuellen Status aller Routinen und die Sonnenzeiten in eine Datei."""
     status_data = {
         "routines": [r.get_status() for r in routines],
         "sun_times": sun_times,
@@ -233,7 +211,6 @@ def write_status(routines, sun_times):
                 "sunset"
             ].isoformat()
             status_data["sun_times"] = serializable_sun_times
-
         with open(STATUS_FILE, "w", encoding="utf-8") as f:
             json.dump(status_data, f, indent=2)
     except Exception as e:
@@ -241,7 +218,6 @@ def write_status(routines, sun_times):
 
 
 def run_logic(log):
-    """Die Hauptschleife, die die Routinen ausführt. Gibt True zurück, wenn sie neu gestartet werden soll."""
     global data_logger_thread
     log.info("Lade Konfiguration und starte Hue-Logik...")
     config = load_config(log)
@@ -255,7 +231,7 @@ def run_logic(log):
 
     if not bridge_ip or not app_key:
         log.warning(
-            "Keine 'bridge_ip' oder 'app_key' in der Konfiguration gefunden. Die Lichtsteuerung ist pausiert."
+            "Keine 'bridge_ip' oder 'app_key' in der Konfiguration. Die Lichtsteuerung ist pausiert."
         )
     else:
         bridge = connect_bridge(bridge_ip, app_key, log)
@@ -268,28 +244,28 @@ def run_logic(log):
 
     try:
         global_settings = config.get("global_settings", {})
-        loop_interval = global_settings.get("loop_interval_s", 1)
-        status_interval = global_settings.get("status_interval_s", 5)
-        datalogger_interval = global_settings.get("datalogger_interval_minutes", 1)
+
+        # KORREKTUR: Robuste Abfrage der Einstellungen mit Fallback-Werten
+        loop_interval = global_settings.get("loop_interval_s") or 1
+        status_interval = global_settings.get("status_interval_s") or 5
+        datalogger_interval = global_settings.get("datalogger_interval_minutes") or 15
+
         last_mod_time = os.path.getmtime(CONFIG_FILE)
         sun_times = get_sun_times(config.get("location"), log)
-
         scenes = {
             name: Scene(**params) for name, params in config.get("scenes", {}).items()
         }
         routines = []
 
         if bridge:
-            all_sensors_data = bridge.get_sensor()
             all_motion_sensor_ids = [
                 int(sid)
-                for sid, data in all_sensors_data.items()
+                for sid, data in bridge.get_sensor().items()
                 if data.get("type") == "ZLLPresence"
             ]
             all_sensor_objects_for_logger = [
                 Sensor(bridge, sensor_id, log) for sensor_id in all_motion_sensor_ids
             ]
-
             unique_sensor_ids_in_routines = {
                 room.get("sensor_id")
                 for room in config.get("rooms", [])
@@ -299,17 +275,14 @@ def run_logic(log):
                 sensor_id: Sensor(bridge, sensor_id, log)
                 for sensor_id in unique_sensor_ids_in_routines
             }
-
             room_to_sensor_map = {
                 room_conf["name"]: sensors_for_routines.get(room_conf.get("sensor_id"))
                 for room_conf in config.get("rooms", [])
             }
-
             rooms = {
                 room_conf["name"]: Room(bridge, log, **room_conf)
                 for room_conf in config.get("rooms", [])
             }
-
             routines = [
                 Routine(
                     name=r_conf["name"],
@@ -324,9 +297,7 @@ def run_logic(log):
                 for r_conf in config.get("routines", [])
                 if rooms.get(r_conf["room_name"])
             ]
-
             log.info(f"{len(routines)} Routine(n) erfolgreich geladen.")
-
             if all_sensor_objects_for_logger and (
                 data_logger_thread is None or not data_logger_thread.is_alive()
             ):
@@ -351,7 +322,6 @@ def run_logic(log):
                 log.info(
                     "Änderung in 'config.yaml' erkannt. Warte auf Freigabe (Lock-Datei)..."
                 )
-
                 lock_wait_start = time.time()
                 while os.path.exists(CONFIG_LOCK_FILE):
                     time.sleep(0.1)
@@ -405,11 +375,9 @@ def cleanup():
             server_process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             server_process.kill()
-
     if data_logger_thread and data_logger_thread.is_alive():
         stop_event.set()
         data_logger_thread.join()
-
     if os.path.exists(STATUS_FILE):
         try:
             os.remove(STATUS_FILE)
@@ -421,20 +389,15 @@ def cleanup():
 
 if __name__ == "__main__":
     log = Logger(LOG_FILE, level=logging.INFO)
-
     manage_config_file(log)
     init_database(log)
-
     atexit.register(cleanup)
     start_server(log)
-
     while True:
         if not run_logic(log):
             break
-
         log.info("Warte 5 Sekunden, bevor die Logik neu gestartet wird...")
         time.sleep(5)
-
         config = load_config(log)
         if config:
             new_log_level_str = (
@@ -442,5 +405,4 @@ if __name__ == "__main__":
             )
             log.logger.setLevel(getattr(logging, new_log_level_str, logging.INFO))
             log.info(f"Log-Level wurde auf {new_log_level_str} gesetzt.")
-
     log.info("Hauptprogramm wird beendet.")

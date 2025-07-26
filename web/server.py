@@ -139,6 +139,12 @@ def index():
     return render_template("index.html")
 
 
+# FÜGE DIESEN BLOCK HINZU
+@app.route("/favicon.ico")
+def favicon():
+    return "", 204
+
+
 @app.route("/api/bridge/groups")
 def get_bridge_groups():
     b = get_bridge()
@@ -235,31 +241,35 @@ def get_data_history():
         sensor_id = request.args.get("sensor_id", type=int)
         period = request.args.get("period", "day")
         date_str = request.args.get("date")
-        range_hours = request.args.get("range", default=24, type=int)
         avg_window = request.args.get("avg", default=0, type=int)
 
         if not sensor_id:
             return jsonify({"error": "sensor_id ist erforderlich"}), 400
 
+        if not date_str:
+            return jsonify({"error": "Ein Datum ist erforderlich"}), 400
+
         light_sensor_id = sensor_id + 1
         temp_sensor_id = sensor_id + 2
         con = sqlite3.connect(DB_FILE)
 
+        # Logik vereinheitlicht für Tages- und Wochenansicht
+        start_date = datetime.fromisoformat(date_str)
         if period == "week":
-            start_date = datetime.fromisoformat(date_str)
-            start_of_week = start_date - timedelta(days=start_date.weekday())
-            end_of_week = start_of_week + timedelta(days=7)
-            start_iso = start_of_week.isoformat()
-            end_iso = end_of_week.isoformat()
-        else:  # day or custom range
-            now = datetime.now()
-            start_date = now - timedelta(hours=range_hours)
-            start_iso = start_date.isoformat()
-            end_iso = now.isoformat()
+            start_of_period = start_date - timedelta(days=start_date.weekday())
+            end_of_period = start_of_period + timedelta(days=7)
+        else:  # 'day'
+            start_of_period = start_date.replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            end_of_period = start_of_period + timedelta(days=1)
+
+        start_iso = start_of_period.isoformat()
+        end_iso = end_of_period.isoformat()
 
         query = """
-            SELECT timestamp, value, measurement_type FROM measurements
-            WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp <= ?
+            SELECT timestamp, value, measurement_type FROM measurements 
+            WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp < ? 
             ORDER BY timestamp
         """
         df = pd.read_sql_query(
