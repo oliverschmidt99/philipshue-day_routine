@@ -402,10 +402,8 @@ def add_default_scenes():
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
-
         if "scenes" not in config or not config["scenes"]:
             config["scenes"] = {}
-
         default_scenes = {
             "off": {"status": False, "bri": 0},
             "on": {"status": True, "bri": 254, "ct": 366},
@@ -421,12 +419,9 @@ def add_default_scenes():
             "tageslicht_kalt": {"status": True, "bri": 254, "ct": 230},
             "abendrot_gedimmt": {"status": True, "bri": 70, "ct": 480},
         }
-
         config["scenes"].update(default_scenes)
-
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             yaml.dump(config, f, allow_unicode=True, sort_keys=False)
-
         return jsonify(
             {
                 "message": "Standard-Szenen wurden erfolgreich hinzugefügt/aktualisiert. Bitte die Seite neu laden, um sie im Editor zu sehen."
