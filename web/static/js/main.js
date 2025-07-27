@@ -118,6 +118,8 @@ function runMainApp() {
       const action = button.dataset.action;
       const routineCard = e.target.closest("[data-index]");
       const sceneCard = e.target.closest("[data-name]");
+      const itemElement = e.target.closest("[data-id][data-type]");
+
       const actions = {
         "toggle-routine-details": () => {
           const details = routineCard.querySelector(".routine-details");
@@ -183,6 +185,77 @@ function runMainApp() {
         "save-routine": handleSaveEditedRoutine,
         "create-routine": handleCreateNewRoutine,
         "cancel-modal": ui.closeModal,
+        "edit-rename": () => {
+          itemElement.querySelector(".item-view").classList.add("hidden");
+          itemElement.querySelector(".item-edit").classList.remove("hidden");
+          const actionsContainer = itemElement.querySelector(".item-actions");
+          actionsContainer
+            .querySelector('[data-action="edit-rename"]')
+            .classList.add("hidden");
+          actionsContainer
+            .querySelector('[data-action="delete-item"]')
+            .classList.add("hidden");
+          actionsContainer
+            .querySelector('[data-action="save-rename"]')
+            .classList.remove("hidden");
+          actionsContainer
+            .querySelector('[data-action="cancel-rename"]')
+            .classList.remove("hidden");
+        },
+        "cancel-rename": () => {
+          itemElement.querySelector(".item-view").classList.remove("hidden");
+          itemElement.querySelector(".item-edit").classList.add("hidden");
+          const actionsContainer = itemElement.querySelector(".item-actions");
+          actionsContainer
+            .querySelector('[data-action="edit-rename"]')
+            .classList.remove("hidden");
+          actionsContainer
+            .querySelector('[data-action="delete-item"]')
+            .classList.remove("hidden");
+          actionsContainer
+            .querySelector('[data-action="save-rename"]')
+            .classList.add("hidden");
+          actionsContainer
+            .querySelector('[data-action="cancel-rename"]')
+            .classList.add("hidden");
+        },
+        "save-rename": async () => {
+          const type = itemElement.dataset.type;
+          const id = itemElement.dataset.id;
+          const input = itemElement.querySelector("input");
+          const newName = input.value.trim();
+          if (!newName) {
+            ui.showToast("Der Name darf nicht leer sein.", true);
+            return;
+          }
+          try {
+            await api.renameBridgeItem(type, id, newName);
+            ui.showToast("Gerät erfolgreich umbenannt.", false);
+            itemElement.querySelector(".item-name").textContent = newName;
+            actions["cancel-rename"]();
+          } catch (error) {
+            ui.showToast(`Fehler: ${error.message}`, true);
+          }
+        },
+        "delete-item": async () => {
+          const type = itemElement.dataset.type;
+          const id = itemElement.dataset.id;
+          const name = itemElement.querySelector(".item-name").textContent;
+
+          if (
+            confirm(
+              `Möchtest du ${type} "${name}" (ID: ${id}) wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`
+            )
+          ) {
+            try {
+              await api.deleteBridgeItem(type, id);
+              ui.showToast("Gerät erfolgreich gelöscht.", false);
+              setupBridgeDevicesTab();
+            } catch (error) {
+              ui.showToast(`Fehler: ${error.message}`, true);
+            }
+          }
+        },
       };
 
       if (actions[action]) {
@@ -207,6 +280,11 @@ function runMainApp() {
         btn: "tab-einstellungen",
         content: "content-einstellungen",
         init: loadSettings,
+      },
+      {
+        btn: "tab-bridge-devices",
+        content: "content-bridge-devices",
+        init: setupBridgeDevicesTab,
       },
       { btn: "tab-hilfe", content: "content-hilfe", init: loadHelp },
     ];
@@ -245,7 +323,6 @@ function runMainApp() {
 
     try {
       const { statusData, logText } = await api.updateStatus();
-      console.log("Empfangene Status-Daten:", statusData);
       ui.renderSunTimes(statusData.sun_times || null);
       ui.renderStatus(
         statusData.routines || [],
@@ -303,6 +380,15 @@ function runMainApp() {
     statusInterval = setInterval(() => updateStatus(false), refreshInterval);
     animateTimeIndicators();
     clockAnimationInterval = setInterval(animateTimeIndicators, 60 * 1000);
+  };
+
+  const setupBridgeDevicesTab = async () => {
+    try {
+      const items = await api.loadBridgeItems();
+      ui.renderBridgeDevices(items);
+    } catch (error) {
+      ui.showToast(`Fehler: ${error.message}`, true);
+    }
   };
 
   const setupAnalyseTab = () => {

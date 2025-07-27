@@ -29,6 +29,9 @@ const clockElement = document.getElementById("clock");
 const sunTimesContainer = document.getElementById("sun-times");
 const modalSceneContainer = document.getElementById("modal-scene");
 const modalRoutineContainer = document.getElementById("modal-routine");
+const bridgeDevicesContainer = document.getElementById(
+  "bridge-devices-container"
+);
 
 export function showToast(message, isError = false) {
   if (!toastElement) return;
@@ -98,6 +101,84 @@ export function renderLog(logText) {
   if (!logContainer) return;
   logContainer.textContent = logText || "Log-Datei wird geladen...";
   logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+export function renderBridgeDevices(items) {
+  if (!bridgeDevicesContainer) return;
+
+  const renderItem = (item, type) => `
+        <li class="flex justify-between items-center py-2 border-b" data-id="${item.id}" data-type="${type}">
+            <div class="item-view flex items-center">
+                <span class="font-mono text-xs text-gray-400 mr-2 w-8 text-right">${item.id}</span>
+                <span class="item-name">${item.name}</span>
+            </div>
+            <div class="item-edit hidden flex-grow ml-4">
+                <input type="text" value="${item.name}" class="border-gray-300 rounded-md shadow-sm text-sm p-1 w-full">
+            </div>
+            <div class="item-actions flex items-center flex-shrink-0">
+                <button data-action="save-rename" class="hidden ml-2 text-sm bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600">Speichern</button>
+                <button data-action="cancel-rename" class="hidden ml-1 text-sm bg-gray-500 text-white py-1 px-2 rounded hover:bg-gray-600">X</button>
+                <button data-action="edit-rename" class="ml-2 text-sm bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600">Ändern</button>
+                <button data-action="delete-item" class="ml-1 text-sm bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"><i class="fas fa-trash"></i></button>
+            </div>
+        </li>
+    `;
+
+  const groupsHtml = items.grouped_lights
+    .map((group) => {
+      const lightsHtml =
+        group.lights && group.lights.length > 0
+          ? group.lights.map((light) => renderItem(light, "light")).join("")
+          : '<li class="text-xs text-gray-500 py-2">Keine Lampen in diesem Raum.</li>';
+
+      return `
+            <div class="bg-white p-4 rounded-lg shadow-md">
+                <div class="flex justify-between items-center pb-2 border-b mb-2" data-id="${group.id}" data-type="group">
+                    <div class="item-view flex items-center">
+                        <i class="fas fa-layer-group mr-3 text-indigo-500"></i>
+                        <h3 class="text-xl font-semibold item-name">${group.name}</h3>
+                    </div>
+                    <div class="item-edit hidden flex-grow ml-4">
+                        <input type="text" value="${group.name}" class="border-gray-300 rounded-md shadow-sm text-sm p-1 w-full">
+                    </div>
+                    <div class="item-actions flex items-center flex-shrink-0">
+                        <button data-action="save-rename" class="hidden ml-2 text-sm bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600">Speichern</button>
+                        <button data-action="cancel-rename" class="hidden ml-1 text-sm bg-gray-500 text-white py-1 px-2 rounded hover:bg-gray-600">X</button>
+                        <button data-action="edit-rename" class="ml-2 text-sm bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600">Ändern</button>
+                        <button data-action="delete-item" class="ml-1 text-sm bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <ul class="space-y-1">${lightsHtml}</ul>
+            </div>
+        `;
+    })
+    .join("");
+
+  let unassignedLightsHtml = "";
+  if (items.unassigned_lights && items.unassigned_lights.length > 0) {
+    unassignedLightsHtml = `
+            <div class="bg-white p-4 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-question-circle mr-3 text-gray-400"></i>Unsortierte Lampen</h3>
+                <ul class="space-y-1">${items.unassigned_lights
+                  .map((light) => renderItem(light, "light"))
+                  .join("")}</ul>
+            </div>
+        `;
+  }
+
+  const sensorsHtml =
+    items.sensors && items.sensors.length > 0
+      ? `
+        <div class="bg-white p-4 rounded-lg shadow-md">
+             <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-satellite-dish mr-3 text-teal-500"></i>Sensoren</h3>
+            <ul class="space-y-1">${items.sensors
+              .map((sensor) => renderItem(sensor, "sensor"))
+              .join("")}</ul>
+        </div>
+    `
+      : "";
+
+  bridgeDevicesContainer.innerHTML = `<div class="space-y-6">${groupsHtml}${unassignedLightsHtml}${sensorsHtml}</div>`;
 }
 
 export function populateAnalyseSensors(sensors) {
@@ -659,7 +740,6 @@ function renderStatusTimeline(status, sunTimes) {
   const yLabelSun = 205;
   const yLabelRoutine = 220;
 
-  // Tageszustand (primärer Status)
   const periodEmoji = { morning: "🌅", day: "☀️", evening: "🌇", night: "🌙" };
   const primaryEmoji = periodEmoji[status.period] || "🗓️";
   const primaryText = periodNames[status.period] || status.period || "...";
@@ -670,7 +750,6 @@ function renderStatusTimeline(status, sunTimes) {
       </div>
     `;
 
-  // Besonderer Zustand (sekundärer Status), falls vorhanden
   let secondaryStateHtml = "";
   let secondaryEmoji = "";
   let secondaryText = "";

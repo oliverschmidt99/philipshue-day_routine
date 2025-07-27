@@ -78,6 +78,52 @@ export async function loadBridgeData() {
 }
 
 /**
+ * Lädt alle umbenennbaren Items von der Bridge.
+ * @returns {Promise<Object>} Ein Objekt mit `lights`, `sensors` und `groups`.
+ */
+export async function loadBridgeItems() {
+  const response = await fetch("/api/bridge/all_items");
+  if (!response.ok)
+    throw new Error("Geräte konnten nicht von der Bridge geladen werden");
+  return response.json();
+}
+
+/**
+ * Sendet einen Befehl zum Umbenennen eines Geräts an den Server.
+ * @param {string} itemType - Der Typ des Geräts ('light', 'sensor', 'group').
+ * @param {string|number} itemId - Die ID des Geräts.
+ * @param {string} newName - Der neue Name.
+ * @returns {Promise<Object>} Die Antwort vom Server.
+ */
+export async function renameBridgeItem(itemType, itemId, newName) {
+  const response = await fetch("/api/bridge/rename", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: itemType, id: itemId, name: newName }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "Fehler beim Umbenennen");
+  return result;
+}
+
+/**
+ * Sendet einen Befehl zum Löschen eines Geräts an den Server.
+ * @param {string} itemType - Der Typ des Geräts ('light', 'sensor', 'group').
+ * @param {string|number} itemId - Die ID des Geräts.
+ * @returns {Promise<Object>} Die Antwort vom Server.
+ */
+export async function deleteBridgeItem(itemType, itemId) {
+  const response = await fetch("/api/bridge/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: itemType, id: itemId }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "Fehler beim Löschen");
+  return result;
+}
+
+/**
  * Speichert die vollständige Konfiguration.
  * @param {Object} config - Das zu speichernde Konfigurationsobjekt.
  * @returns {Promise<Object>} Die Antwort vom Server.

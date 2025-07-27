@@ -178,6 +178,117 @@ def get_bridge_sensors():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/bridge/all_items")
+def get_all_bridge_items():
+    b = get_bridge()
+    if not b:
+        return jsonify({"error": "Bridge nicht konfiguriert oder erreichbar"}), 500
+    try:
+        lights = b.get_light()
+        sensors = b.get_sensor()
+        groups = b.get_group()
+
+        # Lampen nach Gruppen sortieren
+        grouped_lights = []
+        light_ids_in_groups = set()
+
+        for group_id, group_data in groups.items():
+            group_light_ids = set(group_data.get("lights", []))
+            group_lights = []
+            for light_id in group_light_ids:
+                if light_id in lights:
+                    group_lights.append(
+                        {"id": light_id, "name": lights[light_id]["name"]}
+                    )
+
+            grouped_lights.append(
+                {"id": group_id, "name": group_data["name"], "lights": group_lights}
+            )
+            light_ids_in_groups.update(group_light_ids)
+
+        # Nicht zugeordnete Lampen finden
+        unassigned_lights = []
+        for light_id, light_data in lights.items():
+            if light_id not in light_ids_in_groups:
+                unassigned_lights.append({"id": light_id, "name": light_data["name"]})
+
+        return jsonify(
+            {
+                "grouped_lights": grouped_lights,
+                "unassigned_lights": unassigned_lights,
+                "sensors": [
+                    {"id": key, "name": value["name"]} for key, value in sensors.items()
+                ],
+            }
+        )
+    except Exception as e:
+        log.error(f"Fehler beim Laden der Bridge-Geräte: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/bridge/rename", methods=["POST"])
+def rename_bridge_item():
+    b = get_bridge()
+    if not b:
+        return jsonify({"error": "Bridge nicht konfiguriert oder erreichbar"}), 500
+
+    data = request.get_json()
+    item_type = data.get("type")
+    item_id = data.get("id")
+    new_name = data.get("name")
+
+    if not all([item_type, item_id, new_name]):
+        return jsonify({"error": "Fehlende Parameter"}), 400
+
+    try:
+        item_id_int = int(item_id)
+        if item_type == "light":
+            b.set_light(item_id_int, "name", new_name)
+        elif item_type == "sensor":
+            b.set_sensor(item_id_int, "name", new_name)
+        elif item_type == "group":
+            b.set_group(item_id_int, "name", new_name)
+        else:
+            return jsonify({"error": "Ungültiger Typ"}), 400
+
+        log.info(f"{item_type.capitalize()} {item_id} wurde zu '{new_name}' umbenannt.")
+        return jsonify({"message": f"{item_type.capitalize()} erfolgreich umbenannt."})
+    except Exception as e:
+        log.error(f"Fehler beim Umbenennen von {item_type} {item_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/bridge/delete", methods=["POST"])
+def delete_bridge_item():
+    b = get_bridge()
+    if not b:
+        return jsonify({"error": "Bridge nicht konfiguriert oder erreichbar"}), 500
+
+    data = request.get_json()
+    item_type = data.get("type")
+    item_id = data.get("id")
+
+    if not all([item_type, item_id]):
+        return jsonify({"error": "Fehlende Parameter"}), 400
+
+    try:
+        item_id_int = int(item_id)
+        if item_type == "light":
+            b.delete_light(item_id_int)
+        elif item_type == "sensor":
+            b.delete_sensor(item_id_int)
+        elif item_type == "group":
+            b.delete_group(item_id_int)
+        else:
+            return jsonify({"error": "Ungültiger Typ"}), 400
+
+        log.info(f"{item_type.capitalize()} {item_id} wurde gelöscht.")
+        return jsonify({"message": f"{item_type.capitalize()} erfolgreich gelöscht."})
+    except Exception as e:
+        log.error(f"Fehler beim Löschen von {item_type} {item_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/config", methods=["GET", "POST"])
 def handle_config():
     if request.method == "POST":
