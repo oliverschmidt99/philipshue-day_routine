@@ -178,6 +178,7 @@ function runMainApp() {
             config.routines[routineCard.dataset.index],
             routineCard.dataset.index,
             Object.keys(config.scenes),
+            config.rooms,
             bridgeData.groups,
             bridgeData.sensors
           ),

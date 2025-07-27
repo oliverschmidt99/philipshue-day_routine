@@ -84,6 +84,7 @@ export function renderStatus(statuses, sunTimes, openStates = []) {
     statusContainer.innerHTML += renderStatusTimeline(status, sunTimes);
   });
 
+  // Klappt die Elemente wieder auf, die vor dem Refresh offen waren
   document.querySelectorAll(".status-card").forEach((card) => {
     const name = card.querySelector("h4")?.textContent;
     if (name && openStates.includes(name)) {
@@ -496,7 +497,8 @@ export function openEditRoutineModal(
   routine,
   routineIndex,
   sceneNames,
-  allRooms,
+  configuredRooms,
+  allBridgeRooms,
   allSensors
 ) {
   const sceneOptions = sceneNames
@@ -505,7 +507,7 @@ export function openEditRoutineModal(
     )
     .join("");
 
-  const roomOptions = allRooms
+  const roomOptions = allBridgeRooms
     .map(
       (room) =>
         `<option value="${room.id}|${room.name}" ${
@@ -514,7 +516,7 @@ export function openEditRoutineModal(
     )
     .join("");
 
-  const roomConf = allRooms.find((r) => r.name === routine.room_name);
+  const roomConf = configuredRooms.find((r) => r.name === routine.room_name);
   const currentSensorId = roomConf ? roomConf.sensor_id : undefined;
 
   const sensorOptions = allSensors
@@ -737,8 +739,6 @@ function renderStatusTimeline(status, sunTimes) {
   const lastMotionTime = status.last_motion_iso
     ? new Date(status.last_motion_iso).toLocaleTimeString("de-DE")
     : "nie";
-  const yLabelSun = 205;
-  const yLabelRoutine = 220;
 
   const periodEmoji = { morning: "🌅", day: "☀️", evening: "🌇", night: "🌙" };
   const primaryEmoji = periodEmoji[status.period] || "🗓️";
