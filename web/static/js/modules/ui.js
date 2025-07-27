@@ -739,6 +739,8 @@ function renderStatusTimeline(status, sunTimes) {
   const lastMotionTime = status.last_motion_iso
     ? new Date(status.last_motion_iso).toLocaleTimeString("de-DE")
     : "nie";
+  const yLabelSun = 205;
+  const yLabelRoutine = 220;
 
   const periodEmoji = { morning: "🌅", day: "☀️", evening: "🌇", night: "🌙" };
   const primaryEmoji = periodEmoji[status.period] || "🗓️";

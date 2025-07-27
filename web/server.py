@@ -188,7 +188,6 @@ def get_all_bridge_items():
         sensors = b.get_sensor()
         groups = b.get_group()
 
-        # Lampen nach Gruppen sortieren
         grouped_lights = []
         light_ids_in_groups = set()
 
@@ -206,19 +205,23 @@ def get_all_bridge_items():
             )
             light_ids_in_groups.update(group_light_ids)
 
-        # Nicht zugeordnete Lampen finden
         unassigned_lights = []
         for light_id, light_data in lights.items():
             if light_id not in light_ids_in_groups:
                 unassigned_lights.append({"id": light_id, "name": light_data["name"]})
 
+        # Sicherstellen, dass nur Sensoren mit Namen included werden
+        sensors_with_names = [
+            {"id": key, "name": value.get("name")}
+            for key, value in sensors.items()
+            if value.get("name")
+        ]
+
         return jsonify(
             {
                 "grouped_lights": grouped_lights,
                 "unassigned_lights": unassigned_lights,
-                "sensors": [
-                    {"id": key, "name": value["name"]} for key, value in sensors.items()
-                ],
+                "sensors": sensors_with_names,
             }
         )
     except Exception as e:
