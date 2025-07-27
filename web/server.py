@@ -128,6 +128,11 @@ def save_setup_config():
                 "energie_tanken": {"status": True, "bri": 254, "ct": 156},
                 "hell": {"status": True, "bri": 254, "ct": 366},
                 "gedimmt": {"status": True, "bri": 77, "ct": 447},
+                "nachtlicht": {"status": True, "bri": 1, "ct": 450},
+                "sonnenaufgang": {"status": True, "bri": 120, "ct": 500},
+                "tageslicht_neutral": {"status": True, "bri": 254, "ct": 340},
+                "tageslicht_kalt": {"status": True, "bri": 254, "ct": 230},
+                "abendrot_gedimmt": {"status": True, "bri": 70, "ct": 480},
             },
         }
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -329,13 +334,14 @@ def restart_app():
 def backup_config():
     log.info("Backup der Konfiguration über API ausgelöst.")
     try:
-        shutil.copy(CONFIG_FILE, CONFIG_BACKUP_FILE)
+        shutil.copyfile(CONFIG_FILE, CONFIG_BACKUP_FILE)
         return jsonify(
             {
                 "message": f"Konfiguration wurde als '{os.path.basename(CONFIG_BACKUP_FILE)}' gesichert."
             }
         )
     except Exception as e:
+        log.error(f"Fehler beim Erstellen des Backups: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -345,13 +351,26 @@ def restore_config():
     try:
         if not os.path.exists(CONFIG_BACKUP_FILE):
             return jsonify({"error": "Keine Backup-Datei gefunden."}), 404
-        shutil.copy(CONFIG_BACKUP_FILE, CONFIG_FILE)
+        if os.path.getsize(CONFIG_BACKUP_FILE) < 50:
+            log.error(
+                "Wiederherstellung abgebrochen: Backup-Datei ist leer oder ungültig."
+            )
+            return (
+                jsonify(
+                    {
+                        "error": "Wiederherstellung abgebrochen, da die Backup-Datei ungültig zu sein scheint."
+                    }
+                ),
+                400,
+            )
+        shutil.copyfile(CONFIG_BACKUP_FILE, CONFIG_FILE)
         return jsonify(
             {
                 "message": "Konfiguration aus Backup wiederhergestellt. Bitte die Anwendung neu starten."
             }
         )
     except Exception as e:
+        log.error(f"Fehler beim Wiederherstellen des Backups: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -377,44 +396,6 @@ def update_app():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/system/update_os", methods=["POST"])
-def update_os():
-    log.info("Betriebssystem-Update über API ausgelöst.")
-    command = []
-    try:
-        if shutil.which("pacman"):
-            command = ["sudo", "pacman", "-Syu", "--noconfirm"]
-        elif shutil.which("apt-get"):
-            subprocess.run(
-                ["sudo", "apt-get", "update"],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-            command = ["sudo", "apt-get", "upgrade", "-y"]
-        else:
-            return (
-                jsonify(
-                    {
-                        "error": "Kein unterstützter Paketmanager (pacman, apt-get) gefunden."
-                    }
-                ),
-                400,
-            )
-
-        process = subprocess.run(command, capture_output=True, text=True, check=True)
-        log.info(f"OS Update output: {process.stdout}")
-        return jsonify(
-            {"message": f"System-Update erfolgreich abgeschlossen:\n{process.stdout}"}
-        )
-    except subprocess.CalledProcessError as e:
-        log.error(f"Fehler beim System-Update: {e.stderr}")
-        return jsonify({"error": f"Fehler beim System-Update:\n{e.stderr}"}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# ===== HIER IST DIE NEUE FUNKTION =====
 @app.route("/api/scenes/add_defaults", methods=["POST"])
 def add_default_scenes():
     log.info("Hinzufügen der Standard-Szenen über API ausgelöst.")
@@ -426,17 +407,21 @@ def add_default_scenes():
             config["scenes"] = {}
 
         default_scenes = {
+            "off": {"status": False, "bri": 0},
+            "on": {"status": True, "bri": 254, "ct": 366},
             "entspannen": {"status": True, "bri": 144, "ct": 447},
             "lesen": {"status": True, "bri": 254, "ct": 343},
             "konzentrieren": {"status": True, "bri": 254, "ct": 233},
             "energie_tanken": {"status": True, "bri": 254, "ct": 156},
             "hell": {"status": True, "bri": 254, "ct": 366},
             "gedimmt": {"status": True, "bri": 77, "ct": 447},
-            "on": {"status": True, "bri": 254, "ct": 366},
-            "off": {"status": False, "bri": 0},
+            "nachtlicht": {"status": True, "bri": 1, "ct": 450},
+            "sonnenaufgang": {"status": True, "bri": 120, "ct": 500},
+            "tageslicht_neutral": {"status": True, "bri": 254, "ct": 340},
+            "tageslicht_kalt": {"status": True, "bri": 254, "ct": 230},
+            "abendrot_gedimmt": {"status": True, "bri": 70, "ct": 480},
         }
 
-        # Fügt die Standard-Szenen hinzu oder überschreibt sie
         config["scenes"].update(default_scenes)
 
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
