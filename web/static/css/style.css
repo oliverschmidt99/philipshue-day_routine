@@ -37,6 +37,18 @@ body {
     transition: transform 0.3s ease-in-out;
 }
 
+/* NEU: Stile für das Routine-Akkordeon */
+.routine-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+}
+
+.routine-header i {
+    transition: transform 0.3s ease-in-out;
+}
+
+
 /* Stile für die interaktive Zeitleiste */
 .timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;

@@ -46,7 +46,7 @@ function runMainApp() {
   };
 
   const renderAll = () => {
-    ui.renderRoutines(config.routines);
+    ui.renderRoutines(config, bridgeData);
     ui.renderScenes(config.scenes);
   };
 
@@ -107,15 +107,33 @@ function runMainApp() {
     document.body.addEventListener("click", (e) => {
       const button = e.target.closest("[data-action]");
       if (!button) return;
+
+      // Verhindert, dass der Klick auf einen Schalter das Akkordeon öffnet/schließt
+      if (button.dataset.action === "stop-propagation") {
+        e.stopPropagation();
+        return;
+      }
+
       const action = button.dataset.action;
       const routineCard = e.target.closest("[data-index]");
       const sceneCard = e.target.closest("[data-name]");
       const actions = {
-        "toggle-routine": () => {
-          config.routines[routineCard.dataset.index].enabled = button.checked;
+        "toggle-routine-details": () => {
+          const details = routineCard.querySelector(".routine-details");
+          const icon = routineCard.querySelector(".routine-header i");
+          const isOpening = !details.style.maxHeight;
+          details.style.maxHeight = isOpening
+            ? details.scrollHeight + "px"
+            : null;
+          icon.style.transform = isOpening ? "rotate(180deg)" : "rotate(0deg)";
+        },
+        "toggle-routine": (event) => {
+          e.stopPropagation(); // Klick nicht an parent weitergeben
+          const checkbox = event.target;
+          config.routines[routineCard.dataset.index].enabled = checkbox.checked;
           ui.showToast(
             `Routine ${
-              button.checked ? "aktiviert" : "deaktiviert"
+              checkbox.checked ? "aktiviert" : "deaktiviert"
             }. Speichern nicht vergessen!`
           );
         },
@@ -147,15 +165,22 @@ function runMainApp() {
             config.routines[routineCard.dataset.index],
             routineCard.dataset.index,
             Object.keys(config.scenes),
-            config.rooms,
-            bridgeData.sensors // Sensorliste übergeben
+            bridgeData.groups, // Immer alle Bridge-Gruppen übergeben
+            bridgeData.sensors
           ),
         "save-scene": handleSaveScene,
         "save-routine": handleSaveEditedRoutine,
         "create-routine": handleCreateNewRoutine,
         "cancel-modal": ui.closeModal,
       };
-      if (actions[action]) actions[action]();
+
+      if (actions[action]) {
+        if (action === "toggle-routine") {
+          actions[action](e); // Event-Objekt für den Schalter übergeben
+        } else {
+          actions[action]();
+        }
+      }
     });
 
     const tabs = [
@@ -468,13 +493,36 @@ function runMainApp() {
     const routine = config.routines[index];
     if (!routine) return;
 
-    const newRoomName = modal.querySelector("#routine-room-select").value;
-    routine.room_name = newRoomName;
+    // Name aktualisieren
+    routine.name = modal.querySelector("#routine-name-edit").value.trim();
 
+    // Raum und Sensor aktualisieren
+    const [newGroupId, newRoomName] = modal
+      .querySelector("#routine-room-select")
+      .value.split("|");
+    routine.room_name = newRoomName;
     const newSensorId = modal.querySelector("#routine-sensor-select").value;
-    const roomToUpdate = config.rooms.find((r) => r.name === newRoomName);
+
+    let roomToUpdate = config.rooms.find((r) => r.name === newRoomName);
     if (roomToUpdate) {
+      // Raum existiert bereits, Sensor-ID aktualisieren
       roomToUpdate.sensor_id = newSensorId ? parseInt(newSensorId) : undefined;
+    } else {
+      // Der Routine wurde ein neuer Raum zugewiesen, der noch nicht in der config ist
+      // Alten Eintrag (falls Name geändert wurde) entfernen und neuen erstellen
+      const oldRoomName = config.routines[index].room_name;
+      const oldRoomIndex = config.rooms.findIndex(
+        (r) => r.name === oldRoomName
+      );
+      if (oldRoomIndex > -1) {
+        // Hier könnte man prüfen, ob der alte Raum noch von anderen Routinen verwendet wird.
+        // Zur Vereinfachung lassen wir ihn erstmal drin und fügen nur einen neuen hinzu.
+      }
+      config.rooms.push({
+        name: newRoomName,
+        group_ids: [parseInt(newGroupId)],
+        sensor_id: newSensorId ? parseInt(newSensorId) : undefined,
+      });
     }
 
     const startMinutes = parseInt(

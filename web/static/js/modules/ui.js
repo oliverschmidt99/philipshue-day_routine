@@ -5,6 +5,7 @@ export const icons = {
   evening: "🌇",
   night: "🌙",
   sun: "🌞",
+  sensor: "💡",
 };
 export const sectionColors = {
   morning: "bg-yellow-100 border-yellow-200",
@@ -199,18 +200,28 @@ export function renderChart(chartInstance, data, period) {
   });
 }
 
-export function renderRoutines(routines) {
+export function renderRoutines(config, bridgeData) {
   if (!routinesContainer) return;
   routinesContainer.innerHTML = "";
-  if (!routines || routines.length === 0) {
+  if (!config.routines || config.routines.length === 0) {
     routinesContainer.innerHTML = `<p class="text-gray-500 text-center mt-4">Noch keine Routinen erstellt.</p>`;
     return;
   }
-  routines.forEach((routine, index) => {
+  config.routines.forEach((routine, index) => {
     const routineEl = document.createElement("div");
     routineEl.className =
-      "bg-white p-6 rounded-lg shadow-md border border-gray-200";
+      "bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden";
     routineEl.dataset.index = index;
+
+    const roomConf = config.rooms.find((r) => r.name === routine.room_name);
+    const sensorId = roomConf ? roomConf.sensor_id : null;
+    const sensor = sensorId
+      ? bridgeData.sensors.find((s) => s.id == sensorId)
+      : null;
+    const sensorHtml = sensor
+      ? `<span class="mx-2 text-gray-400">|</span> <span class="flex items-center"><i class="fas fa-lightbulb mr-2 text-yellow-500"></i> ${sensor.name}</span>`
+      : "";
+
     const sectionsHtml = ["morning", "day", "evening", "night"]
       .map((name) => {
         const section = routine[name];
@@ -240,23 +251,46 @@ export function renderRoutines(routines) {
         }</div></div>`;
       })
       .join("");
+
     const dailyTime = routine.daily_time || {};
     const isEnabled = routine.enabled !== false;
-    routineEl.innerHTML = `<div class="flex justify-between items-start mb-4"><div><h3 class="text-2xl font-semibold">${
-      routine.name
-    }</h3><div class="flex items-center text-gray-500 text-sm"><p>Raum: ${
-      routine.room_name
-    }</p><span class="mx-2">|</span><p>Aktiv: ${String(dailyTime.H1).padStart(
-      2,
-      "0"
-    )}:${String(dailyTime.M1).padStart(2, "0")} - ${String(
+
+    routineEl.innerHTML = `
+            <div class="routine-header p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center" data-action="toggle-routine-details">
+                <div>
+                    <div class="flex items-center">
+                        <h3 class="text-2xl font-semibold">${routine.name}</h3>
+                        <i class="fas fa-chevron-down ml-4 text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center text-gray-500 text-sm mt-1">
+                        <p>Raum: ${routine.room_name}</p>
+                        ${sensorHtml}
+                        <span class="mx-2 text-gray-400">|</span>
+                        <p>Aktiv: ${String(dailyTime.H1).padStart(
+                          2,
+                          "0"
+                        )}:${String(dailyTime.M1).padStart(2, "0")} - ${String(
       dailyTime.H2
-    ).padStart(2, "0")}:${String(dailyTime.M2).padStart(
-      2,
-      "0"
-    )}</p></div></div><div class="flex items-center space-x-4"><label class="relative inline-flex items-center cursor-pointer" title="Routine an/aus"><input type="checkbox" data-action="toggle-routine" class="sr-only peer" ${
-      isEnabled ? "checked" : ""
-    }><div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-checked:after:translate-x-full after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label><button type="button" data-action="edit-routine" class="text-blue-600 hover:text-blue-800 font-medium">Bearbeiten</button><button type="button" data-action="delete-routine" class="text-red-600 hover:text-red-800 font-medium">Löschen</button></div></div><div class="space-y-2 border-t pt-4 mt-4"><h4 class="text-lg font-medium">Ablauf</h4>${sectionsHtml}</div>`;
+    ).padStart(2, "0")}:${String(dailyTime.M2).padStart(2, "0")}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <label class="relative inline-flex items-center cursor-pointer" title="Routine an/aus" data-action="stop-propagation">
+                        <input type="checkbox" data-action="toggle-routine" class="sr-only peer" ${
+                          isEnabled ? "checked" : ""
+                        }>
+                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-checked:after:translate-x-full after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                    <button type="button" data-action="edit-routine" class="text-blue-600 hover:text-blue-800 font-medium">Bearbeiten</button>
+                    <button type="button" data-action="delete-routine" class="text-red-600 hover:text-red-800 font-medium">Löschen</button>
+                </div>
+            </div>
+            <div class="routine-details px-4 pb-4">
+                <div class="space-y-2 border-t pt-4 mt-2">
+                    <h4 class="text-lg font-medium">Ablauf</h4>
+                    ${sectionsHtml}
+                </div>
+            </div>`;
     routinesContainer.appendChild(routineEl);
   });
 }
@@ -365,18 +399,39 @@ export function openCreateRoutineModal(bridgeData) {
   modalRoutineContainer.classList.remove("hidden");
 }
 
-export function openEditRoutineModal(routine, routineIndex, sceneNames, rooms) {
+export function openEditRoutineModal(
+  routine,
+  routineIndex,
+  sceneNames,
+  allRooms,
+  allSensors
+) {
   const sceneOptions = sceneNames
     .map(
       (name) => `<option value="${name}">${name.replace(/_/g, " ")}</option>`
     )
     .join("");
-  const roomOptions = rooms
+
+  const roomOptions = allRooms
     .map(
       (room) =>
-        `<option value="${room.name}" ${
+        `<option value="${room.id}|${room.name}" ${
           routine.room_name === room.name ? "selected" : ""
         }>${room.name}</option>`
+    )
+    .join("");
+
+  const roomConf = allRooms.find((r) => r.name === routine.room_name);
+  const currentSensorId = roomConf ? roomConf.sensor_id : undefined;
+
+  const sensorOptions = allSensors
+    .map(
+      (sensor) =>
+        `<option value="${sensor.id}" ${
+          currentSensorId && parseInt(sensor.id) === parseInt(currentSensorId)
+            ? "selected"
+            : ""
+        }>${sensor.name}</option>`
     )
     .join("");
 
@@ -417,7 +472,33 @@ export function openEditRoutineModal(routine, routineIndex, sceneNames, rooms) {
       </div></div></div></div>`;
     })
     .join("");
-  modalRoutineContainer.innerHTML = `<div class="bg-white rounded-lg shadow-xl w-full max-w-3xl m-4 flex flex-col" style="max-height: 90vh;"><div class="p-6 border-b"><h3 class="text-2xl font-bold">${routine.name}</h3></div><div class="p-6 overflow-y-auto"><form class="space-y-4"><input type="hidden" id="routine-index" value="${routineIndex}"><div><label for="routine-room-select" class="block text-sm font-medium">Raum / Zone</label><select id="routine-room-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${roomOptions}</select></div><div class="relative h-24"><div class="flex justify-between items-center mb-2"><div class="text-center"><label class="block font-medium">Startzeit</label><input type="time" id="time-input-start" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div><div class="text-center"><label class="block font-medium">Endzeit</label><input type="time" id="time-input-end" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div></div><div id="timeline-container" class="relative h-20 pt-5"><svg class="absolute inset-0 w-full h-full" viewBox="0 0 1000 80" preserveAspectRatio="none"><line x1="20" y1="40" x2="980" y2="40" stroke="#9ca3af" stroke-width="2"/><path d="M 975 35 L 985 40 L 975 45 Z" fill="#9ca3af"/><line x1="20" y1="35" x2="20" y2="45" stroke="#9ca3af" stroke-width="2"/><line x1="980" y1="35" x2="980" y2="45" stroke="#9ca3af" stroke-width="2"/><text x="20" y="65" text-anchor="middle" font-size="12px" fill="#4b5563">00:00</text><text x="980" y="65" text-anchor="end" font-size="12px" fill="#4b5563">23:59</text></svg><div id="timeline-emojis" class="absolute inset-x-0 top-0 h-8 text-xl text-center pointer-events-none"></div><input type="range" id="time-slider-start" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"><input type="range" id="time-slider-end" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"></div></div><div><h4 class="text-lg font-medium mb-2 mt-4 border-t pt-4">Ablauf</h4><div class="space-y-3">${sectionsHtml}</div></div></form></div><div class="bg-gray-50 px-6 py-3 border-t flex justify-end space-x-3"><button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button><button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 rounded-md">Speichern</button></div></div>`;
+
+  modalRoutineContainer.innerHTML = `<div class="bg-white rounded-lg shadow-xl w-full max-w-3xl m-4 flex flex-col" style="max-height: 90vh;">
+        <div class="p-6 border-b"><h3 class="text-2xl font-bold">Routine bearbeiten</h3></div>
+        <div class="p-6 overflow-y-auto">
+            <form class="space-y-4">
+                <input type="hidden" id="routine-index" value="${routineIndex}">
+                
+                <div><label for="routine-name-edit" class="block text-sm font-medium">Name der Routine</label>
+                <input type="text" id="routine-name-edit" value="${routine.name}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
+
+                <div><label for="routine-room-select" class="block text-sm font-medium">Raum / Zone</label>
+                <select id="routine-room-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${roomOptions}</select></div>
+                
+                <div><label for="routine-sensor-select" class="block text-sm font-medium">Sensor</label>
+                <select id="routine-sensor-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"><option value="">Kein Sensor</option>${sensorOptions}</select></div>
+
+                <div class="relative h-24"><div class="flex justify-between items-center mb-2"><div class="text-center"><label class="block font-medium">Startzeit</label><input type="time" id="time-input-start" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div><div class="text-center"><label class="block font-medium">Endzeit</label><input type="time" id="time-input-end" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div></div><div id="timeline-container" class="relative h-20 pt-5"><svg class="absolute inset-0 w-full h-full" viewBox="0 0 1000 80" preserveAspectRatio="none"><line x1="20" y1="40" x2="980" y2="40" stroke="#9ca3af" stroke-width="2"/><path d="M 975 35 L 985 40 L 975 45 Z" fill="#9ca3af"/><line x1="20" y1="35" x2="20" y2="45" stroke="#9ca3af" stroke-width="2"/><line x1="980" y1="35" x2="980" y2="45" stroke="#9ca3af" stroke-width="2"/><text x="20" y="65" text-anchor="middle" font-size="12px" fill="#4b5563">00:00</text><text x="980" y="65" text-anchor="end" font-size="12px" fill="#4b5563">23:59</text></svg><div id="timeline-emojis" class="absolute inset-x-0 top-0 h-8 text-xl text-center pointer-events-none"></div><input type="range" id="time-slider-start" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"><input type="range" id="time-slider-end" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"></div></div>
+                
+                <div><h4 class="text-lg font-medium mb-2 mt-4 border-t pt-4">Ablauf</h4>
+                <div class="space-y-3">${sectionsHtml}</div></div>
+            </form>
+        </div>
+        <div class="bg-gray-50 px-6 py-3 border-t flex justify-end space-x-3">
+            <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button>
+            <button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 rounded-md">Speichern</button>
+        </div>
+    </div>`;
   modalRoutineContainer.classList.remove("hidden");
 
   const handleCheckboxLogic = (sectionDiv) => {
