@@ -169,10 +169,11 @@ def connect_bridge(ip, app_key, log):
 
 
 def get_sun_times(location_config, log):
+    # KORREKTUR: Prüfen, ob die Werte nicht nur existieren, sondern auch gültig sind.
     if (
         not location_config
-        or "latitude" not in location_config
-        or "longitude" not in location_config
+        or not location_config.get("latitude")
+        or not location_config.get("longitude")
     ):
         log.warning(
             "Keine vollständigen Standort-Informationen in config.yaml gefunden."
@@ -244,12 +245,9 @@ def run_logic(log):
 
     try:
         global_settings = config.get("global_settings", {})
-
-        # KORREKTUR: Robuste Abfrage der Einstellungen mit Fallback-Werten
         loop_interval = global_settings.get("loop_interval_s") or 1
         status_interval = global_settings.get("status_interval_s") or 5
         datalogger_interval = global_settings.get("datalogger_interval_minutes") or 15
-
         last_mod_time = os.path.getmtime(CONFIG_FILE)
         sun_times = get_sun_times(config.get("location"), log)
         scenes = {
