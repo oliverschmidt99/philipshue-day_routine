@@ -73,6 +73,9 @@ function runMainApp() {
       );
     });
 
+    // NEU: Event-Listener für den Refresh-Button hinzugefügt
+    addListener("btn-refresh-status", "click", updateStatus);
+
     addListener("btn-update-app", "click", () => {
       api.systemAction(
         "/api/system/update_app",
