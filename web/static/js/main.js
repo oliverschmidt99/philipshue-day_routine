@@ -147,7 +147,8 @@ function runMainApp() {
             config.routines[routineCard.dataset.index],
             routineCard.dataset.index,
             Object.keys(config.scenes),
-            bridgeData.groups // KORREKTUR: Wir übergeben alle verfügbaren Gruppen von der Bridge
+            config.rooms,
+            bridgeData.sensors // Sensorliste übergeben
           ),
         "save-scene": handleSaveScene,
         "save-routine": handleSaveEditedRoutine,
@@ -455,7 +456,8 @@ function runMainApp() {
       newRoutine,
       config.routines.length - 1,
       Object.keys(config.scenes),
-      bridgeData.groups
+      config.rooms,
+      bridgeData.sensors
     );
   };
 
@@ -466,20 +468,13 @@ function runMainApp() {
     const routine = config.routines[index];
     if (!routine) return;
 
-    // Raumname aus dem neuen Dropdown auslesen
     const newRoomName = modal.querySelector("#routine-room-select").value;
     routine.room_name = newRoomName;
 
-    // Sicherstellen, dass der neue Raum in der config.rooms Liste existiert
-    const roomExists = config.rooms.some((r) => r.name === newRoomName);
-    if (!roomExists) {
-      const newRoomData = bridgeData.groups.find((g) => g.name === newRoomName);
-      if (newRoomData) {
-        config.rooms.push({
-          name: newRoomData.name,
-          group_ids: [parseInt(newRoomData.id)],
-        });
-      }
+    const newSensorId = modal.querySelector("#routine-sensor-select").value;
+    const roomToUpdate = config.rooms.find((r) => r.name === newRoomName);
+    if (roomToUpdate) {
+      roomToUpdate.sensor_id = newSensorId ? parseInt(newSensorId) : undefined;
     }
 
     const startMinutes = parseInt(
