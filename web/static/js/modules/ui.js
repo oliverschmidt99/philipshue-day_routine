@@ -365,12 +365,24 @@ export function openCreateRoutineModal(bridgeData) {
   modalRoutineContainer.classList.remove("hidden");
 }
 
-export function openEditRoutineModal(routine, routineIndex, sceneNames) {
+// ===== HIER BEGINNEN DIE ÄNDERUNGEN =====
+export function openEditRoutineModal(routine, routineIndex, sceneNames, rooms) {
   const sceneOptions = sceneNames
     .map(
       (name) => `<option value="${name}">${name.replace(/_/g, " ")}</option>`
     )
     .join("");
+
+  // Raum-Optionen für das neue Dropdown erstellen
+  const roomOptions = rooms
+    .map(
+      (room) =>
+        `<option value="${room.name}" ${
+          routine.room_name === room.name ? "selected" : ""
+        }>${room.name}</option>`
+    )
+    .join("");
+
   const sectionsHtml = ["morning", "day", "evening", "night"]
     .map((name) => {
       const section = routine[name] || {};
@@ -404,14 +416,19 @@ export function openEditRoutineModal(routine, routineIndex, sceneNames) {
       }" class="w-full ct-slider section-bri-ct"></div><span class="font-mono text-sm text-gray-700 bg-gray-100 p-1 rounded ct-value-display w-16 text-center"></span></div></div></div></div></div>`;
     })
     .join("");
-  modalRoutineContainer.innerHTML = `<div class="bg-white rounded-lg shadow-xl w-full max-w-3xl m-4 flex flex-col" style="max-height: 90vh;"><div class="p-6 border-b"><h3 class="text-2xl font-bold">${routine.name}</h3></div><div class="p-6 overflow-y-auto"><form class="space-y-4"><input type="hidden" id="routine-index" value="${routineIndex}"><div class="relative h-24"><div class="flex justify-between items-center mb-2"><div class="text-center"><label class="block font-medium">Startzeit</label><input type="time" id="time-input-start" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div><div class="text-center"><label class="block font-medium">Endzeit</label><input type="time" id="time-input-end" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div></div><div id="timeline-container" class="relative h-20 pt-5"><svg class="absolute inset-0 w-full h-full" viewBox="0 0 1000 80" preserveAspectRatio="none"><line x1="20" y1="40" x2="980" y2="40" stroke="#9ca3af" stroke-width="2"/><path d="M 975 35 L 985 40 L 975 45 Z" fill="#9ca3af"/><line x1="20" y1="35" x2="20" y2="45" stroke="#9ca3af" stroke-width="2"/><line x1="980" y1="35" x2="980" y2="45" stroke="#9ca3af" stroke-width="2"/><text x="20" y="65" text-anchor="middle" font-size="12px" fill="#4b5563">00:00</text><text x="980" y="65" text-anchor="end" font-size="12px" fill="#4b5563">23:59</text></svg><div id="timeline-emojis" class="absolute inset-x-0 top-0 h-8 text-xl text-center pointer-events-none"></div><input type="range" id="time-slider-start" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"><input type="range" id="time-slider-end" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"></div></div><div><h4 class="text-lg font-medium mb-2 mt-4 border-t pt-4">Ablauf</h4><div class="space-y-3">${sectionsHtml}</div></div></form></div><div class="bg-gray-50 px-6 py-3 border-t flex justify-end space-x-3"><button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button><button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 rounded-md">Speichern</button></div></div>`;
+  modalRoutineContainer.innerHTML = `<div class="bg-white rounded-lg shadow-xl w-full max-w-3xl m-4 flex flex-col" style="max-height: 90vh;"><div class="p-6 border-b"><h3 class="text-2xl font-bold">${routine.name}</h3></div><div class="p-6 overflow-y-auto"><form class="space-y-4"><input type="hidden" id="routine-index" value="${routineIndex}">
+  
+  <div>
+    <label for="routine-room-select" class="block text-sm font-medium">Raum / Zone</label>
+    <select id="routine-room-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${roomOptions}</select>
+  </div>
+  <div class="relative h-24"><div class="flex justify-between items-center mb-2"><div class="text-center"><label class="block font-medium">Startzeit</label><input type="time" id="time-input-start" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div><div class="text-center"><label class="block font-medium">Endzeit</label><input type="time" id="time-input-end" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div></div><div id="timeline-container" class="relative h-20 pt-5"><svg class="absolute inset-0 w-full h-full" viewBox="0 0 1000 80" preserveAspectRatio="none"><line x1="20" y1="40" x2="980" y2="40" stroke="#9ca3af" stroke-width="2"/><path d="M 975 35 L 985 40 L 975 45 Z" fill="#9ca3af"/><line x1="20" y1="35" x2="20" y2="45" stroke="#9ca3af" stroke-width="2"/><line x1="980" y1="35" x2="980" y2="45" stroke="#9ca3af" stroke-width="2"/><text x="20" y="65" text-anchor="middle" font-size="12px" fill="#4b5563">00:00</text><text x="980" y="65" text-anchor="end" font-size="12px" fill="#4b5563">23:59</text></svg><div id="timeline-emojis" class="absolute inset-x-0 top-0 h-8 text-xl text-center pointer-events-none"></div><input type="range" id="time-slider-start" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"><input type="range" id="time-slider-end" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"></div></div><div><h4 class="text-lg font-medium mb-2 mt-4 border-t pt-4">Ablauf</h4><div class="space-y-3">${sectionsHtml}</div></div></form></div><div class="bg-gray-50 px-6 py-3 border-t flex justify-end space-x-3"><button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button><button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 rounded-md">Speichern</button></div></div>`;
   modalRoutineContainer.classList.remove("hidden");
 
   const handleCheckboxLogic = (sectionDiv) => {
     const motionCheck = sectionDiv.querySelector(".section-motion-check");
     const dndCheck = sectionDiv.querySelector(".section-do-not-disturb");
     const briCheck = sectionDiv.querySelector(".section-bri-check");
-
     if (!motionCheck.checked) {
       if (dndCheck.checked)
         showToast(
@@ -423,10 +440,8 @@ export function openEditRoutineModal(routine, routineIndex, sceneNames) {
     } else {
       dndCheck.disabled = briCheck.checked;
     }
-
     if (dndCheck.checked) briCheck.disabled = true;
     else briCheck.disabled = false;
-
     if (briCheck.checked) dndCheck.disabled = true;
     else if (motionCheck.checked) dndCheck.disabled = false;
   };
@@ -443,7 +458,6 @@ export function openEditRoutineModal(routine, routineIndex, sceneNames) {
         )
       );
       handleCheckboxLogic(sectionDiv);
-
       const briSlider = sectionDiv.querySelector(".brightness-slider");
       const briDisplay = sectionDiv.querySelector(".brightness-value-display");
       const ctSlider = sectionDiv.querySelector(".ct-slider");

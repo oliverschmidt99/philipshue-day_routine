@@ -79,12 +79,6 @@ function runMainApp() {
         "Möchtest du die Anwendung wirklich via 'git pull' aktualisieren?"
       );
     });
-    addListener("btn-update-system", "click", () => {
-      api.systemAction(
-        "/api/system/update_os",
-        "Möchtest du das Betriebssystem wirklich aktualisieren? Dies kann einige Zeit dauern."
-      );
-    });
     addListener("btn-restart-app", "click", () => {
       api.systemAction(
         "/api/system/restart",
@@ -103,7 +97,6 @@ function runMainApp() {
         "Möchtest du die Konfiguration aus dem Backup wiederherstellen? Ungespeicherte Änderungen gehen verloren."
       );
     });
-    // HIER IST DER NEUE LISTENER
     addListener("btn-add-default-scenes", "click", () => {
       api.systemAction(
         "/api/scenes/add_defaults",
@@ -153,7 +146,8 @@ function runMainApp() {
           ui.openEditRoutineModal(
             config.routines[routineCard.dataset.index],
             routineCard.dataset.index,
-            Object.keys(config.scenes)
+            Object.keys(config.scenes),
+            bridgeData.groups // KORREKTUR: Wir übergeben alle verfügbaren Gruppen von der Bridge
           ),
         "save-scene": handleSaveScene,
         "save-routine": handleSaveEditedRoutine,
@@ -460,7 +454,8 @@ function runMainApp() {
     ui.openEditRoutineModal(
       newRoutine,
       config.routines.length - 1,
-      Object.keys(config.scenes)
+      Object.keys(config.scenes),
+      bridgeData.groups
     );
   };
 
@@ -470,6 +465,23 @@ function runMainApp() {
     const index = modal.querySelector("#routine-index").value;
     const routine = config.routines[index];
     if (!routine) return;
+
+    // Raumname aus dem neuen Dropdown auslesen
+    const newRoomName = modal.querySelector("#routine-room-select").value;
+    routine.room_name = newRoomName;
+
+    // Sicherstellen, dass der neue Raum in der config.rooms Liste existiert
+    const roomExists = config.rooms.some((r) => r.name === newRoomName);
+    if (!roomExists) {
+      const newRoomData = bridgeData.groups.find((g) => g.name === newRoomName);
+      if (newRoomData) {
+        config.rooms.push({
+          name: newRoomData.name,
+          group_ids: [parseInt(newRoomData.id)],
+        });
+      }
+    }
+
     const startMinutes = parseInt(
       modal.querySelector("#time-slider-start").value
     );
