@@ -4,12 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Hue Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script defer>
         document.addEventListener('DOMContentLoaded', () => {
-            // App sichtbar machen
             document.getElementById('main-app').classList.remove('hidden');
-
-            // Tab-Navigation aktivieren
             const tabs = ['routines', 'scenes', 'status', 'analyse', 'einstellungen', 'hilfe'];
             tabs.forEach(tab => {
                 const btn = document.getElementById(`tab-${tab}`);
@@ -223,9 +224,6 @@
                             <button type="button" id="btn-update-app"
                                 class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700">Anwendung
                                 aktualisieren (Git)</button>
-                            <button type="button" id="btn-update-system"
-                                class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">Betriebssystem
-                                aktualisieren</button>
                             <button type="button" id="btn-restart-app"
                                 class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
                                 neu starten</button>
