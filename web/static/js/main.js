@@ -73,8 +73,7 @@ function runMainApp() {
       );
     });
 
-    // NEU: Event-Listener für den Refresh-Button hinzugefügt
-    addListener("btn-refresh-status", "click", updateStatus);
+    addListener("btn-refresh-status", "click", () => updateStatus(true));
 
     addListener("btn-update-app", "click", () => {
       api.systemAction(
@@ -111,7 +110,6 @@ function runMainApp() {
       const button = e.target.closest("[data-action]");
       if (!button) return;
 
-      // Verhindert, dass der Klick auf einen Schalter das Akkordeon öffnet/schließt
       if (button.dataset.action === "stop-propagation") {
         e.stopPropagation();
         return;
@@ -130,8 +128,18 @@ function runMainApp() {
             : null;
           icon.style.transform = isOpening ? "rotate(180deg)" : "rotate(0deg)";
         },
+        "toggle-status-details": () => {
+          const statusCard = e.target.closest(".status-card");
+          const details = statusCard.querySelector(".status-details");
+          const icon = statusCard.querySelector(".status-header i");
+          const isOpening = !details.style.maxHeight;
+          details.style.maxHeight = isOpening
+            ? details.scrollHeight + "px"
+            : null;
+          icon.style.transform = isOpening ? "rotate(180deg)" : "rotate(0deg)";
+        },
         "toggle-routine": (event) => {
-          e.stopPropagation(); // Klick nicht an parent weitergeben
+          e.stopPropagation();
           const checkbox = event.target;
           config.routines[routineCard.dataset.index].enabled = checkbox.checked;
           ui.showToast(
@@ -168,7 +176,7 @@ function runMainApp() {
             config.routines[routineCard.dataset.index],
             routineCard.dataset.index,
             Object.keys(config.scenes),
-            bridgeData.groups, // Immer alle Bridge-Gruppen übergeben
+            bridgeData.groups,
             bridgeData.sensors
           ),
         "save-scene": handleSaveScene,
@@ -179,7 +187,7 @@ function runMainApp() {
 
       if (actions[action]) {
         if (action === "toggle-routine") {
-          actions[action](e); // Event-Objekt für den Schalter übergeben
+          actions[action](e);
         } else {
           actions[action]();
         }
@@ -220,16 +228,40 @@ function runMainApp() {
     });
   };
 
-  const updateStatus = async () => {
+  const updateStatus = async (showNotification = false) => {
+    const openStates = [];
+    document
+      .querySelectorAll(".status-card .status-details")
+      .forEach((details) => {
+        if (details.style.maxHeight && details.style.maxHeight !== "0px") {
+          const name = details
+            .closest(".status-card")
+            .querySelector("h4")?.textContent;
+          if (name) {
+            openStates.push(name);
+          }
+        }
+      });
+
     try {
       const { statusData, logText } = await api.updateStatus();
       console.log("Empfangene Status-Daten:", statusData);
       ui.renderSunTimes(statusData.sun_times || null);
-      ui.renderStatus(statusData.routines || [], statusData.sun_times);
+      ui.renderStatus(
+        statusData.routines || [],
+        statusData.sun_times,
+        openStates
+      );
       ui.renderLog(logText);
       animateTimeIndicators();
+      if (showNotification) {
+        ui.showToast("Status erfolgreich aktualisiert!", false);
+      }
     } catch (error) {
       console.error("Fehler beim Abrufen des Status:", error);
+      if (showNotification) {
+        ui.showToast("Fehler beim Aktualisieren des Status.", true);
+      }
     }
   };
 
@@ -268,7 +300,7 @@ function runMainApp() {
     updateStatus();
     const refreshInterval =
       (config.global_settings?.status_interval_s || 5) * 1000;
-    statusInterval = setInterval(updateStatus, refreshInterval);
+    statusInterval = setInterval(() => updateStatus(false), refreshInterval);
     animateTimeIndicators();
     clockAnimationInterval = setInterval(animateTimeIndicators, 60 * 1000);
   };
@@ -496,10 +528,8 @@ function runMainApp() {
     const routine = config.routines[index];
     if (!routine) return;
 
-    // Name aktualisieren
     routine.name = modal.querySelector("#routine-name-edit").value.trim();
 
-    // Raum und Sensor aktualisieren
     const [newGroupId, newRoomName] = modal
       .querySelector("#routine-room-select")
       .value.split("|");
@@ -508,18 +538,13 @@ function runMainApp() {
 
     let roomToUpdate = config.rooms.find((r) => r.name === newRoomName);
     if (roomToUpdate) {
-      // Raum existiert bereits, Sensor-ID aktualisieren
       roomToUpdate.sensor_id = newSensorId ? parseInt(newSensorId) : undefined;
     } else {
-      // Der Routine wurde ein neuer Raum zugewiesen, der noch nicht in der config ist
-      // Alten Eintrag (falls Name geändert wurde) entfernen und neuen erstellen
       const oldRoomName = config.routines[index].room_name;
       const oldRoomIndex = config.rooms.findIndex(
         (r) => r.name === oldRoomName
       );
       if (oldRoomIndex > -1) {
-        // Hier könnte man prüfen, ob der alte Raum noch von anderen Routinen verwendet wird.
-        // Zur Vereinfachung lassen wir ihn erstmal drin und fügen nur einen neuen hinzu.
       }
       config.rooms.push({
         name: newRoomName,

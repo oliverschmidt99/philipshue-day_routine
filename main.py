@@ -169,7 +169,6 @@ def connect_bridge(ip, app_key, log):
 
 
 def get_sun_times(location_config, log):
-    # KORREKTUR: Prüfen, ob die Werte nicht nur existieren, sondern auch gültig sind.
     if (
         not location_config
         or not location_config.get("latitude")
@@ -202,7 +201,9 @@ def write_status(routines, sun_times):
         "routines": [r.get_status() for r in routines],
         "sun_times": sun_times,
     }
+    temp_file = STATUS_FILE + ".tmp"
     try:
+        serializable_sun_times = None
         if status_data["sun_times"]:
             serializable_sun_times = status_data["sun_times"].copy()
             serializable_sun_times["sunrise"] = serializable_sun_times[
@@ -211,11 +212,21 @@ def write_status(routines, sun_times):
             serializable_sun_times["sunset"] = serializable_sun_times[
                 "sunset"
             ].isoformat()
-            status_data["sun_times"] = serializable_sun_times
-        with open(STATUS_FILE, "w", encoding="utf-8") as f:
-            json.dump(status_data, f, indent=2)
+
+        final_data = {
+            "routines": status_data["routines"],
+            "sun_times": serializable_sun_times,
+        }
+
+        with open(temp_file, "w", encoding="utf-8") as f:
+            json.dump(final_data, f, indent=2)
+
+        os.replace(temp_file, STATUS_FILE)
     except Exception as e:
         print(f"Fehler beim Schreiben der Status-Datei: {e}")
+    finally:
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
 
 
 def run_logic(log):

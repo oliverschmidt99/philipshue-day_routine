@@ -70,7 +70,7 @@ export function renderSunTimes(sunData) {
   }
 }
 
-export function renderStatus(statuses, sunTimes) {
+export function renderStatus(statuses, sunTimes, openStates = []) {
   if (!statusContainer) return;
   statusContainer.innerHTML = "";
   if (!statuses || statuses.length === 0) {
@@ -79,6 +79,18 @@ export function renderStatus(statuses, sunTimes) {
   }
   statuses.forEach((status) => {
     statusContainer.innerHTML += renderStatusTimeline(status, sunTimes);
+  });
+
+  document.querySelectorAll(".status-card").forEach((card) => {
+    const name = card.querySelector("h4")?.textContent;
+    if (name && openStates.includes(name)) {
+      const details = card.querySelector(".status-details");
+      const icon = card.querySelector(".status-header i");
+      if (details && icon) {
+        details.style.maxHeight = details.scrollHeight + "px";
+        icon.style.transform = "rotate(180deg)";
+      }
+    }
   });
 }
 
@@ -646,39 +658,106 @@ function renderStatusTimeline(status, sunTimes) {
     : "nie";
   const yLabelSun = 205;
   const yLabelRoutine = 220;
-  return `<div class="bg-white p-4 rounded-lg shadow border border-gray-200"><h4 class="font-bold text-lg">${
-    status.name
-  }</h4><div class="w-full my-2 h-72 text-gray-700"><svg class="h-full w-full timeline-svg" viewBox="0 0 1000 240" font-family="Inter, sans-serif" font-size="12px" data-center-x="${centerX}" data-radius-x="${arcRadiusX}" data-radius-y="${arcRadiusY}" data-arc-start-x="${arcStartX}" data-arc-end-x="${arcEndX}"><line x1="2%" y1="180" x2="98%" y2="180" stroke="#9ca3af" stroke-width="2" /><path d="M 978 175 L 988 180 L 978 185 Z" fill="#9ca3af" />${timeMarkersHtml}<line x1="${morningStartPercent}%" y1="175" x2="${morningStartPercent}%" y2="185" stroke="#3b82f6" stroke-width="2" /><text x="${morningStartPercent}%" y="${yLabelRoutine}" text-anchor="middle" fill="#3b82f6" font-weight="bold">${String(
+
+  // Tageszustand (primärer Status)
+  const periodEmoji = { morning: "🌅", day: "☀️", evening: "🌇", night: "🌙" };
+  const primaryEmoji = periodEmoji[status.period] || "🗓️";
+  const primaryText = periodNames[status.period] || status.period || "...";
+  let primaryStateHtml = `
+      <div class="flex items-center text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
+        <span class="mr-2">${primaryEmoji}</span>
+        <span>${primaryText}</span>
+      </div>
+    `;
+
+  // Besonderer Zustand (sekundärer Status), falls vorhanden
+  let secondaryStateHtml = "";
+  let secondaryEmoji = "";
+  let secondaryText = "";
+
+  if (status.enabled === false) {
+    secondaryEmoji = "⏸️";
+    secondaryText = "Deaktiviert";
+  } else if (status.last_scene?.toLowerCase().includes("manuell")) {
+    secondaryEmoji = "✋";
+    secondaryText = "Manuell";
+  } else if (status.motion_status?.includes("erkannt")) {
+    secondaryEmoji = "🏃‍♂️";
+    secondaryText = "Bewegung";
+  } else if (status.last_scene?.toLowerCase().includes("geregelt")) {
+    secondaryEmoji = "💡";
+    secondaryText = "Geregelt";
+  }
+
+  if (secondaryText) {
+    secondaryStateHtml = `
+          <div class="flex items-center text-sm font-medium text-gray-700 bg-yellow-100 border border-yellow-200 px-3 py-1 rounded-full ml-2">
+            <span class="mr-2">${secondaryEmoji}</span>
+            <span>${secondaryText}</span>
+          </div>
+        `;
+  }
+
+  const statusDisplayHtml = `
+        <div class="flex items-center">
+            ${primaryStateHtml}
+            ${secondaryStateHtml}
+        </div>
+    `;
+
+  return `<div class="bg-white rounded-lg shadow border border-gray-200 status-card">
+    <div class="status-header flex justify-between items-center cursor-pointer hover:bg-gray-50 p-2" data-action="toggle-status-details">
+        <div class="flex items-center">
+            <h4 class="font-bold text-lg">${status.name}</h4>
+            <i class="fas fa-chevron-down ml-4 text-gray-400"></i>
+        </div>
+        ${statusDisplayHtml}
+    </div>
+    <div class="status-details px-4">
+        <div class="w-full my-2 h-72 text-gray-700">
+            <svg class="h-full w-full timeline-svg" viewBox="0 0 1000 240" font-family="Inter, sans-serif" font-size="12px" data-center-x="${centerX}" data-radius-x="${arcRadiusX}" data-radius-y="${arcRadiusY}" data-arc-start-x="${arcStartX}" data-arc-end-x="${arcEndX}">
+                <line x1="2%" y1="180" x2="98%" y2="180" stroke="#9ca3af" stroke-width="2" />
+                <path d="M 978 175 L 988 180 L 978 185 Z" fill="#9ca3af" />
+                ${timeMarkersHtml}
+                <line x1="${morningStartPercent}%" y1="175" x2="${morningStartPercent}%" y2="185" stroke="#3b82f6" stroke-width="2" />
+                <text x="${morningStartPercent}%" y="${yLabelRoutine}" text-anchor="middle" fill="#3b82f6" font-weight="bold">${String(
     routineStart.H1
-  ).padStart(2, "0")}:${String(routineStart.M1).padStart(
-    2,
-    "0"
-  )}</text><line x1="${sunrisePercent}%" y1="175" x2="${sunrisePercent}%" y2="185" stroke="#f59e0b" stroke-width="2" /><text x="${sunrisePercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f59e0b">${sunrise?.toLocaleTimeString(
+  ).padStart(2, "0")}:${String(routineStart.M1).padStart(2, "0")}</text>
+                <line x1="${sunrisePercent}%" y1="175" x2="${sunrisePercent}%" y2="185" stroke="#f59e0b" stroke-width="2" />
+                <text x="${sunrisePercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f59e0b">${sunrise?.toLocaleTimeString(
     [],
     { hour: "2-digit", minute: "2-digit" }
-  )}</text><line x1="${sunsetPercent}%" y1="175" x2="${sunsetPercent}%" y2="185" stroke="#f97316" stroke-width="2" /><text x="${sunsetPercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f97316">${sunset?.toLocaleTimeString(
+  )}</text>
+                <line x1="${sunsetPercent}%" y1="175" x2="${sunsetPercent}%" y2="185" stroke="#f97316" stroke-width="2" />
+                <text x="${sunsetPercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f97316">${sunset?.toLocaleTimeString(
     [],
     { hour: "2-digit", minute: "2-digit" }
-  )}</text><line x1="${eveningEndPercent}%" y1="175" x2="${eveningEndPercent}%" y2="185" stroke="#3b82f6" stroke-width="2" /><text x="${eveningEndPercent}%" y="${yLabelRoutine}" text-anchor="middle" fill="#3b82f6" font-weight="bold">${String(
+  )}</text>
+                <line x1="${eveningEndPercent}%" y1="175" x2="${eveningEndPercent}%" y2="185" stroke="#3b82f6" stroke-width="2" />
+                <text x="${eveningEndPercent}%" y="${yLabelRoutine}" text-anchor="middle" fill="#3b82f6" font-weight="bold">${String(
     routineStart.H2
-  ).padStart(2, "0")}:${String(routineStart.M2).padStart(
-    2,
-    "0"
-  )}</text><path d="M ${arcStartX} 180 A ${arcRadiusX} ${arcRadiusY} 0 0 1 ${arcEndX} 180" stroke="#f97316" stroke-width="1.5" fill="none" />${periods}<g class="sun-emoji-indicator" data-sunrise-mins="${sunriseMins}" data-sunset-mins="${sunsetMins}"><text x="0" y="0" text-anchor="middle" font-size="28">${
+  ).padStart(2, "0")}:${String(routineStart.M2).padStart(2, "0")}</text>
+                <path d="M ${arcStartX} 180 A ${arcRadiusX} ${arcRadiusY} 0 0 1 ${arcEndX} 180" stroke="#f97316" stroke-width="1.5" fill="none" />
+                ${periods}
+                <g class="sun-emoji-indicator" data-sunrise-mins="${sunriseMins}" data-sunset-mins="${sunsetMins}"><text x="0" y="0" text-anchor="middle" font-size="28">${
     icons.sun
-  }</text></g></svg></div><div class="text-sm grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 border-t pt-2"><span><strong>Status:</strong> <span class="${
-    status.enabled ? "text-green-600" : "text-red-500"
-  }">${
-    status.enabled ? "Aktiviert" : "Deaktiviert"
-  }</span></span><span class="${
-    status.motion_status?.includes("erkannt") ? "text-green-600" : ""
-  }"><strong>Bewegung:</strong> ${
-    status.motion_status
-  }</span><span><strong>Helligkeit:</strong> ${
-    status.brightness
-  }</span><span><strong>Temperatur:</strong> ${
-    status.temperature
-  }°C</span><span class="md:col-span-2"><strong>Letzte Szene:</strong> ${
-    status.last_scene
-  }</span><span class="md:col-span-2"><strong>Letzte Bewegung:</strong> ${lastMotionTime}</span></div></div>`;
+  }</text></g>
+            </svg>
+        </div>
+        <div class="text-sm grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 border-t pt-2">
+            <span><strong>Status:</strong> <span class="${
+              status.enabled ? "text-green-600" : "text-red-500"
+            }">${status.enabled ? "Aktiviert" : "Deaktiviert"}</span></span>
+            <span class="${
+              status.motion_status?.includes("erkannt") ? "text-green-600" : ""
+            }"><strong >Bewegung:</strong> ${status.motion_status}</span>
+            <span><strong>Helligkeit:</strong> ${status.brightness}</span>
+            <span><strong>Temperatur:</strong> ${status.temperature}°C</span>
+            <span class="md:col-span-2"><strong>Letzte Szene:</strong> ${
+              status.last_scene
+            }</span>
+            <span class="md:col-span-2"><strong>Letzte Bewegung:</strong> ${lastMotionTime}</span>
+        </div>
+    </div>
+  </div>`;
 }
