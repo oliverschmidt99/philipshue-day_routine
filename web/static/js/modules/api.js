@@ -52,7 +52,7 @@ export const saveFullConfig = (config) =>
   });
 
 // --- Bridge Data ---
-export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
+export const loadBridgeItems = () => fetchAPI("/api/bridge/all_items");
 export const renameBridgeItem = (itemType, itemId, newName) =>
   fetchAPI("/api/bridge/rename", {
     method: "POST",
@@ -81,6 +81,9 @@ export const loadChartData = (sensorId, period, date, avgWindow) =>
   fetchAPI(
     `/api/data/history?sensor_id=${sensorId}&period=${period}&date=${date}&avg=${avgWindow}`
   );
+
+// --- Help ---
+export const loadHelpContent = () => fetchAPI("/api/help");
 
 // --- System ---
 export const addDefaultScenes = () =>

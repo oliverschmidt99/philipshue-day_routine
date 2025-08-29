@@ -41,12 +41,14 @@ def create_app():
         from web.api.system import system_api
         from web.api.data import data_api
         from web.api.config_api import config_api
+        from web.api.help import help_api
 
         app.register_blueprint(setup_api, url_prefix="/api/setup")
         app.register_blueprint(bridge_api, url_prefix="/api/bridge")
         app.register_blueprint(system_api, url_prefix="/api/system")
         app.register_blueprint(data_api, url_prefix="/api/data")
         app.register_blueprint(config_api, url_prefix="/api/config")
+        app.register_blueprint(help_api, url_prefix="/api/help")
 
     @app.route("/")
     def index():
