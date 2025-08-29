@@ -114,6 +114,96 @@ export function renderLog(logText) {
   }
 }
 
+export function renderBridgeDevices(items) {
+  if (!bridgeDevicesContainer) return;
+
+  const renderItem = (item, type) => `
+        <li class="flex justify-between items-center py-2 border-b" data-id="${
+          item.id
+        }" data-type="${type}">
+            <div class="item-view flex items-center">
+                <span class="font-mono text-xs text-gray-400 mr-2 w-8 text-right">${
+                  item.id
+                }</span>
+                <span class="item-name">${item.name}</span>
+            </div>
+            <div class="item-edit hidden flex-grow ml-4">
+                <input type="text" value="${
+                  item.name
+                }" class="border-gray-300 rounded-md shadow-sm text-sm p-1 w-full">
+            </div>
+            <div class="item-actions flex items-center flex-shrink-0">
+                <button data-action="save-rename" class="hidden ml-2 text-sm bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600">Speichern</button>
+                <button data-action="cancel-rename" class="hidden ml-1 text-sm bg-gray-500 text-white py-1 px-2 rounded hover:bg-gray-600">X</button>
+                <button data-action="edit-rename" class="ml-2 text-sm bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600">Ändern</button>
+                <button data-action="delete-item" class="ml-1 text-sm bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"><i class="fas fa-trash"></i></button>
+            </div>
+        </li>
+    `;
+
+  const groupsHtml = items.grouped_lights
+    .map((group) => {
+      const lightsHtml =
+        group.lights && group.lights.length > 0
+          ? group.lights.map((light) => renderItem(light, "light")).join("")
+          : '<li class="text-xs text-gray-500 py-2">Keine Lampen in diesem Raum.</li>';
+
+      return `
+            <div class="bg-white p-4 rounded-lg shadow-md">
+                <div class="flex justify-between items-center pb-2 border-b mb-2" data-id="${
+                  group.id
+                }" data-type="group">
+                    <div class="item-view flex items-center">
+                        <i class="fas fa-layer-group mr-3 text-indigo-500"></i>
+                        <h3 class="text-xl font-semibold item-name">${
+                          group.name
+                        }</h3>
+                    </div>
+                    <div class="item-edit hidden flex-grow ml-4">
+                        <input type="text" value="${
+                          group.name
+                        }" class="border-gray-300 rounded-md shadow-sm text-sm p-1 w-full">
+                    </div>
+                    <div class="item-actions flex items-center flex-shrink-0">
+                        <button data-action="save-rename" class="hidden ml-2 text-sm bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600">Speichern</button>
+                        <button data-action="cancel-rename" class="hidden ml-1 text-sm bg-gray-500 text-white py-1 px-2 rounded hover:bg-gray-600">X</button>
+                        <button data-action="edit-rename" class="ml-2 text-sm bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600">Ändern</button>
+                        <button data-action="delete-item" class="ml-1 text-sm bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <ul class="space-y-1">${lightsHtml}</ul>
+            </div>
+        `;
+    })
+    .join("");
+
+  let unassignedLightsHtml = "";
+  if (items.unassigned_lights && items.unassigned_lights.length > 0) {
+    unassignedLightsHtml = `
+            <div class="bg-white p-4 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-question-circle mr-3 text-gray-400"></i>Unsortierte Lampen</h3>
+                <ul class="space-y-1">${items.unassigned_lights
+                  .map((light) => renderItem(light, "light"))
+                  .join("")}</ul>
+            </div>
+        `;
+  }
+
+  const sensorsHtml =
+    items.sensors && items.sensors.length > 0
+      ? `
+        <div class="bg-white p-4 rounded-lg shadow-md">
+             <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-satellite-dish mr-3 text-teal-500"></i>Sensoren</h3>
+            <ul class="space-y-1">${items.sensors
+              .map((sensor) => renderItem(sensor, "sensor"))
+              .join("")}</ul>
+        </div>
+    `
+      : "";
+
+  bridgeDevicesContainer.innerHTML = `<div class="space-y-6">${groupsHtml}${unassignedLightsHtml}${sensorsHtml}</div>`;
+}
+
 export function populateAnalyseSensors(sensors) {
   const sensorSelect = document.getElementById("analyse-sensor");
   if (!sensorSelect) return;
@@ -229,8 +319,38 @@ export function renderRoutines(config, bridgeData) {
       ? bridgeData.sensors.find((s) => s.id == sensorId)
       : null;
     const sensorHtml = sensor
-      ? `<span class="mx-2 text-gray-400">|</span> <span class="flex items-center"><i class="fas fa-satellite-dish mr-2 text-teal-500"></i> ${sensor.name}</span>`
+      ? `<span class="mx-2 text-gray-400">|</span> <span class="flex items-center"><i class="fas fa-lightbulb mr-2 text-yellow-500"></i> ${sensor.name}</span>`
       : "";
+
+    const sectionsHtml = ["morning", "day", "evening", "night"]
+      .map((name) => {
+        const section = routine[name];
+        if (!section) return "";
+        const waitTime = section.wait_time || {};
+        const waitTimeString = `${waitTime.min || 0}m ${waitTime.sec || 0}s`;
+        return `<div class="py-2 px-3 ${
+          sectionColors[name] || "bg-gray-50"
+        } rounded-md mt-2"><p class="font-semibold capitalize flex items-center">${
+          icons[name] || ""
+        } <span class="ml-2">${
+          periodNames[name] || name
+        }</span></p><div class="text-sm text-gray-700 grid grid-cols-2 gap-x-4"><span><strong class="font-medium">Normal:</strong> ${
+          section.scene_name
+        }</span><span><strong class="font-medium">Bewegung:</strong> ${
+          section.x_scene_name
+        }</span><span><strong class="font-medium">Bewegung:</strong> ${
+          section.motion_check ? `Ja (${waitTimeString})` : "Nein"
+        }</span><span><strong class="font-medium">Nicht stören:</strong> ${
+          section.do_not_disturb ? "Ja" : "Nein"
+        }</span><span><strong class="font-medium">Helligkeit:</strong> ${
+          section.bri_check ? "Ja" : "Nein"
+        }</span>${
+          section.bri_check
+            ? `<span><strong class="font-medium">Max Level:</strong> ${section.max_light_level}</span>`
+            : ""
+        }</div></div>`;
+      })
+      .join("");
 
     const dailyTime = routine.daily_time || {};
     const isEnabled = routine.enabled !== false;
@@ -240,22 +360,18 @@ export function renderRoutines(config, bridgeData) {
                 <div>
                     <div class="flex items-center">
                         <h3 class="text-2xl font-semibold">${routine.name}</h3>
-                        <i class="fas fa-chevron-down ml-4 text-gray-400 transition-transform"></i>
+                        <i class="fas fa-chevron-down ml-4 text-gray-400"></i>
                     </div>
                     <div class="flex items-center text-gray-500 text-sm mt-1">
-                        <p><i class="fas fa-layer-group mr-2 text-indigo-500"></i>${
-                          routine.room_name
-                        }</p>
+                        <p>Raum: ${routine.room_name}</p>
                         ${sensorHtml}
                         <span class="mx-2 text-gray-400">|</span>
-                        <p><i class="far fa-clock mr-2 text-blue-500"></i>Aktiv: ${String(
-                          dailyTime.H1 || 0
-                        ).padStart(2, "0")}:${String(
-      dailyTime.M1 || 0
-    ).padStart(2, "0")} - ${String(dailyTime.H2 || 23).padStart(
-      2,
-      "0"
-    )}:${String(dailyTime.M2 || 59).padStart(2, "0")}</p>
+                        <p>Aktiv: ${String(dailyTime.H1).padStart(
+                          2,
+                          "0"
+                        )}:${String(dailyTime.M1).padStart(2, "0")} - ${String(
+      dailyTime.H2
+    ).padStart(2, "0")}:${String(dailyTime.M2).padStart(2, "0")}</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -269,9 +385,11 @@ export function renderRoutines(config, bridgeData) {
                     <button type="button" data-action="delete-routine" class="text-red-600 hover:text-red-800 font-medium">Löschen</button>
                 </div>
             </div>
-            <div class="routine-details px-4 pb-4 hidden">
+            <div class="routine-details px-4 pb-4">
                 <div class="space-y-2 border-t pt-4 mt-2">
-                    </div>
+                    <h4 class="text-lg font-medium">Ablauf</h4>
+                    ${sectionsHtml}
+                </div>
             </div>`;
     routinesContainer.appendChild(routineEl);
   });
@@ -446,223 +564,194 @@ export function updateStatusTimelines() {
 // (Hier aus Kürze weggelassen, da keine direkten Fehler drin waren)
 export function openEditRoutineModal(
   routine,
-  index,
-  scenes,
-  rooms,
-  groups,
-  sensors
+  routineIndex,
+  sceneNames,
+  configuredRooms,
+  allBridgeRooms,
+  allSensors
 ) {
-  const modalRoutineContainer = document.getElementById("modal-routine");
-  if (!modalRoutineContainer) return;
-
-  const roomConf = rooms.find((r) => r.name === routine.room_name) || {};
-  const sensorId = roomConf.sensor_id || null;
-
-  const groupOptions = groups
+  const sceneOptions = sceneNames
     .map(
-      (g) =>
-        `<option value="${g.id}|${g.name}" ${
-          g.name === routine.room_name ? "selected" : ""
-        }>${g.name}</option>`
+      (name) => `<option value="${name}">${name.replace(/_/g, " ")}</option>`
     )
     .join("");
 
-  const sensorOptions = sensors
+  const roomOptions = allBridgeRooms
     .map(
-      (s) =>
-        `<option value="${s.id}" ${
-          s.id == sensorId ? "selected" : ""
-        }>${s.name}</option>`
+      (room) =>
+        `<option value="${room.id}|${room.name}" ${
+          routine.room_name === room.name ? "selected" : ""
+        }>${room.name}</option>`
     )
     .join("");
 
-  const periods = ["morning", "day", "evening", "night"];
-  const periodNames = {
-    morning: "Morgen",
-    day: "Tag",
-    evening: "Abend",
-    night: "Nacht",
-  };
+  const roomConf = configuredRooms.find((r) => r.name === routine.room_name);
+  const currentSensorId = roomConf ? roomConf.sensor_id : undefined;
 
-  const periodTabs = periods
+  const sensorOptions = allSensors
     .map(
-      (p) =>
-        `<button type="button" class="px-4 py-2 text-sm font-medium rounded-md" data-tab-target="period-${p}">${periodNames[p]}</button>`
+      (sensor) =>
+        `<option value="${sensor.id}" ${
+          currentSensorId && parseInt(sensor.id) === parseInt(currentSensorId)
+            ? "selected"
+            : ""
+        }>${sensor.name}</option>`
     )
     .join("");
 
-  const periodContents = periods
-    .map((p) => {
-      const config = routine[p] || {};
-      const waitTime = config.wait_time || { min: 1, sec: 0 };
-      return `
-      <div id="period-${p}" class="hidden space-y-4 p-4 border rounded-md">
-        <h4 class="text-lg font-semibold">${periodNames[p]}</h4>
-        <div>
-          <label class="block text-sm font-medium">Normal-Szene (wenn keine Bewegung)</label>
-          <select id="routine-${p}-scene" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-            ${scenes
-              .map(
-                (s) =>
-                  `<option value="${s}" ${
-                    s === config.scene_name ? "selected" : ""
-                  }>${s}</option>`
-              )
-              .join("")}
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Szene bei Bewegung</label>
-          <select id="routine-${p}-x-scene" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-             ${scenes
-               .map(
-                 (s) =>
-                   `<option value="${s}" ${
-                     s === config.x_scene_name ? "selected" : ""
-                   }>${s}</option>`
-               )
-               .join("")}
-          </select>
-        </div>
-        <div class="flex items-center">
-          <input type="checkbox" id="routine-${p}-motion-check" class="h-4 w-4 rounded border-gray-300" ${
-        config.motion_check ? "checked" : ""
-      }>
-          <label for="routine-${p}-motion-check" class="ml-2">Auf Bewegung reagieren</label>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium">Wartezeit (Min)</label>
-            <input type="number" id="routine-${p}-wait-min" value="${
-        waitTime.min
-      }" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-          </div>
-          <div>
-            <label class="block text-sm font-medium">Wartezeit (Sek)</label>
-            <input type="number" id="routine-${p}-wait-sec" value="${
-        waitTime.sec
-      }" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-          </div>
-        </div>
-        <div class="flex items-center">
-          <input type="checkbox" id="routine-${p}-dnd" class="h-4 w-4 rounded border-gray-300" ${
-        config.do_not_disturb ? "checked" : ""
-      }>
-          <label for="routine-${p}-dnd" class="ml-2">Bitte nicht stören</label>
-        </div>
-        <div class="flex items-center">
-          <input type="checkbox" id="routine-${p}-bri-check" class="h-4 w-4 rounded border-gray-300" ${
-        config.bri_check ? "checked" : ""
-      }>
-          <label for="routine-${p}-bri-check" class="ml-2">Helligkeits-Check</label>
-        </div>
-      </div>
-    `;
+  const sectionsHtml = ["morning", "day", "evening", "night"]
+    .map((name) => {
+      const section = routine[name] || {};
+      const waitTime = section.wait_time || {};
+      const initialBriValue =
+        Math.round((section.max_light_level || 0) / 100) * 100;
+      return `<div class="p-4 border-2 rounded-lg ${
+        sectionColors[name]
+      }" data-section-name="${name}"><h5 class="font-semibold capitalize text-base flex items-center">${
+        icons[name] || ""
+      } <span class="ml-2">${
+        periodNames[name] || name
+      }</span></h5><div class="grid grid-cols-2 gap-4 text-sm mt-2"><div><label class="block font-medium">Normal-Szene</label><select class="mt-1 w-full rounded-md border-gray-300 shadow-sm section-scene-name">${sceneOptions.replace(
+        `value="${section.scene_name}"`,
+        `value="${section.scene_name}" selected`
+      )}</select></div><div><label class="block font-medium">Bewegungs-Szene</label><select class="mt-1 w-full rounded-md border-gray-300 shadow-sm section-x-scene-name">${sceneOptions.replace(
+        `value="${section.x_scene_name}"`,
+        `value="${section.x_scene_name}" selected`
+      )}</select></div><div class="col-span-2 border-t mt-2 pt-2 space-y-2"><div class="flex items-center"><input type="checkbox" ${
+        section.motion_check ? "checked" : ""
+      } class="h-4 w-4 rounded border-gray-300 section-motion-check"><label class="ml-2 font-medium">Auf Bewegung reagieren</label></div><div class="grid grid-cols-2 gap-2"><div><label class="block">Minuten</label><input type="number" value="${
+        waitTime.min || 1
+      }" class="mt-1 w-full rounded-md border-gray-300 shadow-sm section-wait-time-min"></div><div><label class="block">Sekunden</label><input type="number" value="${
+        waitTime.sec || 0
+      }" class="mt-1 w-full rounded-md border-gray-300 shadow-sm section-wait-time-sec"></div></div><div class="flex items-center"><input type="checkbox" ${
+        section.do_not_disturb ? "checked" : ""
+      } class="h-4 w-4 rounded border-gray-300 section-do-not-disturb"><label class="ml-2">Bitte nicht stören</label></div></div><div class="col-span-2 border-t mt-2 pt-2 space-y-2"><div class="flex items-center"><input type="checkbox" ${
+        section.bri_check ? "checked" : ""
+      } class="h-4 w-4 rounded border-gray-300 section-bri-check"><label class="ml-2 font-medium">Helligkeits-Check (Adaptive Helligkeit)</label></div><div class="space-y-2 pl-6">
+
+      <div class="flex items-center gap-4"><div class="flex-grow"><label class="block text-xs">Max. Helligkeit (Schwellenwert)</label><input type="range" min="0" max="35000" step="100" value="${initialBriValue}" class="w-full brightness-slider"></div><span class="font-mono text-sm text-gray-700 bg-gray-100 p-1 rounded brightness-value-display w-16 text-center"></span></div>
+      <div class="flex items-center gap-4"><div class="flex-grow"><label class="block text-xs">Lichtfarbe für Regelung</label><input type="range" min="153" max="500" value="${
+        section.bri_ct || 366
+      }" class="w-full ct-slider section-bri-ct"></div><span class="font-mono text-sm text-gray-700 bg-gray-100 p-1 rounded ct-value-display w-16 text-center"></span></div>
+      </div></div></div></div>`;
     })
     .join("");
 
-  const dailyTime = routine.daily_time || {};
+  modalRoutineContainer.innerHTML = `<div class="bg-white rounded-lg shadow-xl w-full max-w-3xl m-4 flex flex-col" style="max-height: 90vh;">
+        <div class="p-6 border-b"><h3 class="text-2xl font-bold">Routine bearbeiten</h3></div>
+        <div class="p-6 overflow-y-auto">
+            <form class="space-y-4">
+                <input type="hidden" id="routine-index" value="${routineIndex}">
 
-  modalRoutineContainer.innerHTML = `
-    <div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4">
-        <div class="p-6">
-          <h3 class="text-2xl font-bold mb-4">Routine bearbeiten: ${
-            routine.name
-          }</h3>
-          <form id="form-routine" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-            <input type="hidden" id="routine-index" value="${index}">
-            <div>
-              <label class="block text-sm font-medium">Name</label>
-              <input type="text" id="routine-name" value="${
-                routine.name
-              }" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium">Raum / Zone</label>
-                <select id="routine-group" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">${groupOptions}</select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium">Sensor (Optional)</label>
-                <select id="routine-sensor" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                  <option value="">Kein Sensor</option>
-                  ${sensorOptions}
-                </select>
-              </div>
-            </div>
-            <div class="flex items-center">
-              <input type="checkbox" id="routine-enabled" class="h-4 w-4 rounded border-gray-300" ${
-                routine.enabled ? "checked" : ""
-              }>
-              <label for="routine-enabled" class="ml-2">Routine aktiviert</label>
-            </div>
-            <fieldset class="border p-4 rounded-md">
-              <legend class="text-lg font-medium px-2">Tageszeit</legend>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium">Start (HH:MM)</label>
-                  <div class="flex space-x-2">
-                    <input type="number" id="routine-time-h1" value="${
-                      dailyTime.H1 || 7
-                    }" class="w-full rounded-md border-gray-300 shadow-sm">
-                    <input type="number" id="routine-time-m1" value="${
-                      dailyTime.M1 || 0
-                    }" class="w-full rounded-md border-gray-300 shadow-sm">
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium">Ende (HH:MM)</label>
-                  <div class="flex space-x-2">
-                    <input type="number" id="routine-time-h2" value="${
-                      dailyTime.H2 || 23
-                    }" class="w-full rounded-md border-gray-300 shadow-sm">
-                    <input type="number" id="routine-time-m2" value="${
-                      dailyTime.M2 || 0
-                    }" class="w-full rounded-md border-gray-300 shadow-sm">
-                  </div>
-                </div>
-              </div>
-            </fieldset>
+                <div><label for="routine-name-edit" class="block text-sm font-medium">Name der Routine</label>
+                <input type="text" id="routine-name-edit" value="${routine.name}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div>
 
-            <div class="border-b border-gray-200">
-              <nav class="flex space-x-2" id="period-tabs">${periodTabs}</nav>
-            </div>
-            <div id="period-content-container">${periodContents}</div>
-          </form>
+                <div><label for="routine-room-select" class="block text-sm font-medium">Raum / Zone</label>
+                <select id="routine-room-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${roomOptions}</select></div>
+
+                <div><label for="routine-sensor-select" class="block text-sm font-medium">Sensor</label>
+                <select id="routine-sensor-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"><option value="">Kein Sensor</option>${sensorOptions}</select></div>
+
+                <div class="relative h-24"><div class="flex justify-between items-center mb-2"><div class="text-center"><label class="block font-medium">Startzeit</label><input type="time" id="time-input-start" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div><div class="text-center"><label class="block font-medium">Endzeit</label><input type="time" id="time-input-end" class="text-2xl font-semibold text-blue-600 bg-transparent border-none p-0 text-center w-28 focus:ring-0"></div></div><div id="timeline-container" class="relative h-20 pt-5"><svg class="absolute inset-0 w-full h-full" viewBox="0 0 1000 80" preserveAspectRatio="none"><line x1="20" y1="40" x2="980" y2="40" stroke="#9ca3af" stroke-width="2"/><path d="M 975 35 L 985 40 L 975 45 Z" fill="#9ca3af"/><line x1="20" y1="35" x2="20" y2="45" stroke="#9ca3af" stroke-width="2"/><line x1="980" y1="35" x2="980" y2="45" stroke="#9ca3af" stroke-width="2"/><text x="20" y="65" text-anchor="middle" font-size="12px" fill="#4b5563">00:00</text><text x="980" y="65" text-anchor="end" font-size="12px" fill="#4b5563">23:59</text></svg><div id="timeline-emojis" class="absolute inset-x-0 top-0 h-8 text-xl text-center pointer-events-none"></div><input type="range" id="time-slider-start" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"><input type="range" id="time-slider-end" min="0" max="1439" class="absolute w-full top-1/2 -translate-y-1/2 h-2 bg-transparent appearance-none timeline-slider"></div></div>
+
+                <div><h4 class="text-lg font-medium mb-2 mt-4 border-t pt-4">Ablauf</h4>
+                <div class="space-y-3">${sectionsHtml}</div></div>
+            </form>
         </div>
-        <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
-          <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm">Abbrechen</button>
-          <button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 rounded-md shadow-sm">Speichern</button>
+        <div class="bg-gray-50 px-6 py-3 border-t flex justify-end space-x-3">
+            <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button>
+            <button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 rounded-md">Speichern</button>
         </div>
-      </div>
-    </div>
-  `;
+    </div>`;
   modalRoutineContainer.classList.remove("hidden");
 
-  // Tab logic
-  const tabs = modalRoutineContainer.querySelectorAll("[data-tab-target]");
-  const tabContainer = document.getElementById("period-tabs");
-  const tabContents =
-    modalRoutineContainer.querySelectorAll("[id^='period-']");
+  const handleCheckboxLogic = (sectionDiv) => {
+    const motionCheck = sectionDiv.querySelector(".section-motion-check");
+    const dndCheck = sectionDiv.querySelector(".section-do-not-disturb");
+    const briCheck = sectionDiv.querySelector(".section-bri-check");
+    if (!motionCheck.checked) {
+      if (dndCheck.checked)
+        showToast(
+          "'Bitte nicht stören' deaktiviert, da Bewegungserkennung aus ist.",
+          false
+        );
+      dndCheck.disabled = true;
+      dndCheck.checked = false;
+    } else {
+      dndCheck.disabled = briCheck.checked;
+    }
+    if (dndCheck.checked) briCheck.disabled = true;
+    else briCheck.disabled = false;
+    if (briCheck.checked) dndCheck.disabled = true;
+    else if (motionCheck.checked) dndCheck.disabled = false;
+  };
 
-  tabContainer.addEventListener("click", (e) => {
-    const clickedTab = e.target.closest("button");
-    if (!clickedTab) return;
-
-    tabs.forEach((t) => t.classList.remove("bg-blue-100", "text-blue-700"));
-    clickedTab.classList.add("bg-blue-100", "text-blue-700");
-
-    const targetId = clickedTab.dataset.tabTarget;
-    tabContents.forEach((c) => {
-      c.classList.toggle("hidden", c.id !== targetId);
+  modalRoutineContainer
+    .querySelectorAll("[data-section-name]")
+    .forEach((sectionDiv) => {
+      const motion = sectionDiv.querySelector(".section-motion-check");
+      const dnd = sectionDiv.querySelector(".section-do-not-disturb");
+      const bri = sectionDiv.querySelector(".section-bri-check");
+      [motion, dnd, bri].forEach((checkbox) =>
+        checkbox.addEventListener("change", () =>
+          handleCheckboxLogic(sectionDiv)
+        )
+      );
+      handleCheckboxLogic(sectionDiv);
+      const briSlider = sectionDiv.querySelector(".brightness-slider");
+      const briDisplay = sectionDiv.querySelector(".brightness-value-display");
+      const ctSlider = sectionDiv.querySelector(".ct-slider");
+      const ctDisplay = sectionDiv.querySelector(".ct-value-display");
+      const updateBriDisplay = () => (briDisplay.textContent = briSlider.value);
+      const updateCtDisplay = () => (ctDisplay.textContent = ctSlider.value);
+      briSlider.addEventListener("input", updateBriDisplay);
+      ctSlider.addEventListener("input", updateCtDisplay);
+      updateBriDisplay();
+      updateCtDisplay();
     });
-  });
 
-  // Show first tab by default
-  if (tabs.length > 0) {
-    tabs[0].click();
-  }
+  const startSlider = document.getElementById("time-slider-start");
+  const endSlider = document.getElementById("time-slider-end");
+  const timeInputStart = document.getElementById("time-input-start");
+  const timeInputEnd = document.getElementById("time-input-end");
+  const emojiContainer = document.getElementById("timeline-emojis");
+  const minutesToTimeStr = (m) =>
+    `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(
+      2,
+      "0"
+    )}`;
+  const timeStrToMinutes = (t) => {
+    const [hours, minutes] = t.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+  const updateDisplays = () => {
+    const startVal = parseInt(startSlider.value);
+    const endVal = parseInt(endSlider.value);
+    if (startVal >= endVal) startSlider.value = endVal - 1;
+    if (endVal <= startVal) endSlider.value = startVal + 1;
+    timeInputStart.value = minutesToTimeStr(startSlider.value);
+    timeInputEnd.value = minutesToTimeStr(endSlider.value);
+    const startPercent = (startSlider.value / 1439) * 100;
+    const endPercent = (endSlider.value / 1439) * 100;
+    const midPercent = startPercent + (endPercent - startPercent) / 2;
+    emojiContainer.innerHTML = `<span class="absolute" style="left: 1%; top: -5px;">${icons.night}</span><span class="absolute" style="left: ${startPercent}%; transform: translateX(-50%);">${icons.morning}</span><span class="absolute" style="left: ${midPercent}%; transform: translateX(-50%);">${icons.day}</span><span class="absolute" style="left: ${endPercent}%; transform: translateX(-50%);">${icons.evening}</span><span class="absolute" style="right: 1%; top: -5px;">${icons.night}</span>`;
+  };
+  startSlider.addEventListener("input", updateDisplays);
+  endSlider.addEventListener("input", updateDisplays);
+  timeInputStart.addEventListener("change", () => {
+    startSlider.value = timeStrToMinutes(timeInputStart.value);
+    updateDisplays();
+  });
+  timeInputEnd.addEventListener("change", () => {
+    endSlider.value = timeStrToMinutes(timeInputEnd.value);
+    updateDisplays();
+  });
+  const initialStartMinutes =
+    routine.daily_time.H1 * 60 + routine.daily_time.M1;
+  const initialEndMinutes = routine.daily_time.H2 * 60 + routine.daily_time.M2;
+  startSlider.value = initialStartMinutes;
+  endSlider.value = initialEndMinutes;
+  updateDisplays();
 }
 
 export function renderSettings(config) {
@@ -689,76 +778,159 @@ export function renderSettings(config) {
 }
 
 function renderStatusTimeline(status, sunTimes) {
-  // Diese komplexe Funktion bleibt im Kern erhalten, da sie hauptsächlich
-  // SVG-Grafiken erzeugt. Kleinere Anpassungen für Datenbindung wurden
-  // in `renderStatus` und `updateStatusTimelines` vorgenommen.
-  const timeToMinutes = (h, m) => (h || 0) * 60 + (m || 0);
+  const timeToMinutes = (h, m) => h * 60 + m;
   const routineStart = status.daily_time;
   const sunrise = sunTimes ? new Date(sunTimes.sunrise) : null;
   const sunset = sunTimes ? new Date(sunTimes.sunset) : null;
-
   const morningStartMins = timeToMinutes(routineStart.H1, routineStart.M1);
   const eveningEndMins = timeToMinutes(routineStart.H2, routineStart.M2);
   const sunriseMins = sunrise
     ? timeToMinutes(sunrise.getHours(), sunrise.getMinutes())
-    : 390; // Fallback 6:30
+    : 330;
   const sunsetMins = sunset
     ? timeToMinutes(sunset.getHours(), sunset.getMinutes())
-    : 1260; // Fallback 21:00
-
+    : 1290;
   const timeToPercent = (mins) => 10 + (mins / 1439) * 80;
-
+  const timeMarkers = [3, 9, 12, 15, 18, 21];
+  let timeMarkersHtml = "";
+  timeMarkers.forEach((h) => {
+    const percent = timeToPercent(h * 60);
+    timeMarkersHtml += `<line x1="${percent}%" y1="175" x2="${percent}%" y2="185" stroke="#d1d5db" stroke-width="1.5" /><text x="${percent}%" y="170" text-anchor="middle" font-size="12px" fill="#6b7280">${String(
+      h
+    ).padStart(2, "0")}</text>`;
+  });
   const morningStartPercent = timeToPercent(morningStartMins);
   const eveningEndPercent = timeToPercent(eveningEndMins);
   const sunrisePercent = timeToPercent(sunriseMins);
   const sunsetPercent = timeToPercent(sunsetMins);
-
+  let showMorning = sunriseMins > morningStartMins;
+  let showEvening = sunsetMins <= eveningEndMins;
+  const yPos = { day: 75, transition: 125, night: 155 };
+  const leftNightX = 5;
+  const rightNightX = 95;
+  let periods = `<text x="${leftNightX}%" y="${yPos.night}" text-anchor="middle" font-size="24">${icons.night}</text>`;
+  if (showMorning) {
+    periods += `<text x="${(morningStartPercent + sunrisePercent) / 2}%" y="${
+      yPos.transition
+    }" text-anchor="middle" font-size="24">${icons.morning}</text>`;
+  }
+  periods += `<text x="${(sunrisePercent + sunsetPercent) / 2}%" y="${
+    yPos.day
+  }" text-anchor="middle" font-size="24">${icons.day}</text>`;
+  if (showEvening) {
+    periods += `<text x="${(sunsetPercent + eveningEndPercent) / 2}%" y="${
+      yPos.transition
+    }" text-anchor="middle" font-size="24">${icons.evening}</text>`;
+  }
+  periods += `<text x="${rightNightX}%" y="${yPos.night}" text-anchor="middle" font-size="24">${icons.night}</text>`;
   const arcStartX = sunrisePercent * 10;
   const arcEndX = sunsetPercent * 10;
   const arcRadiusX = (arcEndX - arcStartX) / 2;
   const arcRadiusY = Math.min(150, arcRadiusX * 0.9);
   const centerX = arcStartX + arcRadiusX;
+  const lastMotionTime = status.last_motion_iso
+    ? new Date(status.last_motion_iso).toLocaleTimeString("de-DE")
+    : "nie";
+  const yLabelSun = 205;
+  const yLabelRoutine = 220;
 
   const periodEmoji = { morning: "🌅", day: "☀️", evening: "🌇", night: "🌙" };
   const primaryEmoji = periodEmoji[status.period] || "🗓️";
-  const primaryText =
-    periodNames[status.period] || status.period || "Unbekannt";
+  const primaryText = periodNames[status.period] || status.period || "...";
+  let primaryStateHtml = `
+      <div class="flex items-center text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
+        <span class="mr-2">${primaryEmoji}</span>
+        <span>${primaryText}</span>
+      </div>
+    `;
 
-  // ... Restlicher HTML-Aufbau ...
-  return `
-    <div class="bg-white rounded-lg shadow border border-gray-200 status-card">
-        <div class="status-header flex justify-between items-center cursor-pointer hover:bg-gray-50 p-2" data-action="toggle-status-details">
-            <div class="flex items-center">
-                <h4 class="font-bold text-lg">${status.name}</h4>
-                <i class="fas fa-chevron-down ml-4 text-gray-400 transition-transform"></i>
-            </div>
-            <div class="flex items-center text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
-                <span class="mr-2">${primaryEmoji}</span>
-                <span>${primaryText}</span>
-            </div>
+  let secondaryStateHtml = "";
+  let secondaryEmoji = "";
+  let secondaryText = "";
+
+  if (status.enabled === false) {
+    secondaryEmoji = "⏸️";
+    secondaryText = "Deaktiviert";
+  } else if (status.last_scene?.toLowerCase().includes("manuell")) {
+    secondaryEmoji = "✋";
+    secondaryText = "Manuell";
+  } else if (status.motion_status?.includes("erkannt")) {
+    secondaryEmoji = "🏃‍♂️";
+    secondaryText = "Bewegung";
+  } else if (status.last_scene?.toLowerCase().includes("geregelt")) {
+    secondaryEmoji = "💡";
+    secondaryText = "Geregelt";
+  }
+
+  if (secondaryText) {
+    secondaryStateHtml = `
+          <div class="flex items-center text-sm font-medium text-gray-700 bg-yellow-100 border border-yellow-200 px-3 py-1 rounded-full ml-2">
+            <span class="mr-2">${secondaryEmoji}</span>
+            <span>${secondaryText}</span>
+          </div>
+        `;
+  }
+
+  const statusDisplayHtml = `
+        <div class="flex items-center">
+            ${primaryStateHtml}
+            ${secondaryStateHtml}
         </div>
-        <div class="status-details px-4 hidden" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out;">
-             <div class="w-full my-2 h-72 text-gray-700">
-                <svg class="h-full w-full timeline-svg" viewBox="0 0 1000 240" font-family="Inter, sans-serif" font-size="12px" data-center-x="${centerX}" data-radius-x="${arcRadiusX}" data-radius-y="${arcRadiusY}" data-arc-start-x="${arcStartX}" data-arc-end-x="${arcEndX}">
-                     <line x1="2%" y1="180" x2="98%" y2="180" stroke="#9ca3af" stroke-width="2" />
-                     <path d="M 978 175 L 988 180 L 978 185 Z" fill="#9ca3af" />
-                     <g class="sun-emoji-indicator" data-sunrise-mins="${sunriseMins}" data-sunset-mins="${sunsetMins}"><text x="0" y="0" text-anchor="middle" font-size="28">${
+    `;
+
+  return `<div class="bg-white rounded-lg shadow border border-gray-200 status-card">
+    <div class="status-header flex justify-between items-center cursor-pointer hover:bg-gray-50 p-2" data-action="toggle-status-details">
+        <div class="flex items-center">
+            <h4 class="font-bold text-lg">${status.name}</h4>
+            <i class="fas fa-chevron-down ml-4 text-gray-400"></i>
+        </div>
+        ${statusDisplayHtml}
+    </div>
+    <div class="status-details px-4">
+        <div class="w-full my-2 h-72 text-gray-700">
+            <svg class="h-full w-full timeline-svg" viewBox="0 0 1000 240" font-family="Inter, sans-serif" font-size="12px" data-center-x="${centerX}" data-radius-x="${arcRadiusX}" data-radius-y="${arcRadiusY}" data-arc-start-x="${arcStartX}" data-arc-end-x="${arcEndX}">
+                <line x1="2%" y1="180" x2="98%" y2="180" stroke="#9ca3af" stroke-width="2" />
+                <path d="M 978 175 L 988 180 L 978 185 Z" fill="#9ca3af" />
+                ${timeMarkersHtml}
+                <line x1="${morningStartPercent}%" y1="175" x2="${morningStartPercent}%" y2="185" stroke="#3b82f6" stroke-width="2" />
+                <text x="${morningStartPercent}%" y="${yLabelRoutine}" text-anchor="middle" fill="#3b82f6" font-weight="bold">${String(
+    routineStart.H1
+  ).padStart(2, "0")}:${String(routineStart.M1).padStart(2, "0")}</text>
+                <line x1="${sunrisePercent}%" y1="175" x2="${sunrisePercent}%" y2="185" stroke="#f59e0b" stroke-width="2" />
+                <text x="${sunrisePercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f59e0b">${sunrise?.toLocaleTimeString(
+    [],
+    { hour: "2-digit", minute: "2-digit" }
+  )}</text>
+                <line x1="${sunsetPercent}%" y1="175" x2="${sunsetPercent}%" y2="185" stroke="#f97316" stroke-width="2" />
+                <text x="${sunsetPercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f97316">${sunset?.toLocaleTimeString(
+    [],
+    { hour: "2-digit", minute: "2-digit" }
+  )}</text>
+                <line x1="${eveningEndPercent}%" y1="175" x2="${eveningEndPercent}%" y2="185" stroke="#3b82f6" stroke-width="2" />
+                <text x="${eveningEndPercent}%" y="${yLabelRoutine}" text-anchor="middle" fill="#3b82f6" font-weight="bold">${String(
+    routineStart.H2
+  ).padStart(2, "0")}:${String(routineStart.M2).padStart(2, "0")}</text>
+                <path d="M ${arcStartX} 180 A ${arcRadiusX} ${arcRadiusY} 0 0 1 ${arcEndX} 180" stroke="#f97316" stroke-width="1.5" fill="none" />
+                ${periods}
+                <g class="sun-emoji-indicator" data-sunrise-mins="${sunriseMins}" data-sunset-mins="${sunsetMins}"><text x="0" y="0" text-anchor="middle" font-size="28">${
     icons.sun
   }</text></g>
-                 </svg>
-             </div>
-             <div class="text-sm grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 border-t pt-2 pb-4">
-                 <span><strong>Status:</strong> <span class="${
-                   status.enabled ? "text-green-600" : "text-red-500"
-                 }">${
-    status.enabled ? "Aktiviert" : "Deaktiviert"
-  }</span></span>
-                 <span><strong>Bewegung:</strong> ${status.motion_status}</span>
-                 <span><strong>Letzte Szene:</strong> ${
-                   status.last_scene
-                 }</span>
-             </div>
+            </svg>
+        </div>
+        <div class="text-sm grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 border-t pt-2">
+            <span><strong>Status:</strong> <span class="${
+              status.enabled ? "text-green-600" : "text-red-500"
+            }">${status.enabled ? "Aktiviert" : "Deaktiviert"}</span></span>
+            <span class="${
+              status.motion_status?.includes("erkannt") ? "text-green-600" : ""
+            }"><strong >Bewegung:</strong> ${status.motion_status}</span>
+            <span><strong>Helligkeit:</strong> ${status.brightness}</span>
+            <span><strong>Temperatur:</strong> ${status.temperature}°C</span>
+            <span class="md:col-span-2"><strong>Letzte Szene:</strong> ${
+              status.last_scene
+            }</span>
+            <span class="md:col-span-2"><strong>Letzte Bewegung:</strong> ${lastMotionTime}</span>
         </div>
     </div>
-    `;
+  </div>`;
 }

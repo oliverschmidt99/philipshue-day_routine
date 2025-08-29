@@ -53,6 +53,19 @@ export const saveFullConfig = (config) =>
 
 // --- Bridge Data ---
 export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
+export const renameBridgeItem = (itemType, itemId, newName) =>
+  fetchAPI("/api/bridge/rename", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: itemType, id: itemId, name: newName }),
+  });
+
+export const deleteBridgeItem = (itemType, itemId) =>
+  fetchAPI("/api/bridge/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: itemType, id: itemId }),
+  });
 
 // --- Status & Logs ---
 export async function updateStatus() {

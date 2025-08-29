@@ -7,27 +7,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     const status = await api.checkSetupStatus();
     if (status.setup_needed) {
-      document.getElementById("main-app")?.classList.add("hidden");
-      document.getElementById("setup-wizard")?.classList.remove("hidden");
+      document.getElementById("main-app").classList.add("hidden");
+      document.getElementById("setup-wizard").classList.remove("hidden");
+      document.getElementById("setup-wizard").classList.add("flex");
       runSetupWizard();
     } else {
-      document.getElementById("setup-wizard")?.classList.add("hidden");
-      document.getElementById("main-app")?.classList.remove("hidden");
-      await runMainApp();
+      document.getElementById("setup-wizard").classList.add("hidden");
+      document.getElementById("main-app").classList.remove("hidden");
+      runMainApp();
     }
   } catch (error) {
-    document.body.innerHTML = `<div class="p-4 m-4 text-center text-red-800 bg-red-100 rounded-lg"><h2 class="text-xl font-bold">Verbindung zum Server fehlgeschlagen</h2><p>Das Backend (main.py) scheint nicht zu laufen oder ist nicht erreichbar. Bitte starte es und lade die Seite neu.</p><p class="mt-2 text-sm text-gray-600">Fehler: ${error.message}</p></div>`;
-    console.error("Fehler bei der Initialisierung:", error);
+    document.body.innerHTML = `<div class="m-4 p-4 text-center text-red-800 bg-red-100 rounded-lg shadow-md"><h2 class="text-xl font-bold">Verbindung zum Server fehlgeschlagen</h2><p class="mt-2">Das Backend (main.py) läuft nicht. Bitte starte es und lade die Seite neu.</p></div>`;
   }
 });
 
-async function runMainApp() {
+function runMainApp() {
   let config = {};
   let bridgeData = {};
   let colorPicker = null;
   let statusInterval;
   let chartInstance = null;
-  let openStatusCards = []; // Speichert die Namen der geöffneten Statuskarten
+  let clockAnimationInterval;
 
   const init = async () => {
     ui.updateClock();
@@ -37,12 +37,8 @@ async function runMainApp() {
         api.loadConfig(),
         api.loadBridgeData(),
       ]);
-      ui.renderSunTimes(config.sun_times); // Sonnenzeiten aus der geladenen Config
       renderAll();
       setupEventListeners();
-
-      // Initial den Status-Tab laden, wenn die App startet
-      document.getElementById("tab-status")?.click();
     } catch (error) {
       ui.showToast(`Initialisierungsfehler: ${error.message}`, true);
       console.error(error);
@@ -59,13 +55,13 @@ async function runMainApp() {
     const addListener = (id, event, handler) => {
       const element = document.getElementById(id);
       if (element) {
-        element.removeEventListener(event, handler); // Alten Listener entfernen
         element.addEventListener(event, handler);
+      } else {
+        console.warn(
+          `Element with ID '${id}' not found. Cannot attach event listener.`
+        );
       }
     };
-
-    // Globale Event Listener (delegiert)
-    document.body.addEventListener("click", handleGlobalClick);
 
     addListener("save-button", "click", saveFullConfig);
     addListener("btn-new-routine", "click", () =>
@@ -79,335 +75,602 @@ async function runMainApp() {
     });
 
     addListener("btn-refresh-status", "click", () => updateStatus(true));
-    addListener("btn-add-default-scenes", "click", addDefaultScenes);
-    addListener("btn-fetch-data", "click", loadChartData);
 
-    // Tab-Navigation
-    document.querySelectorAll('nav button[id^="tab-"]').forEach((button) => {
-      button.addEventListener("click", handleTabClick);
+    addListener("btn-update-app", "click", () => {
+      api.systemAction(
+        "/api/system/update_app",
+        "Möchtest du die Anwendung wirklich via 'git pull' aktualisieren?"
+      );
     });
-  };
-
-  const handleTabClick = (e) => {
-    const button = e.currentTarget;
-    document.querySelectorAll('nav button[id^="tab-"]').forEach((btn) => {
-      btn.classList.remove("tab-active", "text-blue-600", "border-blue-600");
-      btn.classList.add("text-gray-500", "border-transparent");
+    addListener("btn-restart-app", "click", () => {
+      api.systemAction(
+        "/api/system/restart",
+        "Möchtest du die Anwendung wirklich neu starten?"
+      );
     });
-    document
-      .querySelectorAll('main div[id^="content-"]')
-      .forEach((content) => content.classList.add("hidden"));
+    addListener("btn-backup-config", "click", () => {
+      api.systemAction(
+        "/api/config/backup",
+        "Möchtest du die aktuelle Konfiguration sichern?"
+      );
+    });
+    addListener("btn-restore-config", "click", () => {
+      api.systemAction(
+        "/api/config/restore",
+        "Möchtest du die Konfiguration aus dem Backup wiederherstellen? Ungespeicherte Änderungen gehen verloren."
+      );
+    });
+    addListener("btn-add-default-scenes", "click", () => {
+      api.systemAction(
+        "/api/scenes/add_defaults",
+        "Möchtest du die Standard-Szenen hinzufügen oder aktualisieren? Deine eigenen Szenen bleiben erhalten."
+      );
+    });
 
-    button.classList.add("tab-active", "text-blue-600", "border-blue-600");
-    button.classList.remove("text-gray-500", "border-transparent");
+    document.body.addEventListener("click", (e) => {
+      const button = e.target.closest("[data-action]");
+      if (!button) return;
 
-    const contentId = button.id.replace("tab-", "content-");
-    document.getElementById(contentId)?.classList.remove("hidden");
+      if (button.dataset.action === "stop-propagation") {
+        e.stopPropagation();
+        return;
+      }
 
-    clearInterval(statusInterval);
+      const action = button.dataset.action;
+      const routineCard = e.target.closest("[data-index]");
+      const sceneCard = e.target.closest("[data-name]");
+      const itemElement = e.target.closest("[data-id][data-type]");
 
-    if (contentId === "content-status") startStatusUpdates();
-    if (contentId === "content-analyse") setupAnalyseTab();
-    if (contentId === "content-bridge-devices") setupBridgeDevicesTab();
-  };
+      const actions = {
+        "toggle-routine-details": () => {
+          const details = routineCard.querySelector(".routine-details");
+          const icon = routineCard.querySelector(".routine-header i");
+          const isOpening = !details.style.maxHeight;
+          details.style.maxHeight = isOpening
+            ? details.scrollHeight + "px"
+            : null;
+          icon.style.transform = isOpening ? "rotate(180deg)" : "rotate(0deg)";
+        },
+        "toggle-status-details": () => {
+          const statusCard = e.target.closest(".status-card");
+          const details = statusCard.querySelector(".status-details");
+          const icon = statusCard.querySelector(".status-header i");
+          const isOpening = !details.style.maxHeight;
+          details.style.maxHeight = isOpening
+            ? details.scrollHeight + "px"
+            : null;
+          icon.style.transform = isOpening ? "rotate(180deg)" : "rotate(0deg)";
+        },
+        "toggle-routine": (event) => {
+          e.stopPropagation();
+          const checkbox = event.target;
+          config.routines[routineCard.dataset.index].enabled = checkbox.checked;
+          ui.showToast(
+            `Routine ${
+              checkbox.checked ? "aktiviert" : "deaktiviert"
+            }. Speichern nicht vergessen!`
+          );
+        },
+        "delete-scene": () => {
+          if (confirm(`Szene "${sceneCard.dataset.name}" löschen?`)) {
+            delete config.scenes[sceneCard.dataset.name];
+            renderAll();
+          }
+        },
+        "delete-routine": () => {
+          if (
+            confirm(
+              `Routine "${
+                config.routines[routineCard.dataset.index].name
+              }" löschen?`
+            )
+          ) {
+            config.routines.splice(routineCard.dataset.index, 1);
+            renderAll();
+          }
+        },
+        "edit-scene": () =>
+          (colorPicker = ui.openSceneModal(
+            config.scenes[sceneCard.dataset.name],
+            sceneCard.dataset.name
+          )),
+        "edit-routine": () =>
+          ui.openEditRoutineModal(
+            config.routines[routineCard.dataset.index],
+            routineCard.dataset.index,
+            Object.keys(config.scenes),
+            config.rooms,
+            bridgeData.groups,
+            bridgeData.sensors
+          ),
+        "save-scene": handleSaveScene,
+        "save-routine": handleSaveEditedRoutine,
+        "create-routine": handleCreateNewRoutine,
+        "cancel-modal": ui.closeModal,
+        "edit-rename": () => {
+          itemElement.querySelector(".item-view").classList.add("hidden");
+          itemElement.querySelector(".item-edit").classList.remove("hidden");
+          const actionsContainer = itemElement.querySelector(".item-actions");
+          actionsContainer
+            .querySelector('[data-action="edit-rename"]')
+            .classList.add("hidden");
+          actionsContainer
+            .querySelector('[data-action="delete-item"]')
+            .classList.add("hidden");
+          actionsContainer
+            .querySelector('[data-action="save-rename"]')
+            .classList.remove("hidden");
+          actionsContainer
+            .querySelector('[data-action="cancel-rename"]')
+            .classList.remove("hidden");
+        },
+        "cancel-rename": () => {
+          itemElement.querySelector(".item-view").classList.remove("hidden");
+          itemElement.querySelector(".item-edit").classList.add("hidden");
+          const actionsContainer = itemElement.querySelector(".item-actions");
+          actionsContainer
+            .querySelector('[data-action="edit-rename"]')
+            .classList.remove("hidden");
+          actionsContainer
+            .querySelector('[data-action="delete-item"]')
+            .classList.remove("hidden");
+          actionsContainer
+            .querySelector('[data-action="save-rename"]')
+            .classList.add("hidden");
+          actionsContainer
+            .querySelector('[data-action="cancel-rename"]')
+            .classList.add("hidden");
+        },
+        "save-rename": async () => {
+          const type = itemElement.dataset.type;
+          const id = itemElement.dataset.id;
+          const input = itemElement.querySelector("input");
+          const newName = input.value.trim();
+          if (!newName) {
+            ui.showToast("Der Name darf nicht leer sein.", true);
+            return;
+          }
+          try {
+            await api.renameBridgeItem(type, id, newName);
+            ui.showToast("Gerät erfolgreich umbenannt.", false);
+            itemElement.querySelector(".item-name").textContent = newName;
+            actions["cancel-rename"]();
+          } catch (error) {
+            ui.showToast(`Fehler: ${error.message}`, true);
+          }
+        },
+        "delete-item": async () => {
+          const type = itemElement.dataset.type;
+          const id = itemElement.dataset.id;
+          const name = itemElement.querySelector(".item-name").textContent;
 
-  const handleGlobalClick = (e) => {
-    const button = e.target.closest("[data-action]");
-    if (!button) return;
+          if (
+            confirm(
+              `Möchtest du ${type} "${name}" (ID: ${id}) wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`
+            )
+          ) {
+            try {
+              await api.deleteBridgeItem(type, id);
+              ui.showToast("Gerät erfolgreich gelöscht.", false);
+              setupBridgeDevicesTab();
+            } catch (error) {
+              ui.showToast(`Fehler: ${error.message}`, true);
+            }
+          }
+        },
+      };
 
-    // Verhindert, dass Klicks in Modals die App "durchschlagen"
-    if (
-      e.target.closest(".modal-backdrop") &&
-      !e.target.closest(".modal-backdrop > div")
-    ) {
-      ui.closeModal();
-      return;
-    }
-
-    const action = button.dataset.action;
-    const routineCard = e.target.closest("[data-index]");
-    const sceneCard = e.target.closest("[data-name]");
-    const statusCard = e.target.closest(".status-card");
-
-    const actions = {
-      "toggle-routine-details": () =>
-        ui.toggleDetails(button.closest(".routine-header")),
-      "toggle-status-details": () => {
-        const cardName = statusCard.querySelector("h4")?.textContent;
-        if (!cardName) return;
-        if (openStatusCards.includes(cardName)) {
-          openStatusCards = openStatusCards.filter((name) => name !== cardName);
+      if (actions[action]) {
+        if (action === "toggle-routine") {
+          actions[action](e);
         } else {
-          openStatusCards.push(cardName);
+          actions[action]();
         }
-        ui.toggleDetails(button);
+      }
+    });
+
+    const tabs = [
+      { btn: "tab-routines", content: "content-routines" },
+      { btn: "tab-scenes", content: "content-scenes" },
+      {
+        btn: "tab-status",
+        content: "content-status",
+        init: startStatusUpdates,
       },
-      "delete-scene": () => handleDeleteScene(sceneCard),
-      "edit-scene": () => {
-        const sceneName = sceneCard.dataset.name;
-        colorPicker = ui.openSceneModal(config.scenes[sceneName], sceneName);
+      { btn: "tab-analyse", content: "content-analyse", init: setupAnalyseTab },
+      {
+        btn: "tab-einstellungen",
+        content: "content-einstellungen",
+        init: loadSettings,
       },
-      "save-scene": handleSaveScene,
-      "cancel-modal": ui.closeModal,
-      "create-routine": handleCreateRoutine,
-      "edit-routine": () => {
-        const index = routineCard.dataset.index;
-        ui.openEditRoutineModal(
-          config.routines[index],
-          index,
-          Object.keys(config.scenes),
-          config.rooms,
-          bridgeData.groups,
-          bridgeData.sensors
-        );
+      {
+        btn: "tab-bridge-devices",
+        content: "content-bridge-devices",
+        init: setupBridgeDevicesTab,
       },
-      "save-routine": handleSaveRoutine,
-      "delete-routine": () => {
-        const index = routineCard.dataset.index;
-        if (
-          confirm(`Routine "${config.routines[index].name}" wirklich löschen?`)
-        ) {
-          config.routines.splice(index, 1);
-          renderAll();
-          ui.showToast("Routine gelöscht. Speichern nicht vergessen.");
+      { btn: "tab-hilfe", content: "content-hilfe", init: loadHelp },
+    ];
+    tabs.forEach((tabInfo) => {
+      const btn = document.getElementById(tabInfo.btn);
+      if (btn) {
+        btn.addEventListener("click", () => {
+          tabs.forEach((t) => {
+            document.getElementById(t.btn)?.classList.remove("tab-active");
+            document.getElementById(t.content)?.classList.add("hidden");
+          });
+          btn.classList.add("tab-active");
+          document.getElementById(tabInfo.content)?.classList.remove("hidden");
+          if (statusInterval) clearInterval(statusInterval);
+          if (clockAnimationInterval) clearInterval(clockAnimationInterval);
+          if (tabInfo.init) tabInfo.init();
+        });
+      }
+    });
+  };
+
+  const updateStatus = async (showNotification = false) => {
+    const openStates = [];
+    document
+      .querySelectorAll(".status-card .status-details")
+      .forEach((details) => {
+        if (details.style.maxHeight && details.style.maxHeight !== "0px") {
+          const name = details
+            .closest(".status-card")
+            .querySelector("h4")?.textContent;
+          if (name) {
+            openStates.push(name);
+          }
         }
-      },
-      "toggle-routine": (e) => {
-        const index = routineCard.dataset.index;
-        config.routines[index].enabled = e.target.checked;
-        ui.showToast(
-          `Routine ${
-            e.target.checked ? "aktiviert" : "deaktiviert"
-          }. Speichern nicht vergessen.`
-        );
-      },
+      });
+
+    try {
+      const { statusData, logText } = await api.updateStatus();
+      ui.renderSunTimes(statusData.sun_times || null);
+      ui.renderStatus(
+        statusData.routines || [],
+        statusData.sun_times,
+        openStates
+      );
+      ui.renderLog(logText);
+      animateTimeIndicators();
+      if (showNotification) {
+        ui.showToast("Status erfolgreich aktualisiert!", false);
+      }
+    } catch (error) {
+      console.error("Fehler beim Abrufen des Status:", error);
+      if (showNotification) {
+        ui.showToast("Fehler beim Aktualisieren des Status.", true);
+      }
+    }
+  };
+
+  const animateTimeIndicators = () => {
+    const now = new Date();
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    document.querySelectorAll(".sun-emoji-indicator").forEach((sun) => {
+      const svg = sun.closest(".timeline-svg");
+      if (!svg) return;
+      const sunriseMins = parseInt(sun.dataset.sunriseMins);
+      const sunsetMins = parseInt(sun.dataset.sunsetMins);
+      if (nowMins >= sunriseMins && nowMins <= sunsetMins) {
+        sun.style.display = "block";
+        const dayDuration = sunsetMins - sunriseMins;
+        const timeIntoDay = nowMins - sunriseMins;
+        const progress = dayDuration > 0 ? timeIntoDay / dayDuration : 0;
+        const arcStartX = parseFloat(svg.dataset.arcStartX);
+        const arcEndX = parseFloat(svg.dataset.arcEndX);
+        const centerX = parseFloat(svg.dataset.centerX);
+        const arcRadiusX = parseFloat(svg.dataset.radiusX);
+        const arcRadiusY = parseFloat(svg.dataset.radiusY);
+        const sunX = arcStartX + progress * (arcEndX - arcStartX);
+        let term = 1 - Math.pow(sunX - centerX, 2) / Math.pow(arcRadiusX, 2);
+        term = Math.max(0, term);
+        const sunY = 180 - arcRadiusY * Math.sqrt(term);
+        sun.setAttribute("transform", `translate(${sunX}, ${sunY})`);
+      } else {
+        sun.style.display = "none";
+      }
+    });
+  };
+
+  const startStatusUpdates = () => {
+    if (statusInterval) clearInterval(statusInterval);
+    if (clockAnimationInterval) clearInterval(clockAnimationInterval);
+    updateStatus();
+    const refreshInterval =
+      (config.global_settings?.status_interval_s || 5) * 1000;
+    statusInterval = setInterval(() => updateStatus(false), refreshInterval);
+    animateTimeIndicators();
+    clockAnimationInterval = setInterval(animateTimeIndicators, 60 * 1000);
+  };
+
+  const setupBridgeDevicesTab = async () => {
+    try {
+      const items = await api.loadBridgeItems();
+      ui.renderBridgeDevices(items);
+    } catch (error) {
+      ui.showToast(`Fehler: ${error.message}`, true);
+    }
+  };
+
+  const setupAnalyseTab = () => {
+    ui.populateAnalyseSensors(bridgeData.sensors);
+    const periodSelect = document.getElementById("analyse-period");
+    const dayOptions = document.getElementById("day-options");
+    const weekOptions = document.getElementById("week-options");
+    const dayPicker = document.getElementById("analyse-day-picker");
+    const weekPicker = document.getElementById("analyse-week-picker");
+    dayPicker.value = new Date().toISOString().split("T")[0];
+    const getWeekNumber = (d) => {
+      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+      return [d.getUTCFullYear(), weekNo];
     };
-
-    if (actions[action]) {
-      e.preventDefault();
-      actions[action](e);
+    const [year, weekNo] = getWeekNumber(new Date());
+    weekPicker.value = `${year}-W${String(weekNo).padStart(2, "0")}`;
+    const togglePeriodView = () => {
+      const isWeek = periodSelect.value === "week";
+      dayOptions.classList.toggle("hidden", isWeek);
+      weekOptions.classList.toggle("hidden", !isWeek);
+    };
+    periodSelect.addEventListener("change", togglePeriodView);
+    togglePeriodView();
+    document
+      .getElementById("btn-fetch-data")
+      .addEventListener("click", loadChartData);
+    if (bridgeData.sensors && bridgeData.sensors.length > 0) {
+      loadChartData();
     }
   };
 
-  const handleDeleteScene = (sceneCard) => {
-    const sceneName = sceneCard.dataset.name;
-    if (confirm(`Szene "${sceneName}" wirklich löschen?`)) {
-      delete config.scenes[sceneName];
-      renderAll();
-      ui.showToast("Szene gelöscht. Speichern nicht vergessen.", false);
+  const loadChartData = async () => {
+    const sensorId = document.getElementById("analyse-sensor").value;
+    const period = document.getElementById("analyse-period").value;
+    const avgWindow = document.getElementById("analyse-avg-window").value;
+    let date;
+    if (period === "week") {
+      const weekPicker = document.getElementById("analyse-week-picker");
+      if (weekPicker.value) {
+        const [year, weekNum] = weekPicker.value.split("-W");
+        const d = new Date(Date.UTC(year, 0, 1 + (weekNum - 1) * 7));
+        d.setUTCDate(d.getUTCDate() - (d.getUTCDay() || 7) + 1);
+        date = d.toISOString().split("T")[0];
+      }
+    } else {
+      date = document.getElementById("analyse-day-picker").value;
     }
-  };
-
-  const handleCreateRoutine = () => {
-    const name = document.getElementById("new-routine-name").value.trim();
-    const groupSelect = document.getElementById("new-routine-group");
-    const sensorSelect = document.getElementById("new-routine-sensor");
-
-    if (!name || !groupSelect.value) {
-      ui.showToast("Bitte Name und Raum auswählen.", true);
+    if (!sensorId) {
+      ui.showToast("Bitte einen Sensor auswählen.", true);
       return;
     }
+    if (!date) {
+      ui.showToast("Bitte ein Datum auswählen.", true);
+      return;
+    }
+    try {
+      const data = await api.loadChartData(
+        sensorId,
+        period,
+        date,
+        null,
+        avgWindow
+      );
+      chartInstance = ui.renderChart(chartInstance, data, period);
+    } catch (error) {
+      ui.showToast(error.message, true);
+    }
+  };
 
-    const [groupId, groupName] = groupSelect.value.split("|");
+  const loadHelp = async () => {
+    const helpContainer = document.getElementById("help-content-container");
+    try {
+      const content = await api.loadHelpContent();
+      helpContainer.innerHTML = content;
+      helpContainer.querySelectorAll(".faq-question").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const answer = btn.nextElementSibling;
+          const icon = btn.querySelector("i");
+          const isOpening = !answer.style.maxHeight;
+          answer.style.maxHeight = isOpening
+            ? answer.scrollHeight + "px"
+            : null;
+          icon.style.transform = isOpening ? "rotate(180deg)" : "rotate(0deg)";
+        });
+      });
+    } catch (e) {
+      helpContainer.innerHTML = `<p class="text-red-500">Hilfe konnte nicht geladen werden.</p>`;
+    }
+  };
 
+  const loadSettings = () => {
+    const settings = config.global_settings || {};
+    const location = config.location || {};
+    document.getElementById("setting-bridge-ip").value = config.bridge_ip || "";
+    document.getElementById("setting-latitude").value = location.latitude || "";
+    document.getElementById("setting-longitude").value =
+      location.longitude || "";
+    document.getElementById("setting-hysteresis").value =
+      settings.hysteresis_percent || 25;
+    document.getElementById("setting-datalogger-interval").value =
+      settings.datalogger_interval_minutes || 15;
+    document.getElementById("setting-loop-interval").value =
+      settings.loop_interval_s || 1;
+    document.getElementById("setting-status-interval").value =
+      settings.status_interval_s || 5;
+    document.getElementById("setting-loglevel").value =
+      settings.log_level || "INFO";
+  };
+
+  const saveFullConfig = async () => {
+    const settings = config.global_settings || {};
+    settings.hysteresis_percent = parseInt(
+      document.getElementById("setting-hysteresis").value
+    );
+    settings.datalogger_interval_minutes = parseInt(
+      document.getElementById("setting-datalogger-interval").value
+    );
+    settings.loop_interval_s = parseFloat(
+      document.getElementById("setting-loop-interval").value
+    );
+    settings.status_interval_s = parseInt(
+      document.getElementById("setting-status-interval").value
+    );
+    settings.log_level = document.getElementById("setting-loglevel").value;
+    config.global_settings = settings;
+    config.bridge_ip = document.getElementById("setting-bridge-ip").value;
+    config.location = {
+      latitude: parseFloat(document.getElementById("setting-latitude").value),
+      longitude: parseFloat(document.getElementById("setting-longitude").value),
+    };
+    const btn = document.getElementById("save-button");
+    btn.disabled = true;
+    btn.textContent = "Speichere...";
+    try {
+      await api.saveFullConfig(config);
+      ui.showToast("Konfiguration gespeichert & neu gestartet!");
+    } catch (error) {
+      ui.showToast(`Fehler: ${error.message}`, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Speichern und Alle Routinen neu starten";
+    }
+  };
+
+  const handleSaveScene = () => {
+    const form = document.getElementById("form-scene");
+    const originalName = form.querySelector("#scene-original-name").value;
+    const newName = form
+      .querySelector("#scene-name")
+      .value.trim()
+      .replace(/\s+/g, "_")
+      .toLowerCase();
+    if (!newName) return ui.showToast("Name fehlt.", true);
+    const newScene = {
+      status: form.querySelector("#scene-status").checked,
+      bri: parseInt(form.querySelector("#scene-bri").value),
+    };
+    if (
+      form.querySelector('input[name="color-mode"]:checked').value ===
+        "color" &&
+      colorPicker
+    ) {
+      const hsv = colorPicker.color.hsv;
+      newScene.hue = Math.round((hsv.h / 360) * 65535);
+      newScene.sat = Math.round((hsv.s / 100) * 254);
+    } else {
+      newScene.ct = parseInt(form.querySelector("#scene-ct").value);
+    }
+    if (originalName && originalName !== newName)
+      delete config.scenes[originalName];
+    config.scenes[newName] = newScene;
+    renderAll();
+    ui.closeModal();
+  };
+
+  const handleCreateNewRoutine = () => {
+    const name = document.getElementById("new-routine-name").value;
+    const [groupId, groupName] = document
+      .getElementById("new-routine-group")
+      .value.split("|");
+    const sensorId = document.getElementById("new-routine-sensor").value;
+    if (!name || !groupId) return ui.showToast("Name oder Raum fehlt.", true);
     const newRoutine = {
       name,
       room_name: groupName,
       enabled: true,
       daily_time: { H1: 7, M1: 0, H2: 23, M2: 0 },
-      morning: {
-        scene_name: "aus",
-        x_scene_name: "entspannen",
-        motion_check: true,
-        wait_time: { min: 1, sec: 0 },
-        do_not_disturb: false,
-        bri_check: false,
-      },
-      day: {
-        scene_name: "aus",
-        x_scene_name: "konzentrieren",
-        motion_check: true,
-        wait_time: { min: 1, sec: 0 },
-        do_not_disturb: false,
-        bri_check: false,
-      },
-      evening: {
-        scene_name: "aus",
-        x_scene_name: "entspannen",
-        motion_check: true,
-        wait_time: { min: 1, sec: 0 },
-        do_not_disturb: false,
-        bri_check: false,
-      },
-      night: {
-        scene_name: "aus",
-        x_scene_name: "nachtlicht",
-        motion_check: true,
-        wait_time: { min: 1, sec: 0 },
-        do_not_disturb: false,
-        bri_check: false,
-      },
+      ...Object.fromEntries(
+        ["morning", "day", "evening", "night"].map((p) => [
+          p,
+          { scene_name: "off", x_scene_name: "off" },
+        ])
+      ),
     };
-
     if (!config.routines) config.routines = [];
     config.routines.push(newRoutine);
-
-    // Raum-Konfiguration aktualisieren oder hinzufügen
-    let roomConf = config.rooms?.find((r) => r.name === groupName);
-    if (!roomConf) {
-      if (!config.rooms) config.rooms = [];
-      roomConf = { name: groupName, group_id: groupId };
-      config.rooms.push(roomConf);
+    if (!config.rooms) config.rooms = [];
+    if (!config.rooms.some((r) => r.name === groupName)) {
+      config.rooms.push({
+        name: groupName,
+        group_ids: [parseInt(groupId)],
+        sensor_id: sensorId ? parseInt(sensorId) : undefined,
+      });
     }
-    if (sensorSelect.value) {
-      roomConf.sensor_id = sensorSelect.value;
-    }
-
     renderAll();
     ui.closeModal();
-    ui.showToast("Neue Routine erstellt. Speichern nicht vergessen.");
-  };
-
-  const handleSaveRoutine = () => {
-    // Diese Funktion ist sehr umfangreich, da sie alle Felder aus dem Modal ausliest.
-    // Hier wird die Logik implementiert, um die `config`-Variable zu aktualisieren.
-    // ...
-    ui.closeModal();
-    renderAll();
-    ui.showToast(
-      "Routine gespeichert. Haupt-Speichern-Button nicht vergessen!",
-      false
+    ui.openEditRoutineModal(
+      newRoutine,
+      config.routines.length - 1,
+      Object.keys(config.scenes),
+      config.rooms,
+      bridgeData.sensors
     );
   };
 
-  const saveFullConfig = async () => {
-    try {
-      const saveButton = document.getElementById("save-button");
-      saveButton.disabled = true;
-      saveButton.textContent = "Speichern...";
-      const result = await api.saveFullConfig(config);
-      ui.showToast(result.message);
-      // Konfiguration neu laden, um sicherzustellen, dass alles synchron ist
-      config = await api.loadConfig();
-      renderAll();
-    } catch (error) {
-      ui.showToast(error.message, true);
-    } finally {
-      const saveButton = document.getElementById("save-button");
-      saveButton.disabled = false;
-      saveButton.textContent = "Speichern und Alle Routinen neu starten";
-    }
-  };
+  const handleSaveEditedRoutine = () => {
+    const modal = document.getElementById("modal-routine");
+    if (!modal) return;
+    const index = modal.querySelector("#routine-index").value;
+    const routine = config.routines[index];
+    if (!routine) return;
 
-  const handleSaveScene = () => {
-    const originalName = document.getElementById("scene-original-name").value;
-    const newName = document
-      .getElementById("scene-name")
-      .value.trim()
-      .replace(/\s+/g, "_");
-    if (!newName) {
-      ui.showToast("Der Name der Szene darf nicht leer sein.", true);
-      return;
-    }
+    routine.name = modal.querySelector("#routine-name-edit").value.trim();
 
-    const sceneData = {
-      status: document.getElementById("scene-status").checked,
-      bri: parseInt(document.getElementById("scene-bri").value),
-      transitiontime: 10,
-    };
+    const [newGroupId, newRoomName] = modal
+      .querySelector("#routine-room-select")
+      .value.split("|");
+    routine.room_name = newRoomName;
+    const newSensorId = modal.querySelector("#routine-sensor-select").value;
 
-    const colorMode = document.querySelector(
-      'input[name="color-mode"]:checked'
-    ).value;
-    if (colorMode === "color" && colorPicker) {
-      const hsv = colorPicker.color.hsv;
-      sceneData.hue = Math.round((hsv.h / 360) * 65535);
-      sceneData.sat = Math.round((hsv.s / 100) * 254);
+    let roomToUpdate = config.rooms.find((r) => r.name === newRoomName);
+    if (roomToUpdate) {
+      roomToUpdate.sensor_id = newSensorId ? parseInt(newSensorId) : undefined;
     } else {
-      sceneData.ct = parseInt(document.getElementById("scene-ct").value);
+      const oldRoomName = config.routines[index].room_name;
+      const oldRoomIndex = config.rooms.findIndex(
+        (r) => r.name === oldRoomName
+      );
+      if (oldRoomIndex > -1) {
+      }
+      config.rooms.push({
+        name: newRoomName,
+        group_ids: [parseInt(newGroupId)],
+        sensor_id: newSensorId ? parseInt(newSensorId) : undefined,
+      });
     }
 
-    if (originalName && originalName !== newName) {
-      delete config.scenes[originalName];
-    }
-    config.scenes[newName] = sceneData;
-
+    const startMinutes = parseInt(
+      modal.querySelector("#time-slider-start").value
+    );
+    const endMinutes = parseInt(modal.querySelector("#time-slider-end").value);
+    routine.daily_time = {
+      H1: Math.floor(startMinutes / 60),
+      M1: startMinutes % 60,
+      H2: Math.floor(endMinutes / 60),
+      M2: endMinutes % 60,
+    };
+    modal.querySelectorAll("[data-section-name]").forEach((el) => {
+      const name = el.dataset.sectionName;
+      routine[name] = {
+        scene_name: el.querySelector(".section-scene-name").value,
+        x_scene_name: el.querySelector(".section-x-scene-name").value,
+        motion_check: el.querySelector(".section-motion-check").checked,
+        wait_time: {
+          min: parseInt(el.querySelector(".section-wait-time-min").value) || 0,
+          sec: parseInt(el.querySelector(".section-wait-time-sec").value) || 0,
+        },
+        do_not_disturb: el.querySelector(".section-do-not-disturb").checked,
+        bri_check: el.querySelector(".section-bri-check").checked,
+        max_light_level: parseInt(el.querySelector(".brightness-slider").value),
+        bri_ct: parseInt(el.querySelector(".section-bri-ct").value),
+      };
+    });
     renderAll();
     ui.closeModal();
-    ui.showToast(
-      "Szene gespeichert. Haupt-Speichern-Button nicht vergessen.",
-      false
-    );
+    ui.showToast("Routine aktualisiert. Globale Speicherung nicht vergessen!");
   };
 
-  const addDefaultScenes = async () => {
-    try {
-      const result = await api.addDefaultScenes();
-      ui.showToast(result.message);
-      config = await api.loadConfig();
-      renderAll();
-    } catch (error) {
-      ui.showToast(error.message, true);
-    }
-  };
-
-  const updateStatus = async (showToast = false) => {
-    try {
-      const { statusData, logText } = await api.updateStatus();
-      ui.renderStatus(
-        statusData.routines,
-        statusData.sun_times,
-        openStatusCards
-      );
-      ui.renderLog(logText);
-      ui.updateStatusTimelines(); // Aktualisiert die Sonnen-Position
-      if (showToast) ui.showToast("Status aktualisiert!");
-    } catch (error) {
-      if (showToast)
-        ui.showToast(`Status-Update fehlgeschlagen: ${error.message}`, true);
-    }
-  };
-
-  const startStatusUpdates = () => {
-    updateStatus();
-    statusInterval = setInterval(updateStatus, 5000);
-  };
-
-  const setupAnalyseTab = () => {
-    ui.populateAnalyseSensors(bridgeData.sensors);
-    // Standarddatum auf heute setzen
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("analyse-day-picker").value = today;
-  };
-
-  const loadChartData = async () => {
-    const sensorId = document.getElementById("analyse-sensor").value;
-    const date = document.getElementById("analyse-day-picker").value;
-    if (!sensorId || !date) {
-      ui.showToast("Bitte einen Sensor und ein Datum auswählen.", true);
-      return;
-    }
-
-    const button = document.getElementById("btn-fetch-data");
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Lade...';
-
-    try {
-      const data = await api.loadChartData(sensorId, date);
-      chartInstance = ui.renderChart(chartInstance, data);
-    } catch (error) {
-      ui.showToast(error.message, true);
-      // Leert das Chart bei einem Fehler
-      chartInstance = ui.renderChart(chartInstance, null);
-    } finally {
-      button.disabled = false;
-      button.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Daten laden';
-    }
-  };
-
-  const setupBridgeDevicesTab = async () => {
-    // Diese Funktion kann beibehalten werden, wenn du die Geräteverwaltung implementieren möchtest.
-  };
-
-  await init();
+  init();
 }
