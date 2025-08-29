@@ -39,6 +39,7 @@ function runMainApp() {
       ]);
       renderAll();
       setupEventListeners();
+      loadSettings();
     } catch (error) {
       ui.showToast(`Initialisierungsfehler: ${error.message}`, true);
       console.error(error);
@@ -454,7 +455,6 @@ function runMainApp() {
         sensorId,
         period,
         date,
-        null,
         avgWindow
       );
       chartInstance = ui.renderChart(chartInstance, data, period);
