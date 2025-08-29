@@ -444,6 +444,227 @@ export function updateStatusTimelines() {
 // da sie sehr spezifisch für die Formularerstellung ist.
 // Kleine Anpassungen könnten für die Datenbindung nötig sein.
 // (Hier aus Kürze weggelassen, da keine direkten Fehler drin waren)
+export function openEditRoutineModal(
+  routine,
+  index,
+  scenes,
+  rooms,
+  groups,
+  sensors
+) {
+  const modalRoutineContainer = document.getElementById("modal-routine");
+  if (!modalRoutineContainer) return;
+
+  const roomConf = rooms.find((r) => r.name === routine.room_name) || {};
+  const sensorId = roomConf.sensor_id || null;
+
+  const groupOptions = groups
+    .map(
+      (g) =>
+        `<option value="${g.id}|${g.name}" ${
+          g.name === routine.room_name ? "selected" : ""
+        }>${g.name}</option>`
+    )
+    .join("");
+
+  const sensorOptions = sensors
+    .map(
+      (s) =>
+        `<option value="${s.id}" ${
+          s.id == sensorId ? "selected" : ""
+        }>${s.name}</option>`
+    )
+    .join("");
+
+  const periods = ["morning", "day", "evening", "night"];
+  const periodNames = {
+    morning: "Morgen",
+    day: "Tag",
+    evening: "Abend",
+    night: "Nacht",
+  };
+
+  const periodTabs = periods
+    .map(
+      (p) =>
+        `<button type="button" class="px-4 py-2 text-sm font-medium rounded-md" data-tab-target="period-${p}">${periodNames[p]}</button>`
+    )
+    .join("");
+
+  const periodContents = periods
+    .map((p) => {
+      const config = routine[p] || {};
+      const waitTime = config.wait_time || { min: 1, sec: 0 };
+      return `
+      <div id="period-${p}" class="hidden space-y-4 p-4 border rounded-md">
+        <h4 class="text-lg font-semibold">${periodNames[p]}</h4>
+        <div>
+          <label class="block text-sm font-medium">Normal-Szene (wenn keine Bewegung)</label>
+          <select id="routine-${p}-scene" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+            ${scenes
+              .map(
+                (s) =>
+                  `<option value="${s}" ${
+                    s === config.scene_name ? "selected" : ""
+                  }>${s}</option>`
+              )
+              .join("")}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Szene bei Bewegung</label>
+          <select id="routine-${p}-x-scene" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+             ${scenes
+               .map(
+                 (s) =>
+                   `<option value="${s}" ${
+                     s === config.x_scene_name ? "selected" : ""
+                   }>${s}</option>`
+               )
+               .join("")}
+          </select>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="routine-${p}-motion-check" class="h-4 w-4 rounded border-gray-300" ${
+        config.motion_check ? "checked" : ""
+      }>
+          <label for="routine-${p}-motion-check" class="ml-2">Auf Bewegung reagieren</label>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Wartezeit (Min)</label>
+            <input type="number" id="routine-${p}-wait-min" value="${
+        waitTime.min
+      }" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Wartezeit (Sek)</label>
+            <input type="number" id="routine-${p}-wait-sec" value="${
+        waitTime.sec
+      }" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+          </div>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="routine-${p}-dnd" class="h-4 w-4 rounded border-gray-300" ${
+        config.do_not_disturb ? "checked" : ""
+      }>
+          <label for="routine-${p}-dnd" class="ml-2">Bitte nicht stören</label>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="routine-${p}-bri-check" class="h-4 w-4 rounded border-gray-300" ${
+        config.bri_check ? "checked" : ""
+      }>
+          <label for="routine-${p}-bri-check" class="ml-2">Helligkeits-Check</label>
+        </div>
+      </div>
+    `;
+    })
+    .join("");
+
+  const dailyTime = routine.daily_time || {};
+
+  modalRoutineContainer.innerHTML = `
+    <div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4">
+        <div class="p-6">
+          <h3 class="text-2xl font-bold mb-4">Routine bearbeiten: ${
+            routine.name
+          }</h3>
+          <form id="form-routine" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+            <input type="hidden" id="routine-index" value="${index}">
+            <div>
+              <label class="block text-sm font-medium">Name</label>
+              <input type="text" id="routine-name" value="${
+                routine.name
+              }" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium">Raum / Zone</label>
+                <select id="routine-group" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">${groupOptions}</select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium">Sensor (Optional)</label>
+                <select id="routine-sensor" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                  <option value="">Kein Sensor</option>
+                  ${sensorOptions}
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="routine-enabled" class="h-4 w-4 rounded border-gray-300" ${
+                routine.enabled ? "checked" : ""
+              }>
+              <label for="routine-enabled" class="ml-2">Routine aktiviert</label>
+            </div>
+            <fieldset class="border p-4 rounded-md">
+              <legend class="text-lg font-medium px-2">Tageszeit</legend>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium">Start (HH:MM)</label>
+                  <div class="flex space-x-2">
+                    <input type="number" id="routine-time-h1" value="${
+                      dailyTime.H1 || 7
+                    }" class="w-full rounded-md border-gray-300 shadow-sm">
+                    <input type="number" id="routine-time-m1" value="${
+                      dailyTime.M1 || 0
+                    }" class="w-full rounded-md border-gray-300 shadow-sm">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium">Ende (HH:MM)</label>
+                  <div class="flex space-x-2">
+                    <input type="number" id="routine-time-h2" value="${
+                      dailyTime.H2 || 23
+                    }" class="w-full rounded-md border-gray-300 shadow-sm">
+                    <input type="number" id="routine-time-m2" value="${
+                      dailyTime.M2 || 0
+                    }" class="w-full rounded-md border-gray-300 shadow-sm">
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="border-b border-gray-200">
+              <nav class="flex space-x-2" id="period-tabs">${periodTabs}</nav>
+            </div>
+            <div id="period-content-container">${periodContents}</div>
+          </form>
+        </div>
+        <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
+          <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm">Abbrechen</button>
+          <button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 rounded-md shadow-sm">Speichern</button>
+        </div>
+      </div>
+    </div>
+  `;
+  modalRoutineContainer.classList.remove("hidden");
+
+  // Tab logic
+  const tabs = modalRoutineContainer.querySelectorAll("[data-tab-target]");
+  const tabContainer = document.getElementById("period-tabs");
+  const tabContents =
+    modalRoutineContainer.querySelectorAll("[id^='period-']");
+
+  tabContainer.addEventListener("click", (e) => {
+    const clickedTab = e.target.closest("button");
+    if (!clickedTab) return;
+
+    tabs.forEach((t) => t.classList.remove("bg-blue-100", "text-blue-700"));
+    clickedTab.classList.add("bg-blue-100", "text-blue-700");
+
+    const targetId = clickedTab.dataset.tabTarget;
+    tabContents.forEach((c) => {
+      c.classList.toggle("hidden", c.id !== targetId);
+    });
+  });
+
+  // Show first tab by default
+  if (tabs.length > 0) {
+    tabs[0].click();
+  }
+}
+
 export function renderSettings(config) {
   const settings = config.global_settings || {};
   const location = config.location || {};
