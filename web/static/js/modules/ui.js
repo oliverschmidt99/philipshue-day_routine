@@ -444,6 +444,29 @@ export function updateStatusTimelines() {
 // da sie sehr spezifisch für die Formularerstellung ist.
 // Kleine Anpassungen könnten für die Datenbindung nötig sein.
 // (Hier aus Kürze weggelassen, da keine direkten Fehler drin waren)
+export function renderSettings(config) {
+  const settings = config.global_settings || {};
+  const location = config.location || {};
+
+  const fieldMappings = {
+    "setting-bridge-ip": config.bridge_ip || "",
+    "setting-latitude": location.latitude || "",
+    "setting-longitude": location.longitude || "",
+    "setting-hysteresis": settings.hysteresis_percent || "",
+    "setting-datalogger-interval": settings.datalogger_interval_m || "",
+    "setting-loop-interval": settings.loop_interval_s || "",
+    "setting-status-interval": settings.status_interval_s || "",
+    "setting-loglevel": settings.log_level || "INFO",
+  };
+
+  for (const [id, value] of Object.entries(fieldMappings)) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.value = value;
+    }
+  }
+}
+
 function renderStatusTimeline(status, sunTimes) {
   // Diese komplexe Funktion bleibt im Kern erhalten, da sie hauptsächlich
   // SVG-Grafiken erzeugt. Kleinere Anpassungen für Datenbindung wurden

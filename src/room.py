@@ -11,7 +11,9 @@ from .logger import Logger
 class Room:
     """Repräsentiert einen Raum oder eine Zone und steuert die zugehörigen Lichter."""
 
-    def __init__(self, bridge: Bridge, log: Logger, name: str, group_id: int):
+    def __init__(
+        self, bridge: Bridge, log: Logger, name: str, group_id: int, **kwargs
+    ):
         self.bridge = bridge
         self.log = log
         self.name = name

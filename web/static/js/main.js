@@ -52,6 +52,7 @@ async function runMainApp() {
   const renderAll = () => {
     ui.renderRoutines(config, bridgeData);
     ui.renderScenes(config.scenes);
+    ui.renderSettings(config);
   };
 
   const setupEventListeners = () => {
