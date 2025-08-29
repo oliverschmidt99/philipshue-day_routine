@@ -17,7 +17,6 @@ from src.logger import Logger
 from src.config_manager import ConfigManager
 
 # --- Globale Pfade ---
-# Diese bleiben hier, damit sie von überall leicht zugänglich sind
 BASE_DIR = project_root
 DATA_DIR = os.path.join(BASE_DIR, "data")
 LOG_FILE = os.path.join(DATA_DIR, "app.log")
@@ -30,16 +29,12 @@ def create_app():
     """Erstellt und konfiguriert die Flask-App (Application Factory)."""
     app = Flask(__name__, static_folder="static", template_folder="templates")
 
-    # Initialisiere die globalen Manager und hänge sie an die App-Instanz
-    # So können Blueprints über 'current_app' darauf zugreifen, ohne sie zu importieren.
     app.logger_instance = Logger(LOG_FILE)
     app.config_manager = ConfigManager(CONFIG_FILE, app.logger_instance)
 
-    # Deaktiviere das Standard-Flask-Logging, um doppelte Logs zu vermeiden
     werkzeug_log = logging.getLogger("werkzeug")
     werkzeug_log.setLevel(logging.ERROR)
 
-    # Importiere und registriere die Blueprints INNERHALB der Funktion
     with app.app_context():
         from web.api.setup import setup_api
         from web.api.bridge import bridge_api
@@ -53,7 +48,6 @@ def create_app():
         app.register_blueprint(data_api, url_prefix="/api/data")
         app.register_blueprint(config_api, url_prefix="/api/config")
 
-    # --- UI & Fehler-Routen ---
     @app.route("/")
     def index():
         """Zeigt die Hauptseite (index.html) an."""
@@ -61,7 +55,7 @@ def create_app():
 
     @app.route("/favicon.ico")
     def favicon():
-        """Liefert das Favicon aus."""
+        """Liefert das Favicon aus dem Static-Ordner aus."""
         return send_from_directory(
             os.path.join(app.root_path, "static"),
             "favicon.ico",
@@ -71,10 +65,8 @@ def create_app():
     return app
 
 
-# Dieser Block wird ausgeführt, wenn die Datei direkt aufgerufen wird (von main.py)
 if __name__ == "__main__":
     flask_app = create_app()
     log = flask_app.logger_instance
     log.info("Starte Flask-Server...")
-    # debug=False ist wichtig, wenn es als Subprozess läuft, um doppeltes Starten zu verhindern
     flask_app.run(host="0.0.0.0", port=5000, debug=False)

@@ -21,7 +21,7 @@ SERVER_SCRIPT = os.path.join(BASE_DIR, "web", "server.py")
 
 
 def cleanup(log, server_process):
-    """Wird bei Programmende ausgeführt, um den Webserver zu beenden."""
+    """Wird bei Programmende ausgeführt, um den Webserver-Prozess sicher zu beenden."""
     if log:
         log.info("\nRäume auf und beende den Webserver-Prozess...")
     if server_process:
@@ -48,7 +48,7 @@ def main():
     server_process = subprocess.Popen([sys.executable, SERVER_SCRIPT])
     log.info(f"Webserver-Prozess gestartet mit PID: {server_process.pid}")
 
-    # Registriere die Cleanup-Funktion, um den Prozess sicher zu beenden
+    # Registriere die Cleanup-Funktion mit den benötigten Argumenten
     atexit.register(cleanup, log, server_process)
 
     config_manager = ConfigManager(CONFIG_FILE, log)
