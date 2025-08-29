@@ -3,29 +3,29 @@ __pycache__/
 *.py[codz]
 *$py.class
 
-# Distribution / packaging
-.Python
-build/
-dist/
-*.egg-info/
-
 # Virtual Environments
 .venv/
 env/
 venv/
 
 # Project-specific ignores
-/data/
-sensor_data.db
+/data/config.yaml
+/data/status.json
+/sensor_data.db
 
 # IDE / Editor specific
 .vscode/
 .idea/
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[codz]
-*$py.class
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+
 
 # C extensions
 *.so

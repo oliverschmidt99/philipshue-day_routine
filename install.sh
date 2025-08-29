@@ -11,7 +11,7 @@ log_info "Starte die Einrichtung des Philips Hue Controllers..."
 
 log_info "Überprüfe und installiere Systemabhängigkeiten..."
 if command -v pacman &> /dev/null; then
-    sudo pacman -S --needed --noconfirm python python-pip git
+    sudo pacman -S --needed --noconfirm python python-pip git python-venv
 elif command -v apt-get &> /dev/null; then
     sudo apt-get update && sudo apt-get install -y python3 python3-pip python3-venv git
 else
@@ -36,6 +36,8 @@ log_success "Alle Python-Pakete sind installiert."
 
 log_info "Erstelle das 'data' Verzeichnis für Konfiguration und Logs..."
 mkdir -p data
+# Erstelle eine leere Konfigurationsdatei, falls sie nicht existiert
+touch data/config.yaml
 log_success "'data' Verzeichnis sichergestellt."
 
 SERVICE_NAME="hue_controller.service"
@@ -57,6 +59,7 @@ StandardOutput=journal
 StandardError=journal
 Restart=always
 User=$(whoami)
+Environment="PYTHONPATH=$WORKING_DIRECTORY"
 
 [Install]
 WantedBy=multi-user.target

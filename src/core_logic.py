@@ -20,7 +20,7 @@ from src.room import Room
 from src.sensor import Sensor
 from src.routine import Routine
 from src.logger import Logger
-from src.config_manager import ConfigManager, CONFIG_FILE
+from src.config_manager import ConfigManager
 
 # --- Globale Pfade ---
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
@@ -64,9 +64,9 @@ class CoreLogic:
         """
         while not self.stop_event.is_set():
             config = self.config_manager.get_full_config()
-            if not config:
-                self.log.error(
-                    "Konfiguration konnte nicht geladen werden. Nächster Versuch in 15s."
+            if not config or not config.get("bridge_ip"):
+                self.log.warning(
+                    "Konfiguration unvollständig oder Bridge nicht eingerichtet. Warte 15s."
                 )
                 time.sleep(15)
                 continue
@@ -85,7 +85,7 @@ class CoreLogic:
         app_key = config.get("app_key")
         if not bridge_ip or not app_key:
             self.log.warning(
-                "Bridge-IP oder App-Key fehlen in settings.json. Steuerung pausiert."
+                "Bridge-IP oder App-Key fehlen in config.yaml. Steuerung pausiert."
             )
             return None
         try:
@@ -111,11 +111,13 @@ class CoreLogic:
         rooms = {
             rc["name"]: Room(bridge, self.log, **rc) for rc in config.get("rooms", [])
         }
-        sensors = {
-            s_id: Sensor(bridge, s_id, self.log)
-            for r in config.get("rooms", [])
-            if (s_id := r.get("sensor_id"))
-        }
+
+        # Erstelle Sensor-Objekte nur für die in Räumen konfigurierten Sensor-IDs
+        sensors = {}
+        for room_config in config.get("rooms", []):
+            if sensor_id := room_config.get("sensor_id"):
+                if sensor_id not in sensors:
+                    sensors[sensor_id] = Sensor(bridge, sensor_id, self.log)
 
         routines = [
             Routine(
@@ -141,14 +143,14 @@ class CoreLogic:
             if rooms.get(r_conf["room_name"])
         ]
 
-        last_mod_time = os.path.getmtime(CONFIG_FILE)
+        last_mod_time = self.config_manager.get_last_modified_time()
         last_status_write = 0
 
         self.log.info(f"{len(routines)} Routinen werden jetzt ausgeführt...")
-        while True:
+        while not self.stop_event.is_set():
             try:
-                if os.path.getmtime(CONFIG_FILE) > last_mod_time:
-                    self.log.info("Änderung in config.json erkannt. Lade Logik neu.")
+                if self.config_manager.get_last_modified_time() > last_mod_time:
+                    self.log.info("Änderung in config.yaml erkannt. Lade Logik neu.")
                     return  # Beendet die Session und löst Neuladen aus
 
                 now = datetime.now().astimezone()
@@ -170,10 +172,10 @@ class CoreLogic:
                 return
             except (TypeError, KeyError) as e:
                 self.log.error(
-                    f"Konfigurationsfehler: {e}. Bitte config.json prüfen.",
+                    f"Konfigurationsfehler: {e}. Bitte config.yaml prüfen.",
                     exc_info=True,
                 )
-                time.sleep(15)  # Längere Pause, damit der Fehler im Log sichtbar bleibt
+                time.sleep(15)
                 return
 
     def _get_sun_times(self, location_config):
@@ -189,12 +191,12 @@ class CoreLogic:
                 "Home",
                 "Germany",
                 "Europe/Berlin",
-                location_config["latitude"],
-                location_config["longitude"],
+                float(location_config["latitude"]),
+                float(location_config["longitude"]),
             )
             sun_info = sun(loc.observer, date=date.today(), tzinfo=loc.timezone)
             return {"sunrise": sun_info["sunrise"], "sunset": sun_info["sunset"]}
-        except ValueError as e:
+        except (ValueError, TypeError) as e:
             self.log.error(f"Fehler bei der Berechnung der Sonnenzeiten: {e}")
             return None
 

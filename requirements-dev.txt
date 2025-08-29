@@ -3,4 +3,3 @@ pytest
 pytest-mock
 pytest-flask
 selenium
-pytest-selenium

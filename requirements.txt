@@ -3,5 +3,4 @@ phue
 PyYAML
 requests
 astral
-Markdown
 pandas

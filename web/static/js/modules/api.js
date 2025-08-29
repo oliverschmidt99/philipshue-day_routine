@@ -1,12 +1,29 @@
 // web/static/js/modules/api.js
 
 async function fetchAPI(url, options = {}) {
-  const response = await fetch(url, options);
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || `HTTP-Fehler: ${response.status}`);
+  try {
+    const response = await fetch(url, options);
+    // Log ist reiner Text, der Rest JSON
+    const data = response.headers
+      .get("Content-Type")
+      ?.includes("application/json")
+      ? await response.json()
+      : await response.text();
+
+    if (!response.ok) {
+      // Wenn der Server JSON-Fehler schickt, nutze die Nachricht
+      const errorMessage =
+        typeof data === "object" && data.error
+          ? data.error
+          : `HTTP-Fehler: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+    return data;
+  } catch (error) {
+    // Fängt Netzwerkfehler ab
+    console.error(`API-Fehler bei ${url}:`, error);
+    throw error;
   }
-  return data;
 }
 
 // --- Setup ---
@@ -26,32 +43,24 @@ export const saveSetupConfig = (configData) =>
   });
 
 // --- Config ---
-export const loadConfig = () => fetchAPI("/api/config");
+export const loadConfig = () => fetchAPI("/api/config/");
 export const saveFullConfig = (config) =>
-  fetchAPI("/api/config", {
+  fetchAPI("/api/config/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(config),
   });
 
 // --- Bridge Data ---
-export async function loadBridgeData() {
-  // Diese Route wird jetzt von /api/bridge/all_items abgedeckt
-  const data = await fetchAPI("/api/bridge/all_items");
-  return {
-    groups: data.grouped_lights,
-    sensors: data.sensors,
-  };
-}
-export const loadBridgeItems = () => fetchAPI("/api/bridge/all_items");
+export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
 
 // --- Status & Logs ---
 export async function updateStatus() {
-  const [statusData, logRes] = await Promise.all([
+  const [statusData, logText] = await Promise.all([
     fetchAPI("/api/data/status"),
-    fetch("/api/data/log"), // Log ist reiner Text
+    fetchAPI("/api/data/log"), // Log ist reiner Text
   ]);
-  return { statusData, logText: await logRes.text() };
+  return { statusData, logText };
 }
 
 // --- Analyse ---

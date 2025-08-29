@@ -20,18 +20,17 @@ Ein fortschrittliches Steuerungssystem für Philips Hue, das komplexe, zeit- und
 - **`main.py`**: Startpunkt der Anwendung, startet Webserver und Kernlogik.
 - **`src/`**: Enthält die Kernlogik als Python-Paket.
   - `core_logic.py`: Die Hauptschleife, die Routinen ausführt.
-  - `config_manager.py`: Verwaltet die Konfigurationsdateien im `data`-Ordner.
+  - `config_manager.py`: Verwaltet die Konfigurationsdatei `config.yaml`.
   - `routine.py`, `room.py`, etc.: Abstraktionsklassen für die Hue-Logik.
 - **`data/`**: Speichert alle veränderlichen Daten:
-  - `settings.json`: Stabile Einstellungen (Bridge-IP, Standort).
-  - `config.json`: Dynamische Konfiguration (Routinen, Szenen).
+  - `config.yaml`: Die zentrale Konfigurationsdatei für alles.
   - `app.log`: Die Log-Datei.
   - `status.json`: Live-Status für die Web-UI.
+  - `sensor_data.db`: SQLite-Datenbank für Analyse-Daten.
 - **`web/`**: Flask-basierte Webanwendung.
   - `server.py`: Haupt-Serverdatei, die die API-Blueprints registriert.
   - `web/api/`: Aufgeteilte API-Endpunkte für bessere Übersicht.
   - `templates/` & `static/`: HTML-, CSS- und JavaScript-Dateien.
-- **`sensor_data.db`**: SQLite-Datenbank für Analyse-Daten.
 
 ---
 
