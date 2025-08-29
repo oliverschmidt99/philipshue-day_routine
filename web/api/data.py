@@ -1,10 +1,14 @@
-# web/api/data.py
+"""
+API-Endpunkte für den Zugriff auf Laufzeit- und historische Daten.
+Dazu gehören Logs, Statusinformationen und Sensordaten für die Analyse.
+"""
+
 import json
 import sqlite3
 from datetime import datetime, timedelta
 import pandas as pd
-from flask import Blueprint, jsonify, request, Response
-from ..server import DB_FILE, LOG_FILE, STATUS_FILE, log
+from flask import Blueprint, jsonify, request, Response, current_app
+from web.server import DB_FILE, LOG_FILE, STATUS_FILE  # Absoluter Import
 
 data_api = Blueprint("data_api", __name__)
 
@@ -12,6 +16,7 @@ data_api = Blueprint("data_api", __name__)
 @data_api.route("/history")
 def get_data_history():
     """Gibt historische Sensordaten aus der Datenbank zurück."""
+    log = current_app.logger_instance
     try:
         sensor_id_str = request.args.get("sensor_id")
         date_str = request.args.get("date")
@@ -32,7 +37,12 @@ def get_data_history():
         )
         end_date = start_date + timedelta(days=1)
 
-        query = "SELECT timestamp, measurement_type, value FROM measurements WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp < ? ORDER BY timestamp"
+        query = """
+            SELECT timestamp, measurement_type, value
+            FROM measurements
+            WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp < ?
+            ORDER BY timestamp
+        """
 
         with sqlite3.connect(DB_FILE) as con:
             df = pd.read_sql_query(
@@ -54,7 +64,6 @@ def get_data_history():
             index="timestamp", columns="measurement_type", values="value"
         ).reset_index()
 
-        # Fülle fehlende Werte auf für eine durchgehende Linie im Chart
         df_pivot.set_index("timestamp", inplace=True)
         df_resampled = df_pivot.resample("5min").mean().interpolate(method="time")
 
@@ -91,8 +100,6 @@ def get_status():
     """Gibt den aktuellen Status der Routinen aus der status.json zurück."""
     try:
         with open(STATUS_FILE, "r", encoding="utf-8") as f:
-            # Lese direkt den Inhalt und lasse Flask das JSON-Handling machen
             return Response(f.read(), mimetype="application/json")
     except (FileNotFoundError, json.JSONDecodeError):
-        # Gib ein leeres Standardobjekt zurück, wenn die Datei nicht existiert oder leer ist
         return jsonify({"routines": [], "sun_times": None})

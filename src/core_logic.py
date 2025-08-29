@@ -3,7 +3,6 @@ Kapselt die gesamte Kernlogik der Hue-Steuerung, inklusive der Hauptschleife.
 """
 
 import os
-import sys
 import json
 import time
 import sqlite3
@@ -77,7 +76,7 @@ class CoreLogic:
                 continue
 
             # Diese Methode läuft, bis die Konfiguration geändert wird oder ein Fehler auftritt
-            self._execute_routine_session(bridge, config)
+            self._execute_routine_session(bridge)
 
     def _connect_to_bridge(self, config: dict) -> Bridge | None:
         """Versucht, eine Verbindung zur Hue Bridge herzustellen."""
@@ -97,11 +96,12 @@ class CoreLogic:
             self.log.error(f"Netzwerkfehler zur Bridge: {e}.")
             return None
 
-    def _execute_routine_session(self, bridge: Bridge, config: dict):
+    def _execute_routine_session(self, bridge: Bridge):
         """
         Initialisiert und führt alle Routinen aus, bis eine Änderung der
         Konfigurationsdatei erkannt wird.
         """
+        config = self.config_manager.get_full_config()
         global_settings = config.get("global_settings", {})
         sun_times = self._get_sun_times(config.get("location"))
         scenes = {
@@ -112,7 +112,6 @@ class CoreLogic:
             rc["name"]: Room(bridge, self.log, **rc) for rc in config.get("rooms", [])
         }
 
-        # Erstelle Sensor-Objekte nur für die in Räumen konfigurierten Sensor-IDs
         sensors = {}
         for room_config in config.get("rooms", []):
             if sensor_id := room_config.get("sensor_id"):
@@ -151,7 +150,7 @@ class CoreLogic:
             try:
                 if self.config_manager.get_last_modified_time() > last_mod_time:
                     self.log.info("Änderung in config.yaml erkannt. Lade Logik neu.")
-                    return  # Beendet die Session und löst Neuladen aus
+                    return
 
                 now = datetime.now().astimezone()
                 for routine in routines:

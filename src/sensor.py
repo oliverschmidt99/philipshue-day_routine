@@ -1,4 +1,9 @@
-# src/sensor.py
+"""
+Liest und interpretiert Daten von einem Hue Bewegungssensor,
+inklusive der zugehörigen Unter-Sensoren für Helligkeit und Temperatur.
+"""
+
+from phue import PhueException
 from .logger import Logger
 
 
@@ -15,14 +20,10 @@ class Sensor:
         try:
             self.motion_sensor_id = int(sensor_id)
         except (ValueError, TypeError):
-            self.log.error(
-                f"Ungültige Sensor-ID erhalten: {sensor_id}. Dieser Sensor wird nicht funktionieren."
-            )
+            self.log.error(f"Ungültige Sensor-ID: {sensor_id}. Sensor wird ignoriert.")
             self.motion_sensor_id = None
 
         if self.motion_sensor_id is not None:
-            # Annahme, dass der Helligkeitssensor die ID+1 und der Temperatursensor
-            # die ID+2 hat, basierend auf dem Standard-Verhalten der Hue Bridge.
             self.light_sensor_id = self.motion_sensor_id + 1
             self.temp_sensor_id = self.motion_sensor_id + 2
             self.log.info(
@@ -37,7 +38,6 @@ class Sensor:
         if sensor_id is None:
             return default_value
         try:
-            # Das ganze Sensor-Objekt holen, um zu prüfen, ob es existiert.
             sensor_data = self.bridge.get_sensor(sensor_id)
 
             if sensor_data is None:
@@ -50,7 +50,7 @@ class Sensor:
 
             self.log.warning(f"Kein 'state' für Sensor {sensor_id} empfangen.")
             return None
-        except Exception as e:
+        except (PhueException, TypeError) as e:
             self.log.error(
                 f"Fehler beim Abrufen des Zustands für Sensor {sensor_id}: {e}"
             )
@@ -59,7 +59,6 @@ class Sensor:
     def get_motion(self) -> bool:
         """Gibt True zurück, wenn eine Bewegung erkannt wird, sonst False."""
         presence = self._get_state_value(self.motion_sensor_id, "presence", False)
-        # Wenn der Sensor nicht gefunden wird (None), gehe von keiner Bewegung aus.
         return presence is True
 
     def get_brightness(self) -> int | None:

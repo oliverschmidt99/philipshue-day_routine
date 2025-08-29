@@ -1,4 +1,8 @@
-# src/room.py
+"""
+Repräsentiert einen Raum oder eine Zone der Hue Bridge
+und kapselt die Steuerungsbefehle für die zugehörige Lichtgruppe.
+"""
+
 import time
 from phue import Bridge, PhueException
 from .logger import Logger
@@ -7,7 +11,7 @@ from .logger import Logger
 class Room:
     """Repräsentiert einen Raum oder eine Zone und steuert die zugehörigen Lichter."""
 
-    def __init__(self, bridge: Bridge, log: Logger, name: str, group_id: int, **kwargs):
+    def __init__(self, bridge: Bridge, log: Logger, name: str, group_id: int):
         self.bridge = bridge
         self.log = log
         self.name = name
@@ -19,7 +23,6 @@ class Room:
         if time.time() - self.last_command_time < command_throttle_s:
             return
         try:
-            # API erwartet eine Liste von Lichtern/Gruppen, auch wenn es nur eine ist
             self.bridge.set_group(self.group_id, state)
             self.last_command_time = time.time()
             self.log.debug(

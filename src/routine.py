@@ -1,7 +1,10 @@
-# src/routine.py
+"""
+Verwaltet die Zustandslogik und Ausführung einer einzelnen,
+konfigurierbaren Tageslicht-Routine für einen Raum.
+"""
+
 from datetime import datetime, time, timedelta
 from .daily_time_span import DailyTimeSpan
-from .scene import Scene
 
 
 class Routine:
@@ -37,33 +40,23 @@ class Routine:
     def run(self, now: datetime):
         """Führt einen Logik-Durchlauf der Routine aus."""
         if not self.enabled:
-            # Hier könnte man Logik hinzufügen, um Lichter auszuschalten, wenn eine Routine deaktiviert wird
             return
 
         period = self.time_span.get_current_period(now)
         period_config = self.config.get(period)
 
-        # Wenn der Zeitraum wechselt, Zustand zurücksetzen
         if period != self.current_period:
             self.log.info(f"Routine '{self.name}': Wechsel zu Zeitraum '{period}'.")
             self.current_period = period
             self.is_in_motion_state = False
-            self.do_not_disturb_active = False  # Bei Periodenwechsel zurücksetzen
-            # Wenn keine Bewegungserkennung für den neuen Zeitraum aktiv ist, die Normal-Szene setzen
+            self.do_not_disturb_active = False
             if period_config and not period_config.get("motion_check"):
                 self._apply_scene(period_config.get("scene_name"))
-            return  # Im ersten Durchlauf des neuen Zeitraums nur initialisieren
+            return
 
         if not period_config:
             return
 
-        # --- Logik für "Bitte nicht stören" ---
-        if period_config.get("do_not_disturb"):
-            # Hier müsste die Logik implementiert werden, um manuelle Änderungen zu erkennen.
-            # Das ist komplex und wird hier vereinfacht.
-            pass
-
-        # --- Logik für Bewegungserkennung ---
         if self.sensor and period_config.get("motion_check"):
             has_motion = self.sensor.get_motion()
             wait_time_conf = period_config.get("wait_time", {"min": 0, "sec": 5})

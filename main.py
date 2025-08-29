@@ -5,7 +5,6 @@ Initialisiert und startet den Webserver und die Kernlogik.
 
 import os
 import sys
-import time
 import subprocess
 import atexit
 import logging
@@ -20,51 +19,43 @@ LOG_FILE = os.path.join(DATA_DIR, "app.log")
 CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
 SERVER_SCRIPT = os.path.join(BASE_DIR, "web", "server.py")
 
-SERVER_PROCESS = None
-LOG = None
+
+def cleanup(log, server_process):
+    """Wird bei Programmende ausgeführt, um den Webserver zu beenden."""
+    if log:
+        log.info("\nRäume auf und beende den Webserver-Prozess...")
+    if server_process:
+        server_process.terminate()
+        try:
+            server_process.wait(timeout=5)
+            if log:
+                log.info("Webserver-Prozess erfolgreich beendet.")
+        except subprocess.TimeoutExpired:
+            if log:
+                log.warning("Webserver-Prozess reagiert nicht, erzwinge Beendigung.")
+            server_process.kill()
+    if log:
+        log.info("Programm beendet.")
 
 
 def main():
     """Hauptfunktion der Anwendung."""
-    global LOG
     os.makedirs(DATA_DIR, exist_ok=True)
-    LOG = Logger(LOG_FILE, level=logging.INFO)
-
-    # Setze den PYTHONPATH für den Unterprozess, damit er 'src' findet
-    env = os.environ.copy()
-    env["PYTHONPATH"] = BASE_DIR + os.pathsep + env.get("PYTHONPATH", "")
+    log = Logger(LOG_FILE, level=logging.INFO)
 
     # Startet den Webserver als separaten Prozess
-    global SERVER_PROCESS
-    LOG.info(f"Starte Webserver: {sys.executable} {SERVER_SCRIPT}")
-    SERVER_PROCESS = subprocess.Popen([sys.executable, SERVER_SCRIPT], env=env)
-    LOG.info(f"Webserver-Prozess gestartet mit PID: {SERVER_PROCESS.pid}")
+    log.info(f"Starte Webserver: {sys.executable} {SERVER_SCRIPT}")
+    server_process = subprocess.Popen([sys.executable, SERVER_SCRIPT])
+    log.info(f"Webserver-Prozess gestartet mit PID: {server_process.pid}")
 
-    atexit.register(cleanup)
+    # Registriere die Cleanup-Funktion, um den Prozess sicher zu beenden
+    atexit.register(cleanup, log, server_process)
 
-    config_manager = ConfigManager(CONFIG_FILE, LOG)
+    config_manager = ConfigManager(CONFIG_FILE, log)
 
     # Startet die Hauptlogik-Schleife
-    core_logic = CoreLogic(LOG, config_manager)
+    core_logic = CoreLogic(log, config_manager)
     core_logic.run_main_loop()
-
-
-def cleanup():
-    """Wird bei Programmende ausgeführt, um den Webserver zu beenden."""
-    if LOG:
-        LOG.info("\nRäume auf und beende den Webserver-Prozess...")
-    if SERVER_PROCESS:
-        SERVER_PROCESS.terminate()
-        try:
-            SERVER_PROCESS.wait(timeout=5)
-            if LOG:
-                LOG.info("Webserver-Prozess erfolgreich beendet.")
-        except subprocess.TimeoutExpired:
-            if LOG:
-                LOG.warning("Webserver-Prozess reagiert nicht, erzwinge Beendigung.")
-            SERVER_PROCESS.kill()
-    if LOG:
-        LOG.info("Programm beendet.")
 
 
 if __name__ == "__main__":
