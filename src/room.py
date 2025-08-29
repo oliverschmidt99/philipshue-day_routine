@@ -1,86 +1,55 @@
+# src/room.py
 import time
+from phue import Bridge, PhueException
+from .logger import Logger
 
 
 class Room:
-    """Represents a room or a zone in the Hue system."""
+    """Repräsentiert einen Raum oder eine Zone und steuert die zugehörigen Lichter."""
 
-    def __init__(self, bridge, log, name, group_ids, **kwargs):
-        """Initializes the Room object."""
+    def __init__(
+        self, bridge: Bridge, log: Logger, name: str, group_ids: list[int], **kwargs
+    ):
         self.bridge = bridge
         self.log = log
         self.name = name
         self.group_ids = [int(gid) for gid in group_ids]
         self.last_command_time = 0
 
-    def apply_state(self, state, command_throttle_s=1):
-        """
-        Sets the state for all light groups in the room.
-        """
-        current_time = time.time()
-        if current_time - self.last_command_time < command_throttle_s:
-            self.log.debug(f"Room '{self.name}': Command throttled. Skipping.")
+    def apply_state(self, state: dict, command_throttle_s: int = 1):
+        """Setzt den Zustand für alle Lichtgruppen im Raum, mit einem Throttle."""
+        if time.time() - self.last_command_time < command_throttle_s:
             return
-
-        self.log.debug(
-            f"Room '{self.name}': Setting groups {self.group_ids} to state: {state}"
-        )
         try:
             self.bridge.set_group(self.group_ids, state)
-            self.last_command_time = current_time
-        except Exception as e:
-            self.log.error(f"Failed to set state for room '{self.name}': {e}")
+            self.last_command_time = time.time()
+        except PhueException as e:
+            self.log.error(
+                f"Fehler beim Setzen des Zustands für Raum '{self.name}': {e}"
+            )
 
-    def is_any_light_on(self):
-        """
-        Prüft, ob irgendein Licht in dieser Gruppe aktuell eingeschaltet ist.
-        """
+    def is_any_light_on(self) -> bool | None:
+        """Prüft, ob irgendein Licht in der ersten Gruppe des Raumes an ist."""
         if not self.group_ids:
             return False
         try:
-            group_state = self.bridge.get_group(self.group_ids[0])
-            if group_state and "state" in group_state:
-                return group_state["state"].get("any_on", False)
-        except Exception as e:
+            state = self.bridge.get_group(self.group_ids[0], "on")
+            return state if isinstance(state, bool) else None
+        except PhueException as e:
             self.log.error(
-                f"Konnte den Status für Gruppe {self.group_ids[0]} nicht abrufen: {e}"
+                f"Konnte Status für Gruppe {self.group_ids[0]} nicht abrufen: {e}"
             )
             return None
-        return False
 
-    def get_current_state(self):
-        """
-        Holt den aktuellen, detaillierten Lichtzustand der Gruppe von der Bridge.
-        Ist robuster gegen fehlende 'action'-Attribute bei bestimmten Gruppentypen.
-        """
+    def get_current_state(self) -> dict | None:
+        """Holt den aktuellen Lichtzustand der ersten Gruppe des Raumes."""
         if not self.group_ids:
             return None
         try:
-            group_id = self.group_ids[0]
-            group_data = self.bridge.get_group(group_id)
-
-            if group_data and "action" in group_data:
-                group_action = group_data["action"]
-                relevant_keys = ["on", "bri", "ct", "hue", "sat"]
-                return {
-                    key: group_action.get(key)
-                    for key in relevant_keys
-                    if key in group_action
-                }
-
-            elif group_data and "state" in group_data:
-                self.log.warning(
-                    f"Gruppe {group_id} hat keinen 'action'-Zustand. Verwende 'state' als Fallback."
-                )
-                group_state = group_data["state"]
-                return {"on": group_state.get("any_on"), "bri": group_state.get("bri")}
-
-        except Exception as e:
+            group_data = self.bridge.get_group(self.group_ids[0])
+            return group_data.get("action")
+        except PhueException as e:
             self.log.error(
-                f"Konnte den Zustand für Gruppe {self.group_ids[0]} nicht abrufen: {e}"
+                f"Konnte Zustand für Gruppe {self.group_ids[0]} nicht abrufen: {e}"
             )
             return None
-
-        self.log.warning(
-            f"Konnte keinen gültigen Zustand für Gruppe {self.group_ids[0]} ermitteln."
-        )
-        return None

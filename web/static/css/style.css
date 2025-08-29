@@ -1,24 +1,28 @@
+/* Globale Stile und Schriftarten */
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #f0f2f5; /* Ein leichtes Grau als Hintergrund */
+    background-color: #f0f2f5;
+    color: #1f2937;
 }
 
+/* Aktiver Tab in der Navigation */
 .tab-active {
-    border-bottom-color: #3b82f6; /* Tailwind blue-500 */
+    border-bottom-color: #3b82f6; /* blue-500 */
     color: #3b82f6;
-    font-weight: 600; /* semi-bold */
+    font-weight: 600;
 }
 
+/* Hintergrund für Modals (Pop-ups) */
 .modal-backdrop {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
+/* Container für die Log-Anzeige */
 .log-container {
-    background-color: #1f2937; /* Tailwind gray-800 */
-    color: #d1d5db; /* Tailwind gray-300 */
+    background-color: #1f2937; /* gray-800 */
+    color: #d1d5db; /* gray-300 */
     font-family: monospace;
     font-size: 0.875rem;
-    line-height: 1.25rem;
     padding: 1rem;
     border-radius: 0.5rem;
     max-height: 400px;
@@ -26,41 +30,18 @@ body {
     white-space: pre-wrap;
 }
 
-/* Styles for FAQ Accordion in der Hilfe-Seite */
-.faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
-}
-
-.faq-question i {
-    transition: transform 0.3s ease-in-out;
-}
-
-/* Stile für das Routine-Akkordeon */
-.routine-details {
+/* Akkordeon-Stile für FAQ, Routinen und Status */
+.faq-answer, .routine-details, .status-details {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease-in-out;
 }
 
-.routine-header i {
+.faq-question i, .routine-header i, .status-header i {
     transition: transform 0.3s ease-in-out;
 }
 
-/* NEU: Stile für das Status-Akkordeon */
-.status-details {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease-in-out;
-}
-
-.status-header i {
-    transition: transform 0.3s ease-in-out;
-}
-
-
-/* Stile für die interaktive Zeitleiste */
+/* Stile für die interaktive Zeitleiste im Routine-Editor */
 .timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
     width: 16px; height: 32px;
@@ -74,58 +55,23 @@ body {
     cursor: pointer; pointer-events: auto;
 }
 
-/* Stile für den Helligkeits-Slider */
-.brightness-slider {
+/* Stile für Helligkeits- und Farbtemperatur-Slider */
+.brightness-slider, .ct-slider {
     -webkit-appearance: none; appearance: none;
     width: 100%; height: 10px;
     border-radius: 5px;
-    background: linear-gradient(to right, #6b7280, #fef08a);
-    outline: none;
-    opacity: 0.8;
-    transition: opacity .2s;
-}
-.brightness-slider:hover {
-    opacity: 1;
-}
-.brightness-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 2px solid #6b7280; /* grauer Rand */
-    cursor: pointer;
-}
-.brightness-slider::-moz-range-thumb {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 2px solid #6b7280;
-    cursor: pointer;
-}
-
-.chart-container {
-    height: 600px;
-}
-
-.chart-inner-wrapper {
-    min-width: 1200px;
-    padding: 0.5rem;
-}
-
-/* Stile für den Farbtemperatur-Slider */
-.ct-slider {
-    -webkit-appearance: none; appearance: none;
-    width: 100%; height: 10px;
-    border-radius: 5px;
-    background: linear-gradient(to right, #e6f2ff, #ffae34);
     outline: none;
     opacity: 0.9;
     transition: opacity .2s;
 }
-.ct-slider:hover {
+.brightness-slider:hover, .ct-slider:hover {
     opacity: 1;
 }
-.ct-slider::-webkit-slider-thumb {
+
+.brightness-slider { background: linear-gradient(to right, #6b7280, #fef08a); }
+.ct-slider { background: linear-gradient(to right, #e6f2ff, #ffae34); }
+
+.brightness-slider::-webkit-slider-thumb, .ct-slider::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
     width: 20px; height: 20px;
     border-radius: 50%;
@@ -133,10 +79,16 @@ body {
     border: 2px solid #6b7280;
     cursor: pointer;
 }
-.ct-slider::-moz-range-thumb {
+.brightness-slider::-moz-range-thumb, .ct-slider::-moz-range-thumb {
     width: 20px; height: 20px;
     border-radius: 50%;
     background: #ffffff;
     border: 2px solid #6b7280;
     cursor: pointer;
+}
+
+/* Chart-Container für die Analyse-Seite */
+.chart-container {
+    height: 500px;
+    position: relative;
 }

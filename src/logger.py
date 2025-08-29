@@ -1,31 +1,25 @@
+# src/logger.py
 import logging
 import sys
+import os
+
 
 class Logger:
     """
     Initialisiert und konfiguriert einen Logger, der sowohl in die Konsole
     als auch in eine Datei schreibt.
     """
-    # HINWEIS: Ändere logging.INFO zu logging.DEBUG, um alle Details zu sehen.
-    def __init__(self, log_file='info.log', level=logging.INFO):
-        """
-        Initialisiert den Logger. Stellt sicher, dass Handler nicht dupliziert werden.
-        
-        Args:
-            log_file (str): Der Dateipfad für die Log-Datei.
-            level (int): Das Logging-Level (z.B. logging.DEBUG, logging.INFO).
-        """
+
+    def __init__(self, log_file, level=logging.INFO):
         self.logger = logging.getLogger("HueRoutineAppLogger")
-        
-        # Konfiguriere den Logger nur, wenn er noch keine Handler hat.
-        # Das verhindert doppelte Log-Einträge bei mehrmaliger Instanziierung.
+
         if not self.logger.handlers:
             self.logger.setLevel(level)
             self.logger.propagate = False
 
             formatter = logging.Formatter(
-                '%(asctime)s - %(levelname)s - [%(module)s.py:%(lineno)d] - %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S'
+                "%(asctime)s - %(levelname)s - [%(module)s.py:%(lineno)d] - %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
             )
 
             # Konsolen-Handler
@@ -34,7 +28,8 @@ class Logger:
             self.logger.addHandler(ch)
 
             # Datei-Handler
-            fh = logging.FileHandler(log_file, mode='a', encoding='utf-8')
+            os.makedirs(os.path.dirname(log_file), exist_ok=True)
+            fh = logging.FileHandler(log_file, mode="a", encoding="utf-8")
             fh.setFormatter(formatter)
             self.logger.addHandler(fh)
 

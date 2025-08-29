@@ -1,20 +1,26 @@
-# ================================================================= #
-# Project-specific files
-# ================================================================= #
-# Ignoriert die lokale Konfigurationsdatei. So kann jeder Server
-# (z.B. bei dir und bei deiner Oma) seine eigene Konfiguration haben.
-config.yaml
-config.backup.yaml
+# Python Byte-compiled / Cache
+__pycache__/
+*.py[codz]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+
+# Virtual Environments
+.venv/
+env/
+venv/
+
+# Project-specific ignores
+/data/
 sensor_data.db
 
-# Ignoriert die Statusdatei, da diese Laufzeitinformationen enthält,
-# die nicht versioniert werden sollen.
-status.json
-
-
-# ================================================================= #
-# Standard Python .gitignore (deine Vorlage)
-# ================================================================= #
+# IDE / Editor specific
+.vscode/
+.idea/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
