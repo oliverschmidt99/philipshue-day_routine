@@ -103,7 +103,7 @@ function runMainApp() {
     });
     addListener("btn-add-default-scenes", "click", () => {
       api.systemAction(
-        "/api/scenes/add_defaults",
+        "/api/system/scenes/add_defaults",
         "Möchtest du die Standard-Szenen hinzufügen oder aktualisieren? Deine eigenen Szenen bleiben erhalten."
       );
     });
@@ -387,7 +387,7 @@ function runMainApp() {
 
   const setupBridgeDevicesTab = async () => {
     try {
-      const items = await api.loadBridgeItems();
+      const items = await api.loadBridgeData();
       ui.renderBridgeDevices(items);
     } catch (error) {
       ui.showToast(`Fehler: ${error.message}`, true);
@@ -451,12 +451,7 @@ function runMainApp() {
       return;
     }
     try {
-      const data = await api.loadChartData(
-        sensorId,
-        period,
-        date,
-        avgWindow
-      );
+      const data = await api.loadChartData(sensorId, period, date, avgWindow);
       chartInstance = ui.renderChart(chartInstance, data, period);
     } catch (error) {
       ui.showToast(error.message, true);
@@ -520,10 +515,15 @@ function runMainApp() {
     settings.log_level = document.getElementById("setting-loglevel").value;
     config.global_settings = settings;
     config.bridge_ip = document.getElementById("setting-bridge-ip").value;
+
+    // KORREKTUR: Leere Felder werden als 'null' behandelt, aber nur wenn sie wirklich leer sind
+    const latValue = document.getElementById("setting-latitude").value;
+    const lonValue = document.getElementById("setting-longitude").value;
     config.location = {
-      latitude: parseFloat(document.getElementById("setting-latitude").value),
-      longitude: parseFloat(document.getElementById("setting-longitude").value),
+      latitude: latValue ? parseFloat(latValue) : null,
+      longitude: lonValue ? parseFloat(lonValue) : null,
     };
+
     const btn = document.getElementById("save-button");
     btn.disabled = true;
     btn.textContent = "Speichere...";
@@ -605,6 +605,7 @@ function runMainApp() {
       config.routines.length - 1,
       Object.keys(config.scenes),
       config.rooms,
+      bridgeData.groups,
       bridgeData.sensors
     );
   };

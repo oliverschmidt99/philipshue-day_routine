@@ -41,7 +41,6 @@ export function showToast(message, isError = false) {
   } translate-y-20 opacity-0`;
   toastElement.classList.remove("hidden");
 
-  // Force reflow
   void toastElement.offsetWidth;
 
   toastElement.classList.remove("translate-y-20", "opacity-0");
@@ -118,90 +117,47 @@ export function renderBridgeDevices(items) {
   if (!bridgeDevicesContainer) return;
 
   const renderItem = (item, type) => `
-        <li class="flex justify-between items-center py-2 border-b" data-id="${
-          item.id
-        }" data-type="${type}">
+        <li class="flex justify-between items-center py-2 border-b" data-id="${item.id}" data-type="${type}">
             <div class="item-view flex items-center">
-                <span class="font-mono text-xs text-gray-400 mr-2 w-8 text-right">${
-                  item.id
-                }</span>
+                <span class="font-mono text-xs text-gray-400 mr-2 w-8 text-right">${item.id}</span>
                 <span class="item-name">${item.name}</span>
             </div>
             <div class="item-edit hidden flex-grow ml-4">
-                <input type="text" value="${
-                  item.name
-                }" class="border-gray-300 rounded-md shadow-sm text-sm p-1 w-full">
+                <input type="text" value="${item.name}" class="border-gray-300 rounded-md shadow-sm text-sm p-1 w-full">
             </div>
             <div class="item-actions flex items-center flex-shrink-0">
                 <button data-action="save-rename" class="hidden ml-2 text-sm bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600">Speichern</button>
                 <button data-action="cancel-rename" class="hidden ml-1 text-sm bg-gray-500 text-white py-1 px-2 rounded hover:bg-gray-600">X</button>
                 <button data-action="edit-rename" class="ml-2 text-sm bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600">Ändern</button>
-                <button data-action="delete-item" class="ml-1 text-sm bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"><i class="fas fa-trash"></i></button>
             </div>
         </li>
     `;
 
-  const groupsHtml = items.grouped_lights
-    .map((group) => {
-      const lightsHtml =
-        group.lights && group.lights.length > 0
-          ? group.lights.map((light) => renderItem(light, "light")).join("")
-          : '<li class="text-xs text-gray-500 py-2">Keine Lampen in diesem Raum.</li>';
-
-      return `
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <div class="flex justify-between items-center pb-2 border-b mb-2" data-id="${
-                  group.id
-                }" data-type="group">
-                    <div class="item-view flex items-center">
-                        <i class="fas fa-layer-group mr-3 text-indigo-500"></i>
-                        <h3 class="text-xl font-semibold item-name">${
-                          group.name
-                        }</h3>
-                    </div>
-                    <div class="item-edit hidden flex-grow ml-4">
-                        <input type="text" value="${
-                          group.name
-                        }" class="border-gray-300 rounded-md shadow-sm text-sm p-1 w-full">
-                    </div>
-                    <div class="item-actions flex items-center flex-shrink-0">
-                        <button data-action="save-rename" class="hidden ml-2 text-sm bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600">Speichern</button>
-                        <button data-action="cancel-rename" class="hidden ml-1 text-sm bg-gray-500 text-white py-1 px-2 rounded hover:bg-gray-600">X</button>
-                        <button data-action="edit-rename" class="ml-2 text-sm bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600">Ändern</button>
-                        <button data-action="delete-item" class="ml-1 text-sm bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-                <ul class="space-y-1">${lightsHtml}</ul>
-            </div>
-        `;
-    })
-    .join("");
-
-  let unassignedLightsHtml = "";
-  if (items.unassigned_lights && items.unassigned_lights.length > 0) {
-    unassignedLightsHtml = `
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-question-circle mr-3 text-gray-400"></i>Unsortierte Lampen</h3>
-                <ul class="space-y-1">${items.unassigned_lights
-                  .map((light) => renderItem(light, "light"))
-                  .join("")}</ul>
-            </div>
-        `;
-  }
+  const groupsHtml =
+    items.groups && items.groups.length > 0
+      ? `
+      <div class="bg-white p-4 rounded-lg shadow-md md:col-span-2">
+          <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-layer-group mr-3 text-indigo-500"></i>Gruppen / Räume</h3>
+          <ul class="space-y-1">${items.groups
+            .map((group) => renderItem(group, "group"))
+            .join("")}</ul>
+      </div>
+  `
+      : "";
 
   const sensorsHtml =
     items.sensors && items.sensors.length > 0
       ? `
-        <div class="bg-white p-4 rounded-lg shadow-md">
-             <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-satellite-dish mr-3 text-teal-500"></i>Sensoren</h3>
-            <ul class="space-y-1">${items.sensors
-              .map((sensor) => renderItem(sensor, "sensor"))
-              .join("")}</ul>
-        </div>
-    `
+      <div class="bg-white p-4 rounded-lg shadow-md">
+           <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-satellite-dish mr-3 text-teal-500"></i>Bewegungssensoren</h3>
+          <ul class="space-y-1">${items.sensors
+            .map((sensor) => renderItem(sensor, "sensor"))
+            .join("")}</ul>
+      </div>
+  `
       : "";
 
-  bridgeDevicesContainer.innerHTML = `<div class="space-y-6">${groupsHtml}${unassignedLightsHtml}${sensorsHtml}</div>`;
+  bridgeDevicesContainer.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">${groupsHtml}${sensorsHtml}</div>`;
 }
 
 export function populateAnalyseSensors(sensors) {
@@ -220,7 +176,7 @@ export function populateAnalyseSensors(sensors) {
   });
 }
 
-export function renderChart(chartInstance, data) {
+export function renderChart(chartInstance, data, period) {
   const ctx = document.getElementById("sensor-chart")?.getContext("2d");
   if (!ctx) return null;
   if (chartInstance) chartInstance.destroy();
@@ -238,43 +194,57 @@ export function renderChart(chartInstance, data) {
     return null;
   }
 
-  const getMinMax = (arr) => {
+  const getMinMax = (arr, forceMinZero = false) => {
     const validValues = arr.filter((v) => v !== null && isFinite(v));
     if (validValues.length === 0) return {};
     let minVal = Math.min(...validValues);
     let maxVal = Math.max(...validValues);
-    const padding = (maxVal - minVal) * 0.1 || 5;
-    return {
-      min: Math.floor(minVal - padding),
-      max: Math.ceil(maxVal + padding),
-    };
+    if (minVal === maxVal) {
+      minVal -= 5;
+      maxVal += 5;
+    }
+    const padding = (maxVal - minVal) * 0.1;
+    let finalMin = minVal - padding;
+    if (forceMinZero) {
+      finalMin = Math.max(0, finalMin);
+    }
+    return { min: finalMin, max: maxVal + padding };
   };
-
-  const brightnessRange = getMinMax(data.brightness_avg);
+  const brightnessRange = getMinMax(data.brightness_avg, true);
   const temperatureRange = getMinMax(data.temperature_avg);
-
+  const datasets = [];
+  if (data.brightness_avg && data.brightness_avg.some((v) => v !== null)) {
+    datasets.push({
+      label: "Helligkeit",
+      data: data.brightness_avg,
+      borderColor: "rgba(234, 179, 8, 1)",
+      yAxisID: "y",
+      tension: 0.2,
+      pointRadius: 0,
+      borderWidth: 2.5,
+      spanGaps: true,
+    });
+  }
+  if (data.temperature_avg && data.temperature_avg.some((v) => v !== null)) {
+    datasets.push({
+      label: "Temperatur (°C)",
+      data: data.temperature_avg,
+      borderColor: "rgba(37, 99, 235, 1)",
+      yAxisID: "y1",
+      tension: 0.2,
+      pointRadius: 0,
+      borderWidth: 2.5,
+      spanGaps: true,
+    });
+  }
   return new Chart(ctx, {
     type: "line",
     data: {
       labels: data.labels,
-      datasets: [
-        {
-          label: "Helligkeit (Avg)",
-          data: data.brightness_avg,
-          borderColor: "rgba(234, 179, 8, 1)",
-          yAxisID: "y",
-          tension: 0.2,
-          pointRadius: 0,
-        },
-        {
-          label: "Temperatur (°C, Avg)",
-          data: data.temperature_avg,
-          borderColor: "rgba(37, 99, 235, 1)",
-          yAxisID: "y1",
-          tension: 0.2,
-          pointRadius: 0,
-        },
-      ],
+      datasets: datasets.map((ds) => ({
+        ...ds,
+        data: ds.data.map((val, i) => ({ x: data.labels[i], y: val })),
+      })),
     },
     options: {
       responsive: true,
@@ -282,20 +252,40 @@ export function renderChart(chartInstance, data) {
       scales: {
         x: {
           type: "time",
-          time: { unit: "hour", tooltipFormat: "dd.MM.yyyy HH:mm" },
+          time: {
+            unit: period === "week" ? "day" : "hour",
+            tooltipFormat: "dd.MM.yyyy HH:mm",
+            displayFormats: { hour: "HH:mm", day: "EEE dd.MM" },
+          },
+          title: { display: true, text: "Zeit" },
         },
         y: {
+          type: "linear",
           position: "left",
-          title: { display: true, text: "Helligkeit", color: "#b45309" },
-          ...brightnessRange,
+          title: {
+            display: true,
+            text: "Helligkeit (lightlevel)",
+            color: "#b45309",
+          },
+          min: brightnessRange.min,
+          max: brightnessRange.max,
+          ticks: { color: "#b45309" },
         },
         y1: {
+          type: "linear",
           position: "right",
           title: { display: true, text: "Temperatur (°C)", color: "#2563eb" },
           grid: { drawOnChartArea: false },
-          ...temperatureRange,
+          min: temperatureRange.min,
+          max: temperatureRange.max,
+          ticks: { color: "#2563eb" },
         },
       },
+      plugins: {
+        tooltip: { mode: "index", intersect: false },
+        legend: { display: datasets.length > 0 },
+      },
+      interaction: { intersect: false, mode: "index" },
     },
   });
 }
@@ -507,7 +497,6 @@ export function toggleDetails(headerElement, forceOpen = false) {
 
   if (details.classList.contains("hidden") || forceOpen) {
     details.classList.remove("hidden");
-    // Wichtig: max-height muss kurz nach dem Entfernen von 'hidden' gesetzt werden
     setTimeout(() => {
       details.style.maxHeight = details.scrollHeight + "px";
       icon.style.transform = "rotate(180deg)";
@@ -515,7 +504,6 @@ export function toggleDetails(headerElement, forceOpen = false) {
   } else {
     details.style.maxHeight = "0px";
     icon.style.transform = "rotate(0deg)";
-    // 'hidden' wird nach der Transition hinzugefügt
     details.addEventListener(
       "transitionend",
       () => {
@@ -536,7 +524,6 @@ export function updateStatusTimelines() {
     const now = new Date();
     const nowMins = now.getHours() * 60 + now.getMinutes();
 
-    // Nur zwischen Sonnenauf- und -untergang anzeigen
     if (nowMins < sunriseMins || nowMins > sunsetMins) {
       sunEmoji.style.display = "none";
       return;
@@ -558,10 +545,7 @@ export function updateStatusTimelines() {
     sunEmoji.setAttribute("transform", `translate(${x}, ${y})`);
   });
 }
-// Die `openEditRoutineModal`-Funktion bleibt größtenteils gleich,
-// da sie sehr spezifisch für die Formularerstellung ist.
-// Kleine Anpassungen könnten für die Datenbindung nötig sein.
-// (Hier aus Kürze weggelassen, da keine direkten Fehler drin waren)
+
 export function openEditRoutineModal(
   routine,
   routineIndex,
@@ -777,19 +761,30 @@ export function renderSettings(config) {
   }
 }
 
+// =======================================================================
+// HIER IST DIE KORRIGIERTE FUNKTION
+// =======================================================================
 function renderStatusTimeline(status, sunTimes) {
   const timeToMinutes = (h, m) => h * 60 + m;
   const routineStart = status.daily_time;
   const sunrise = sunTimes ? new Date(sunTimes.sunrise) : null;
   const sunset = sunTimes ? new Date(sunTimes.sunset) : null;
+
+  const sunriseText = sunrise
+    ? sunrise.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "--:--";
+  const sunsetText = sunset
+    ? sunset.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "--:--";
+
   const morningStartMins = timeToMinutes(routineStart.H1, routineStart.M1);
   const eveningEndMins = timeToMinutes(routineStart.H2, routineStart.M2);
   const sunriseMins = sunrise
     ? timeToMinutes(sunrise.getHours(), sunrise.getMinutes())
-    : 330;
+    : 390; // Fallback to 06:30
   const sunsetMins = sunset
     ? timeToMinutes(sunset.getHours(), sunset.getMinutes())
-    : 1290;
+    : 1260; // Fallback to 21:00
   const timeToPercent = (mins) => 10 + (mins / 1439) * 80;
   const timeMarkers = [3, 9, 12, 15, 18, 21];
   let timeMarkersHtml = "";
@@ -854,7 +849,7 @@ function renderStatusTimeline(status, sunTimes) {
   } else if (status.last_scene?.toLowerCase().includes("manuell")) {
     secondaryEmoji = "✋";
     secondaryText = "Manuell";
-  } else if (status.motion_status?.includes("erkannt")) {
+  } else if (status.motion_status?.includes("Bewegung")) {
     secondaryEmoji = "🏃‍♂️";
     secondaryText = "Bewegung";
   } else if (status.last_scene?.toLowerCase().includes("geregelt")) {
@@ -878,6 +873,19 @@ function renderStatusTimeline(status, sunTimes) {
         </div>
     `;
 
+  const brightnessText =
+    status.brightness !== null &&
+    status.brightness !== "N/A" &&
+    typeof status.brightness !== "undefined"
+      ? status.brightness
+      : "--";
+  const temperatureText =
+    status.temperature !== null &&
+    status.temperature !== "N/A" &&
+    typeof status.temperature !== "undefined"
+      ? `${status.temperature}°C`
+      : "--";
+
   return `<div class="bg-white rounded-lg shadow border border-gray-200 status-card">
     <div class="status-header flex justify-between items-center cursor-pointer hover:bg-gray-50 p-2" data-action="toggle-status-details">
         <div class="flex items-center">
@@ -897,15 +905,9 @@ function renderStatusTimeline(status, sunTimes) {
     routineStart.H1
   ).padStart(2, "0")}:${String(routineStart.M1).padStart(2, "0")}</text>
                 <line x1="${sunrisePercent}%" y1="175" x2="${sunrisePercent}%" y2="185" stroke="#f59e0b" stroke-width="2" />
-                <text x="${sunrisePercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f59e0b">${sunrise?.toLocaleTimeString(
-    [],
-    { hour: "2-digit", minute: "2-digit" }
-  )}</text>
+                <text x="${sunrisePercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f59e0b">${sunriseText}</text>
                 <line x1="${sunsetPercent}%" y1="175" x2="${sunsetPercent}%" y2="185" stroke="#f97316" stroke-width="2" />
-                <text x="${sunsetPercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f97316">${sunset?.toLocaleTimeString(
-    [],
-    { hour: "2-digit", minute: "2-digit" }
-  )}</text>
+                <text x="${sunsetPercent}%" y="${yLabelSun}" text-anchor="middle" fill="#f97316">${sunsetText}</text>
                 <line x1="${eveningEndPercent}%" y1="175" x2="${eveningEndPercent}%" y2="185" stroke="#3b82f6" stroke-width="2" />
                 <text x="${eveningEndPercent}%" y="${yLabelRoutine}" text-anchor="middle" fill="#3b82f6" font-weight="bold">${String(
     routineStart.H2
@@ -922,10 +924,10 @@ function renderStatusTimeline(status, sunTimes) {
               status.enabled ? "text-green-600" : "text-red-500"
             }">${status.enabled ? "Aktiviert" : "Deaktiviert"}</span></span>
             <span class="${
-              status.motion_status?.includes("erkannt") ? "text-green-600" : ""
+              status.motion_status?.includes("Bewegung") ? "text-green-600" : ""
             }"><strong >Bewegung:</strong> ${status.motion_status}</span>
-            <span><strong>Helligkeit:</strong> ${status.brightness}</span>
-            <span><strong>Temperatur:</strong> ${status.temperature}°C</span>
+            <span><strong>Helligkeit:</strong> ${brightnessText}</span>
+            <span><strong>Temperatur:</strong> ${temperatureText}</span>
             <span class="md:col-span-2"><strong>Letzte Szene:</strong> ${
               status.last_scene
             }</span>

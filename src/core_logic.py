@@ -75,7 +75,6 @@ class CoreLogic:
                 time.sleep(30)
                 continue
 
-            # Diese Methode läuft, bis die Konfiguration geändert wird oder ein Fehler auftritt
             self._execute_routine_session(bridge)
 
     def _connect_to_bridge(self, config: dict) -> Bridge | None:
@@ -89,7 +88,7 @@ class CoreLogic:
             return None
         try:
             bridge = Bridge(bridge_ip, username=app_key)
-            bridge.get_api()  # Testet die Verbindung
+            bridge.get_api()
             self.log.info(f"Erfolgreich mit Bridge unter {bridge_ip} verbunden.")
             return bridge
         except (RequestsConnectionError, PhueRequestTimeout, OSError) as e:
@@ -108,8 +107,13 @@ class CoreLogic:
             name: Scene(**params) for name, params in config.get("scenes", {}).items()
         }
 
+        # KORREKTUR: Übergibt nur die erwarteten Argumente an die Room-Klasse
         rooms = {
-            rc["name"]: Room(bridge, self.log, **rc) for rc in config.get("rooms", [])
+            rc["name"]: Room(
+                bridge=bridge, log=self.log, name=rc["name"], group_ids=rc["group_ids"]
+            )
+            for rc in config.get("rooms", [])
+            if "name" in rc and "group_ids" in rc
         }
 
         sensors = {}

@@ -67,8 +67,10 @@ def create_app():
     return app
 
 
+# DIESER BLOCK IST ENTSCHEIDEND UND WURDE WIEDER HINZUGEFÜGT
 if __name__ == "__main__":
     flask_app = create_app()
     log = flask_app.logger_instance
     log.info("Starte Flask-Server...")
-    flask_app.run(host="0.0.0.0", port=5000, debug=False)
+    # Port auf 5001 geändert, falls du den auch nutzt
+    flask_app.run(host="0.0.0.0", port=5001, debug=False)

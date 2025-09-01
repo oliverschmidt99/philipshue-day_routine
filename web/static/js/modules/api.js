@@ -52,7 +52,9 @@ export const saveFullConfig = (config) =>
   });
 
 // --- Bridge Data ---
+// HIER IST DIE KORREKTUR: Die Funktion heißt jetzt loadBridgeData und nutzt den korrekten Endpunkt
 export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
+
 export const renameBridgeItem = (itemType, itemId, newName) =>
   fetchAPI("/api/bridge/rename", {
     method: "POST",

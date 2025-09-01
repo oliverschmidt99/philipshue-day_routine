@@ -1,0 +1,98 @@
+app_key: Xvu3ERe2BUC21pyOqOX4QKts5UoiywnQkRLVUrTo
+bridge_ip: 192.168.178.42
+global_settings:
+  datalogger_interval_minutes: 15
+  hysteresis_percent: 25
+  log_level: INFO
+  loop_interval_s: 10
+  status_interval_s: 5
+location:
+  latitude: null
+  longitude: null
+rooms:
+- group_ids:
+  - 1
+  name: Zimmer_Olli
+  sensor_id: 2
+routines:
+- daily_time:
+    H1: 7
+    H2: 19
+    M1: 0
+    M2: 0
+  day:
+    bri_check: false
+    bri_ct: 366
+    do_not_disturb: false
+    max_light_level: 0
+    motion_check: false
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: aus
+  enabled: true
+  evening:
+    bri_check: false
+    bri_ct: 366
+    do_not_disturb: false
+    max_light_level: 0
+    motion_check: false
+    scene_name: entspannen
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: aus
+  morning:
+    bri_check: false
+    bri_ct: 366
+    do_not_disturb: false
+    max_light_level: 0
+    motion_check: false
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: aus
+  name: Test
+  night:
+    bri_check: false
+    bri_ct: 366
+    do_not_disturb: false
+    max_light_level: 0
+    motion_check: false
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: aus
+  room_name: Zimmer_Olli
+scenes:
+  aus:
+    bri: 0
+    ct: 366
+    status: false
+  energie_tanken:
+    bri: 254
+    ct: 156
+    status: true
+  entspannen:
+    bri: 144
+    ct: 447
+    status: true
+  gedimmt:
+    bri: 77
+    ct: 369
+    status: true
+  konzentrieren:
+    bri: 254
+    ct: 233
+    status: true
+  lesen:
+    bri: 254
+    ct: 343
+    status: true
+  nachtlicht:
+    bri: 1
+    ct: 447
+    status: true
