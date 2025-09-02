@@ -4,7 +4,8 @@ API-Endpunkte für Systemaktionen wie Neustart, Update und das Hinzufügen von S
 
 import os
 import subprocess
-from flask import Blueprint, jsonify, current_app
+from flask import Blueprint, jsonify, current_app, render_template
+from jinja2 import TemplateNotFound
 
 system_api = Blueprint("system_api", __name__)
 
@@ -14,6 +15,20 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 RESTART_FLAG_FILE = os.path.join(DATA_DIR, "restart.flag")
 
 
+@system_api.route("/help")
+def get_help_content():
+    """Liest und retourniert den HTML-Inhalt der Hilfeseite."""
+    log = current_app.logger_instance
+    try:
+        # render_template sucht automatisch im 'templates'-Ordner
+        return render_template("hilfe.html")
+    except TemplateNotFound:
+        log.error(
+            "Fehler beim Laden der Hilfeseite: Vorlage 'hilfe.html' nicht gefunden."
+        )
+        return "<p>Fehler: Die Hilfedatei konnte nicht gefunden werden.</p>", 404
+
+
 @system_api.route("/restart", methods=["POST"])
 def restart_app():
     """Löst einen Neustart aus, indem eine Flag-Datei für den Hauptprozess erstellt wird."""
@@ -21,13 +36,10 @@ def restart_app():
     log.info("Neustart-Anforderung über API erhalten. Setze Neustart-Flag.")
     try:
         # Erstelle die leere Flag-Datei
-        with open(RESTART_FLAG_FILE, "w", encoding="utf-8") as f:
+        with open(RESTART_FLAG_FILE, "w", encoding="utf-8") as _:
             pass
-        return jsonify(
-            {
-                "message": "Neustart-Signal wurde gesendet. Die Anwendung wird in Kürze neu starten."
-            }
-        )
+        message = "Neustart-Signal gesendet. Die Anwendung wird in Kürze neu starten."
+        return jsonify({"message": message})
     except IOError as e:
         log.error(f"Konnte Neustart-Flag-Datei nicht erstellen: {e}")
         return jsonify({"error": "Neustart konnte nicht ausgelöst werden."}), 500
@@ -35,7 +47,10 @@ def restart_app():
 
 @system_api.route("/update_app", methods=["POST"])
 def update_app():
-    """Führt 'git pull' im Projektverzeichnis aus und löst dann einen Neustart aus."""
+    """
+    Führt 'git pull' aus, um die Anwendung zu aktualisieren.
+    Lokale Änderungen werden mit 'git stash' zwischengespeichert.
+    """
     log = current_app.logger_instance
     log.info("Update über die API ausgelöst.")
 
@@ -46,18 +61,26 @@ def update_app():
         )
 
     try:
+        subprocess.run(["git", "stash"], cwd=BASE_DIR, check=True)
+        log.info("Lokale Änderungen wurden mit 'git stash' gesichert.")
+
         result = subprocess.run(
-            ["git", "pull"], cwd=BASE_DIR, capture_output=True, text=True, check=True
+            ["git", "pull", "--rebase"],
+            cwd=BASE_DIR,
+            capture_output=True,
+            text=True,
+            check=True,
         )
         log.info(f"Git Pull erfolgreich: {result.stdout}")
-        # Nach einem erfolgreichen Update ebenfalls einen Neustart auslösen
-        with open(RESTART_FLAG_FILE, "w", encoding="utf-8") as f:
+
+        subprocess.run(["git", "stash", "pop"], cwd=BASE_DIR, check=True)
+        log.info("Gesicherte Änderungen wurden wieder angewendet.")
+
+        with open(RESTART_FLAG_FILE, "w", encoding="utf-8") as _:
             pass
-        return jsonify(
-            {
-                "message": f"Update erfolgreich!\n{result.stdout}\nAnwendung wird neu gestartet."
-            }
-        )
+        message = f"Update erfolgreich!\n{result.stdout}\nAnwendung wird neu gestartet."
+        return jsonify({"message": message})
+
     except FileNotFoundError:
         log.error("Git ist nicht installiert oder nicht im PATH.")
         return (
@@ -65,7 +88,7 @@ def update_app():
             500,
         )
     except subprocess.CalledProcessError as e:
-        log.error(f"Fehler bei 'git pull': {e.stderr}")
+        log.error(f"Fehler bei Git-Operation: {e.stderr}")
         return jsonify({"error": f"Fehler beim Update: {e.stderr}"}), 500
 
 
