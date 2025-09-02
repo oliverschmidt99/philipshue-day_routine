@@ -39,7 +39,7 @@ function runMainApp() {
       ]);
       renderAll();
       setupEventListeners();
-      loadSettings();
+      loadSettings(); // Stellt sicher, dass die Einstellungen geladen werden
     } catch (error) {
       ui.showToast(`Initialisierungsfehler: ${error.message}`, true);
       console.error(error);
@@ -49,7 +49,7 @@ function runMainApp() {
   const renderAll = () => {
     ui.renderRoutines(config, bridgeData);
     ui.renderScenes(config.scenes);
-    ui.renderSettings(config);
+    // ui.renderSettings(config) wird durch loadSettings() beim Initialisieren ersetzt
   };
 
   const setupEventListeners = () => {
@@ -480,6 +480,7 @@ function runMainApp() {
   };
 
   const loadSettings = () => {
+    // KORREKTUR: Lädt die Konfigurationswerte in die Einstellungsfelder
     const settings = config.global_settings || {};
     const location = config.location || {};
     document.getElementById("setting-bridge-ip").value = config.bridge_ip || "";
@@ -499,6 +500,7 @@ function runMainApp() {
   };
 
   const saveFullConfig = async () => {
+    // KORREKTUR: Liest die Werte aus den Formularfeldern und speichert sie
     const settings = config.global_settings || {};
     settings.hysteresis_percent = parseInt(
       document.getElementById("setting-hysteresis").value
@@ -516,12 +518,10 @@ function runMainApp() {
     config.global_settings = settings;
     config.bridge_ip = document.getElementById("setting-bridge-ip").value;
 
-    // KORREKTUR: Leere Felder werden als 'null' behandelt, aber nur wenn sie wirklich leer sind
-    const latValue = document.getElementById("setting-latitude").value;
-    const lonValue = document.getElementById("setting-longitude").value;
+    // Sendet leere Strings, wenn die Felder leer sind. Das Backend kümmert sich um den Rest.
     config.location = {
-      latitude: latValue ? parseFloat(latValue) : null,
-      longitude: lonValue ? parseFloat(lonValue) : null,
+      latitude: document.getElementById("setting-latitude").value,
+      longitude: document.getElementById("setting-longitude").value,
     };
 
     const btn = document.getElementById("save-button");

@@ -8,7 +8,7 @@ import sqlite3
 from datetime import datetime, timedelta
 import pandas as pd
 from flask import Blueprint, jsonify, request, Response, current_app
-from web.server import DB_FILE, LOG_FILE, STATUS_FILE  # Absoluter Import
+from web.server import DB_FILE, LOG_FILE, STATUS_FILE
 
 data_api = Blueprint("data_api", __name__)
 
@@ -19,29 +19,33 @@ def get_data_history():
     log = current_app.logger_instance
     try:
         sensor_id_str = request.args.get("sensor_id")
-        period = request.args.get("period", "day")
         date_str = request.args.get("date")
+        period = request.args.get("period", "day")
         avg_window_str = request.args.get("avg", "1")
 
         if not sensor_id_str or not date_str:
-            return jsonify({"error": "Sensor-ID und Datum sind erforderlich."}), 400
+            return (
+                jsonify(
+                    {"error": "Parameter 'sensor_id' und 'date' sind erforderlich."}
+                ),
+                400,
+            )
 
         sensor_id = int(sensor_id_str)
+        avg_window = (
+            int(avg_window_str)
+            if avg_window_str.isdigit() and int(avg_window_str) > 0
+            else 1
+        )
+
+        start_date = datetime.fromisoformat(date_str).replace(
+            hour=0, minute=0, second=0
+        )
+        end_date = start_date + (
+            timedelta(days=7) if period == "week" else timedelta(days=1)
+        )
+
         light_sensor_id, temp_sensor_id = sensor_id + 1, sensor_id + 2
-        avg_window = int(avg_window_str) if avg_window_str.isdigit() else 1
-
-        base_date = datetime.fromisoformat(date_str)
-        if period == "week":
-            start_date = base_date - timedelta(days=base_date.weekday())
-            end_date = start_date + timedelta(days=7)
-            resample_rule = "30min"
-        else:  # 'day'
-            start_date = base_date
-            end_date = start_date + timedelta(days=1)
-            resample_rule = "5min"
-
-        start_date = start_date.replace(hour=0, minute=0, second=0)
-        end_date = end_date.replace(hour=0, minute=0, second=0)
 
         query = """
             SELECT timestamp, measurement_type, value
@@ -59,35 +63,46 @@ def get_data_history():
                     start_date.isoformat(),
                     end_date.isoformat(),
                 ),
-                parse_dates=["timestamp"],
             )
 
         if df.empty:
             return jsonify({"labels": [], "brightness_avg": [], "temperature_avg": []})
 
-        df_pivot = df.pivot_table(
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df_pivot = df.pivot(
             index="timestamp", columns="measurement_type", values="value"
         )
-        df_resampled = df_pivot.resample(resample_rule).mean()
 
-        if "brightness" in df_resampled.columns and avg_window > 1:
-            df_resampled["brightness"] = (
-                df_resampled["brightness"].rolling(window=avg_window).mean()
+        # KORREKTUR: Sicherstellen, dass beide Spalten existieren, um KeyErrors zu vermeiden
+        if "brightness" not in df_pivot:
+            df_pivot["brightness"] = pd.NA
+        if "temperature" not in df_pivot:
+            df_pivot["temperature"] = pd.NA
+
+        if avg_window > 1:
+            df_pivot["brightness"] = (
+                df_pivot["brightness"].rolling(window=avg_window, min_periods=1).mean()
+            )
+            df_pivot["temperature"] = (
+                df_pivot["temperature"].rolling(window=avg_window, min_periods=1).mean()
             )
 
-        df_resampled = df_resampled.interpolate(method="time")
+        df_resampled = df_pivot.resample("5min").mean().interpolate(method="time")
 
         return jsonify(
             {
                 "labels": df_resampled.index.strftime("%Y-%m-%dT%H:%M:%S").tolist(),
-                "brightness_avg": df_resampled.get("brightness")
-                .where(pd.notna(df_resampled.get("brightness")), None)
+                "brightness_avg": df_resampled["brightness"]
+                .round(2)
+                .where(pd.notna(df_resampled["brightness"]), None)
                 .tolist(),
-                "temperature_avg": df_resampled.get("temperature")
-                .where(pd.notna(df_resampled.get("temperature")), None)
+                "temperature_avg": df_resampled["temperature"]
+                .round(2)
+                .where(pd.notna(df_resampled["temperature"]), None)
                 .tolist(),
             }
         )
+
     except (sqlite3.Error, ValueError, KeyError) as e:
         log.error(f"Fehler bei der Abfrage der Datenhistorie: {e}", exc_info=True)
         return jsonify({"error": "Datenbankfehler oder ungültige Daten."}), 500

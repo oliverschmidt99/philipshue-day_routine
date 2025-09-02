@@ -26,6 +26,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
 STATUS_FILE = os.path.join(DATA_DIR, "status.json")
+RESTART_FLAG_FILE = os.path.join(DATA_DIR, "restart.flag")  # NEU: Pfad zur Flag-Datei
 
 
 class CoreLogic:
@@ -41,6 +42,8 @@ class CoreLogic:
     def _init_database(self):
         """Stellt sicher, dass die Datenbank und die Tabelle existieren."""
         try:
+            if os.path.exists(RESTART_FLAG_FILE):
+                os.remove(RESTART_FLAG_FILE)  # Alte Flag-Datei bei Start entfernen
             with sqlite3.connect(DB_FILE) as con:
                 cur = con.cursor()
                 cur.execute(
@@ -53,7 +56,7 @@ class CoreLogic:
                     """
                 )
             self.log.info("Datenbank initialisiert.")
-        except sqlite3.Error as e:
+        except (sqlite3.Error, IOError) as e:
             self.log.error(f"Datenbankfehler bei Initialisierung: {e}", exc_info=True)
 
     def run_main_loop(self):
@@ -77,6 +80,11 @@ class CoreLogic:
 
             self._execute_routine_session(bridge)
 
+            if self.data_logger_thread and self.data_logger_thread.is_alive():
+                self.stop_event.set()
+                self.data_logger_thread.join()
+                self.stop_event.clear()
+
     def _connect_to_bridge(self, config: dict) -> Bridge | None:
         """Versucht, eine Verbindung zur Hue Bridge herzustellen."""
         bridge_ip = config.get("bridge_ip")
@@ -95,6 +103,60 @@ class CoreLogic:
             self.log.error(f"Netzwerkfehler zur Bridge: {e}.")
             return None
 
+    def _data_logger_worker(self, sensors: dict, interval_minutes: int):
+        """
+        Ein Worker-Thread, der periodisch Sensordaten in die Datenbank schreibt.
+        """
+        self.log.info(f"Datenlogger gestartet. Intervall: {interval_minutes} Minuten.")
+        while not self.stop_event.is_set():
+            try:
+                now_iso = datetime.now().isoformat()
+                measurements = []
+
+                for _, sensor_obj in sensors.items():
+                    brightness = sensor_obj.get_brightness()
+                    temperature = sensor_obj.get_temperature()
+
+                    if brightness is not None:
+                        measurements.append(
+                            (
+                                now_iso,
+                                sensor_obj.light_sensor_id,
+                                "brightness",
+                                brightness,
+                            )
+                        )
+                    if temperature is not None:
+                        measurements.append(
+                            (
+                                now_iso,
+                                sensor_obj.temp_sensor_id,
+                                "temperature",
+                                temperature,
+                            )
+                        )
+
+                if measurements:
+                    with sqlite3.connect(DB_FILE) as con:
+                        cur = con.cursor()
+                        cur.executemany(
+                            "INSERT OR IGNORE INTO measurements VALUES (?, ?, ?, ?)",
+                            measurements,
+                        )
+                        con.commit()
+                    self.log.debug(
+                        f"{len(measurements)} neue Messwerte in die Datenbank geschrieben."
+                    )
+
+            except (sqlite3.Error, PhueRequestTimeout, RequestsConnectionError) as e:
+                self.log.error(f"Fehler im Datenlogger-Thread: {e}", exc_info=True)
+
+            for _ in range(interval_minutes * 60):
+                if self.stop_event.is_set():
+                    break
+                time.sleep(1)
+        self.log.info("Datenlogger-Thread beendet.")
+
     def _execute_routine_session(self, bridge: Bridge):
         """
         Initialisiert und führt alle Routinen aus, bis eine Änderung der
@@ -106,21 +168,35 @@ class CoreLogic:
         scenes = {
             name: Scene(**params) for name, params in config.get("scenes", {}).items()
         }
-
-        # KORREKTUR: Übergibt nur die erwarteten Argumente an die Room-Klasse
         rooms = {
-            rc["name"]: Room(
-                bridge=bridge, log=self.log, name=rc["name"], group_ids=rc["group_ids"]
-            )
-            for rc in config.get("rooms", [])
-            if "name" in rc and "group_ids" in rc
+            rc["name"]: Room(bridge, self.log, **rc) for rc in config.get("rooms", [])
         }
 
         sensors = {}
-        for room_config in config.get("rooms", []):
-            if sensor_id := room_config.get("sensor_id"):
-                if sensor_id not in sensors:
-                    sensors[sensor_id] = Sensor(bridge, sensor_id, self.log)
+        try:
+            all_bridge_sensors_dict = bridge.get_api().get("sensors", {})
+            for sensor_id, details in all_bridge_sensors_dict.items():
+                if details.get("type") == "ZLLPresence":
+                    int_sensor_id = int(sensor_id)
+                    if int_sensor_id not in sensors:
+                        sensors[int_sensor_id] = Sensor(bridge, int_sensor_id, self.log)
+            self.log.info(
+                f"{len(sensors)} Bewegungssensoren für das Daten-Logging gefunden."
+            )
+        except (PhueRequestTimeout, RequestsConnectionError) as e:
+            self.log.error(f"Konnte Sensoren nicht von der Bridge abrufen: {e}")
+
+        if (
+            not self.data_logger_thread or not self.data_logger_thread.is_alive()
+        ) and sensors:
+            self.stop_event.clear()
+            datalogger_interval = global_settings.get("datalogger_interval_minutes", 15)
+            self.data_logger_thread = threading.Thread(
+                target=self._data_logger_worker,
+                args=(sensors, datalogger_interval),
+                daemon=True,
+            )
+            self.data_logger_thread.start()
 
         routines = [
             Routine(
@@ -152,6 +228,13 @@ class CoreLogic:
         self.log.info(f"{len(routines)} Routinen werden jetzt ausgeführt...")
         while not self.stop_event.is_set():
             try:
+                # KORREKTUR: Prüfe auf die Neustart-Flag-Datei
+                if os.path.exists(RESTART_FLAG_FILE):
+                    self.log.info("Neustart-Signal erkannt. Beende die Anwendung...")
+                    os.remove(RESTART_FLAG_FILE)
+                    self.stop_event.set()  # Signalisiert allen Threads und der Hauptschleife, zu stoppen
+                    return  # Verlässt die Routine-Session, was zum Beenden des Programms führt
+
                 if self.config_manager.get_last_modified_time() > last_mod_time:
                     self.log.info("Änderung in config.yaml erkannt. Lade Logik neu.")
                     return

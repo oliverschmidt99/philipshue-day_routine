@@ -1,14 +1,14 @@
 app_key: Xvu3ERe2BUC21pyOqOX4QKts5UoiywnQkRLVUrTo
 bridge_ip: 192.168.178.42
 global_settings:
-  datalogger_interval_minutes: 15
+  datalogger_interval_minutes: 1
   hysteresis_percent: 25
   log_level: INFO
   loop_interval_s: 10
-  status_interval_s: 5
+  status_interval_s: 60
 location:
-  latitude: null
-  longitude: null
+  latitude: '50'
+  longitude: '7'
 rooms:
 - group_ids:
   - 1
@@ -55,6 +55,58 @@ routines:
       sec: 0
     x_scene_name: aus
   name: Test
+  night:
+    bri_check: false
+    bri_ct: 366
+    do_not_disturb: false
+    max_light_level: 0
+    motion_check: false
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: aus
+  room_name: Zimmer_Olli
+- daily_time:
+    H1: 7
+    H2: 23
+    M1: 0
+    M2: 0
+  day:
+    bri_check: false
+    bri_ct: 366
+    do_not_disturb: false
+    max_light_level: 0
+    motion_check: false
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: aus
+  enabled: true
+  evening:
+    bri_check: false
+    bri_ct: 366
+    do_not_disturb: false
+    max_light_level: 0
+    motion_check: false
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: aus
+  morning:
+    bri_check: false
+    bri_ct: 366
+    do_not_disturb: false
+    max_light_level: 0
+    motion_check: false
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: aus
+  name: test
   night:
     bri_check: false
     bri_ct: 366

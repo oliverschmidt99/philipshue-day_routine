@@ -7,6 +7,7 @@ import requests
 from flask import Blueprint, jsonify, request, current_app
 from phue import Bridge, PhueException
 
+# Erstellt das Blueprint-Objekt, bevor es verwendet wird
 setup_api = Blueprint("setup_api", __name__)
 
 
@@ -60,10 +61,15 @@ def save_setup_config():
     log = current_app.logger_instance
     try:
         data = request.get_json()
+
+        # FIX: Leere Werte für Längen- und Breitengrad abfangen
+        latitude = data.get("latitude") or ""
+        longitude = data.get("longitude") or ""
+
         initial_config = {
             "bridge_ip": data.get("bridge_ip"),
             "app_key": data.get("app_key"),
-            "location": data.get("location", {}),
+            "location": {"latitude": latitude, "longitude": longitude},
             "global_settings": {
                 "loop_interval_s": 1,
                 "status_interval_s": 5,

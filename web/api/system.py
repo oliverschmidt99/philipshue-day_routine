@@ -1,10 +1,72 @@
 """
-API-Endpunkte für Systemaktionen wie das Hinzufügen von Standard-Szenen.
+API-Endpunkte für Systemaktionen wie Neustart, Update und das Hinzufügen von Szenen.
 """
 
+import os
+import subprocess
 from flask import Blueprint, jsonify, current_app
 
 system_api = Blueprint("system_api", __name__)
+
+# Finde das Hauptverzeichnis und das Datenverzeichnis
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+RESTART_FLAG_FILE = os.path.join(DATA_DIR, "restart.flag")
+
+
+@system_api.route("/restart", methods=["POST"])
+def restart_app():
+    """Löst einen Neustart aus, indem eine Flag-Datei für den Hauptprozess erstellt wird."""
+    log = current_app.logger_instance
+    log.info("Neustart-Anforderung über API erhalten. Setze Neustart-Flag.")
+    try:
+        # Erstelle die leere Flag-Datei
+        with open(RESTART_FLAG_FILE, "w", encoding="utf-8") as f:
+            pass
+        return jsonify(
+            {
+                "message": "Neustart-Signal wurde gesendet. Die Anwendung wird in Kürze neu starten."
+            }
+        )
+    except IOError as e:
+        log.error(f"Konnte Neustart-Flag-Datei nicht erstellen: {e}")
+        return jsonify({"error": "Neustart konnte nicht ausgelöst werden."}), 500
+
+
+@system_api.route("/update_app", methods=["POST"])
+def update_app():
+    """Führt 'git pull' im Projektverzeichnis aus und löst dann einen Neustart aus."""
+    log = current_app.logger_instance
+    log.info("Update über die API ausgelöst.")
+
+    if not os.path.isdir(os.path.join(BASE_DIR, ".git")):
+        return (
+            jsonify({"error": "Kein Git-Repository gefunden. Update nicht möglich."}),
+            500,
+        )
+
+    try:
+        result = subprocess.run(
+            ["git", "pull"], cwd=BASE_DIR, capture_output=True, text=True, check=True
+        )
+        log.info(f"Git Pull erfolgreich: {result.stdout}")
+        # Nach einem erfolgreichen Update ebenfalls einen Neustart auslösen
+        with open(RESTART_FLAG_FILE, "w", encoding="utf-8") as f:
+            pass
+        return jsonify(
+            {
+                "message": f"Update erfolgreich!\n{result.stdout}\nAnwendung wird neu gestartet."
+            }
+        )
+    except FileNotFoundError:
+        log.error("Git ist nicht installiert oder nicht im PATH.")
+        return (
+            jsonify({"error": "'git' Kommando nicht gefunden. Ist Git installiert?"}),
+            500,
+        )
+    except subprocess.CalledProcessError as e:
+        log.error(f"Fehler bei 'git pull': {e.stderr}")
+        return jsonify({"error": f"Fehler beim Update: {e.stderr}"}), 500
 
 
 @system_api.route("/scenes/add_defaults", methods=["POST"])
