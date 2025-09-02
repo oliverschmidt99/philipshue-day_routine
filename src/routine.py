@@ -88,7 +88,11 @@ class Routine:
         scene_to_apply = self.scenes.get(scene_name)
         if scene_to_apply:
             self.log.info(f"Routine '{self.name}': Wende Szene '{scene_name}' an.")
-            self.room.apply_state(scene_to_apply.get_state())
+            # Lese den Drosselungswert aus den globalen Einstellungen
+            throttle_s = self.global_settings.get("command_throttle_s", 1.0)
+            self.room.apply_state(
+                scene_to_apply.get_state(), command_throttle_s=throttle_s
+            )
             self.last_scene_name = scene_name
         else:
             self.log.warning(
@@ -98,14 +102,10 @@ class Routine:
     def get_status(self) -> dict:
         """Gibt den aktuellen Status der Routine für die UI zurück."""
         motion_status = "Deaktiviert"
-        if self.sensor and self.config.get(self.current_period, {}).get("motion_check"):
+        if self.config.get(self.current_period, {}).get("motion_check"):
             motion_status = (
                 "In Bewegung" if self.is_in_motion_state else "Keine Bewegung"
             )
-
-        # Hinzugefügte Logik zum Abrufen von Sensorwerten
-        brightness = self.sensor.get_brightness() if self.sensor else "N/A"
-        temperature = self.sensor.get_temperature() if self.sensor else "N/A"
 
         return {
             "name": self.name,
@@ -114,9 +114,4 @@ class Routine:
             "motion_status": motion_status,
             "last_scene": self.last_scene_name,
             "daily_time": self.config.get("daily_time", {}),
-            "brightness": brightness,
-            "temperature": temperature,
-            "last_motion_iso": (
-                self.last_motion_time.isoformat() if self.last_motion_time else None
-            ),
         }

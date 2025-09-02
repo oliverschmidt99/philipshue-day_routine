@@ -1,6 +1,7 @@
 app_key: Xvu3ERe2BUC21pyOqOX4QKts5UoiywnQkRLVUrTo
 bridge_ip: 192.168.178.42
 global_settings:
+  command_throttle_s: 1
   datalogger_interval_minutes: 1
   hysteresis_percent: 25
   log_level: INFO
@@ -13,7 +14,7 @@ rooms:
 - group_ids:
   - 1
   name: Zimmer_Olli
-  sensor_id: 2
+  sensor_id: 193
 routines:
 - daily_time:
     H1: 7

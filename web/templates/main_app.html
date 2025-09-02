@@ -177,6 +177,15 @@
                                 <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Regelung und Logging</h3>
                                 <div class="space-y-4">
                                     <div>
+                                        <label for="setting-command-throttle"
+                                            class="block text-sm font-medium text-gray-700">Bridge Befehls-Drosselung
+                                            (s)</label>
+                                        <input type="number" step="0.1" id="setting-command-throttle" min="0.1"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                        <p class="mt-1 text-xs text-gray-500">Mindestabstand zwischen Befehlen an
+                                            dieselbe Gruppe. Standard: 1s</p>
+                                    </div>
+                                    <div>
                                         <label for="setting-hysteresis"
                                             class="block text-sm font-medium text-gray-700">Hysterese (%)</label>
                                         <input type="number" id="setting-hysteresis" min="0"

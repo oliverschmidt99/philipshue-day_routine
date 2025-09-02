@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
 STATUS_FILE = os.path.join(DATA_DIR, "status.json")
-RESTART_FLAG_FILE = os.path.join(DATA_DIR, "restart.flag")  # NEU: Pfad zur Flag-Datei
+RESTART_FLAG_FILE = os.path.join(DATA_DIR, "restart.flag")
 
 
 class CoreLogic:
@@ -43,7 +43,7 @@ class CoreLogic:
         """Stellt sicher, dass die Datenbank und die Tabelle existieren."""
         try:
             if os.path.exists(RESTART_FLAG_FILE):
-                os.remove(RESTART_FLAG_FILE)  # Alte Flag-Datei bei Start entfernen
+                os.remove(RESTART_FLAG_FILE)
             with sqlite3.connect(DB_FILE) as con:
                 cur = con.cursor()
                 cur.execute(
@@ -168,9 +168,21 @@ class CoreLogic:
         scenes = {
             name: Scene(**params) for name, params in config.get("scenes", {}).items()
         }
-        rooms = {
-            rc["name"]: Room(bridge, self.log, **rc) for rc in config.get("rooms", [])
-        }
+
+        # KORREKTUR: Erstelle Room-Objekte sicher, indem explizit auf 'group_id' geprüft wird
+        rooms = {}
+        for rc in config.get("rooms", []):
+            if "name" in rc and "group_id" in rc:
+                rooms[rc["name"]] = Room(
+                    bridge=bridge,
+                    log=self.log,
+                    name=rc["name"],
+                    group_id=rc["group_id"],
+                )
+            else:
+                self.log.warning(
+                    f"Raumkonfiguration übersprungen, da 'name' oder 'group_id' fehlt: {rc}"
+                )
 
         sensors = {}
         try:
@@ -228,12 +240,11 @@ class CoreLogic:
         self.log.info(f"{len(routines)} Routinen werden jetzt ausgeführt...")
         while not self.stop_event.is_set():
             try:
-                # KORREKTUR: Prüfe auf die Neustart-Flag-Datei
                 if os.path.exists(RESTART_FLAG_FILE):
                     self.log.info("Neustart-Signal erkannt. Beende die Anwendung...")
                     os.remove(RESTART_FLAG_FILE)
-                    self.stop_event.set()  # Signalisiert allen Threads und der Hauptschleife, zu stoppen
-                    return  # Verlässt die Routine-Session, was zum Beenden des Programms führt
+                    self.stop_event.set()
+                    return
 
                 if self.config_manager.get_last_modified_time() > last_mod_time:
                     self.log.info("Änderung in config.yaml erkannt. Lade Logik neu.")

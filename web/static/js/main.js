@@ -39,7 +39,7 @@ function runMainApp() {
       ]);
       renderAll();
       setupEventListeners();
-      loadSettings(); // Stellt sicher, dass die Einstellungen geladen werden
+      loadSettings();
     } catch (error) {
       ui.showToast(`Initialisierungsfehler: ${error.message}`, true);
       console.error(error);
@@ -49,7 +49,6 @@ function runMainApp() {
   const renderAll = () => {
     ui.renderRoutines(config, bridgeData);
     ui.renderScenes(config.scenes);
-    // ui.renderSettings(config) wird durch loadSettings() beim Initialisieren ersetzt
   };
 
   const setupEventListeners = () => {
@@ -480,13 +479,14 @@ function runMainApp() {
   };
 
   const loadSettings = () => {
-    // KORREKTUR: Lädt die Konfigurationswerte in die Einstellungsfelder
     const settings = config.global_settings || {};
     const location = config.location || {};
     document.getElementById("setting-bridge-ip").value = config.bridge_ip || "";
     document.getElementById("setting-latitude").value = location.latitude || "";
     document.getElementById("setting-longitude").value =
       location.longitude || "";
+    document.getElementById("setting-command-throttle").value =
+      settings.command_throttle_s || 1.0;
     document.getElementById("setting-hysteresis").value =
       settings.hysteresis_percent || 25;
     document.getElementById("setting-datalogger-interval").value =
@@ -500,8 +500,10 @@ function runMainApp() {
   };
 
   const saveFullConfig = async () => {
-    // KORREKTUR: Liest die Werte aus den Formularfeldern und speichert sie
     const settings = config.global_settings || {};
+    settings.command_throttle_s =
+      parseFloat(document.getElementById("setting-command-throttle").value) ||
+      1.0;
     settings.hysteresis_percent = parseInt(
       document.getElementById("setting-hysteresis").value
     );
@@ -518,7 +520,6 @@ function runMainApp() {
     config.global_settings = settings;
     config.bridge_ip = document.getElementById("setting-bridge-ip").value;
 
-    // Sendet leere Strings, wenn die Felder leer sind. Das Backend kümmert sich um den Rest.
     config.location = {
       latitude: document.getElementById("setting-latitude").value,
       longitude: document.getElementById("setting-longitude").value,
@@ -592,9 +593,10 @@ function runMainApp() {
     config.routines.push(newRoutine);
     if (!config.rooms) config.rooms = [];
     if (!config.rooms.some((r) => r.name === groupName)) {
+      // KORREKTUR: Schreibe 'group_id' (Singular) anstatt 'group_ids'
       config.rooms.push({
         name: groupName,
-        group_ids: [parseInt(groupId)],
+        group_id: parseInt(groupId),
         sensor_id: sensorId ? parseInt(sensorId) : undefined,
       });
     }
@@ -629,15 +631,9 @@ function runMainApp() {
     if (roomToUpdate) {
       roomToUpdate.sensor_id = newSensorId ? parseInt(newSensorId) : undefined;
     } else {
-      const oldRoomName = config.routines[index].room_name;
-      const oldRoomIndex = config.rooms.findIndex(
-        (r) => r.name === oldRoomName
-      );
-      if (oldRoomIndex > -1) {
-      }
       config.rooms.push({
         name: newRoomName,
-        group_ids: [parseInt(newGroupId)],
+        group_id: parseInt(newGroupId),
         sensor_id: newSensorId ? parseInt(newSensorId) : undefined,
       });
     }
