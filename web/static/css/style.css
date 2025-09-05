@@ -1,92 +1,21 @@
-/* Globale Stile und Schriftarten */
-body {
-    font-family: 'Inter', sans-serif;
-}
-
-/* Aktiver Tab in der Navigation */
-.tab-active {
-    border-bottom-color: #3b82f6; /* blue-500 */
-    color: #3b82f6;
-    font-weight: 600;
-}
-
-/* Hintergrund für Modals (Pop-ups) */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Container für die Log-Anzeige */
-.log-container {
-    background-color: #1f2937; /* gray-800 */
-    color: #d1d5db; /* gray-300 */
-    font-family: monospace;
-    font-size: 0.875rem;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    max-height: 400px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-}
-
-/* Akkordeon-Stile für FAQ, Routinen und Status */
-.faq-answer, .routine-details, .status-details {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease-in-out;
-}
-
-.faq-question i, .routine-header i, .status-header i {
-    transition: transform 0.3s ease-in-out;
-}
-
-/* Stile für die interaktive Zeitleiste im Routine-Editor */
-.timeline-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 16px; height: 32px;
-    background: #3b82f6; border-radius: 4px;
-    cursor: pointer; pointer-events: auto;
-    margin-top: -12px;
-}
-.timeline-slider::-moz-range-thumb {
-    width: 16px; height: 32px;
-    background: #3b82f6; border-radius: 4px;
-    cursor: pointer; pointer-events: auto;
-}
-
-/* Stile für Helligkeits- und Farbtemperatur-Slider */
-.brightness-slider, .ct-slider {
-    -webkit-appearance: none; appearance: none;
-    width: 100%; height: 10px;
-    border-radius: 5px;
-    outline: none;
-    opacity: 0.9;
-    transition: opacity .2s;
-}
-.brightness-slider:hover, .ct-slider:hover {
-    opacity: 1;
-}
-
-.brightness-slider { background: linear-gradient(to right, #6b7280, #fef08a); }
-.ct-slider { background: linear-gradient(to right, #e6f2ff, #ffae34); }
-
-.brightness-slider::-webkit-slider-thumb, .ct-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 2px solid #6b7280;
-    cursor: pointer;
-}
-.brightness-slider::-moz-range-thumb, .ct-slider::-moz-range-thumb {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 2px solid #6b7280;
-    cursor: pointer;
-}
-
-/* Chart-Container für die Analyse-Seite */
-.chart-container {
-    height: 500px;
-    position: relative;
-}
+@import url('components.css');
+:root { --primary-color: #007bff; --primary-hover: #0056b3; --secondary-color: #6c757d; --secondary-hover: #5a6268; --success-color: #28a745; --error-color: #dc3545; --background-color: #f8f9fa; --text-color: #212529; --card-bg: #fff; --border-color: #dee2e6; --shadow: 0 4px 6px rgba(0,0,0,0.07); }
+html[data-theme='dark'] { --background-color: #343a40; --text-color: #e9ecef; --card-bg: #495057; --border-color: #6c757d; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: var(--background-color); color: var(--text-color); transition: background-color 0.2s, color 0.2s; }
+main.container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+header { background-color: var(--card-bg); padding: 0 2rem; box-shadow: var(--shadow); border-bottom: 1px solid var(--border-color); height: 60px; display: flex; justify-content: center; align-items: center; }
+footer { text-align: center; padding: 2rem; margin-top: 2rem; background-color: var(--card-bg); border-top: 1px solid var(--border-color); }
+nav { width: 100%; display: flex; align-items: center; }
+nav ul { padding: 0; margin: 0; list-style: none; display: flex; gap: 0.5rem; }
+nav ul li a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 6px; color: var(--text-color); text-decoration: none; font-weight: 500; transition: background-color 0.2s, color 0.2s; }
+nav ul li a:hover, nav ul li a.active { background-color: var(--primary-color); color: white; }
+nav ul li a img { width: 18px; height: 18px; filter: invert(0); transition: filter 0.2s; }
+nav ul li a:hover img, nav ul li a.active img { filter: brightness(0) invert(1); }
+h1,h2,h3,h4 { margin-top: 0; }
+.hidden { display: none !important; }
+.content-section.hidden { display: none; }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.card-content { margin-top: 1.5rem; }
+.log-box { background-color: #333; color: #eee; padding: 1rem; border-radius: 5px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
+.save-button-wrapper { margin-top: 2rem; text-align: center; }

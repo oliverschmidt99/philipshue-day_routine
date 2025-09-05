@@ -8,7 +8,7 @@ import sys
 import subprocess
 import atexit
 import logging
-import socket  # NEU: Import für die Netzwerkanalyse
+import socket
 from src.logger import Logger
 from src.config_manager import ConfigManager
 from src.core_logic import CoreLogic
@@ -21,17 +21,13 @@ CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
 SERVER_SCRIPT = os.path.join(BASE_DIR, "web", "server.py")
 
 
-# NEU: Funktion zum Ermitteln der lokalen IP-Adresse
 def get_local_ip():
     """Ermittelt die primäre lokale IP-Adresse des Systems."""
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            # Verbindet sich mit einem öffentlichen DNS-Server, um die ausgehende IP zu finden
-            # Es werden keine Daten gesendet.
             s.connect(("8.8.8.8", 80))
             return s.getsockname()[0]
     except OSError:
-        # Fallback, falls keine Netzwerkverbindung besteht
         return "127.0.0.1"
 
 
@@ -58,24 +54,19 @@ def main():
     os.makedirs(DATA_DIR, exist_ok=True)
     log = Logger(LOG_FILE, level=logging.INFO)
 
-    # Startet den Webserver als separaten Prozess
     log.info(f"Starte Webserver: {sys.executable} {SERVER_SCRIPT}")
     server_process = subprocess.Popen([sys.executable, SERVER_SCRIPT])
     log.info(f"Webserver-Prozess gestartet mit PID: {server_process.pid}")
 
-    # NEU: Gibt die erreichbare URL in der Konsole aus
     local_ip = get_local_ip()
-    port = 5001  # Der Port, auf dem der Flask-Server läuft
+    port = 5001
     log.info("=====================================================")
     log.info(f"  Web-UI erreichbar unter: http://{local_ip}:{port}")
     log.info("=====================================================")
 
-    # Registriere die Cleanup-Funktion mit den benötigten Argumenten
     atexit.register(cleanup, log, server_process)
 
     config_manager = ConfigManager(CONFIG_FILE, log)
-
-    # Startet die Hauptlogik-Schleife
     core_logic = CoreLogic(log, config_manager)
     core_logic.run_main_loop()
 
