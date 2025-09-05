@@ -9,11 +9,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
-
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 
 <body>
@@ -64,7 +62,6 @@
                     <div id="routines-container" class="card-content"></div>
                 </div>
             </div>
-
             <div id="content-scenes" class="content-section hidden">
                 <div class="card">
                     <div class="card-header">
@@ -74,7 +71,6 @@
                     <div id="scenes-container" class="card-content"></div>
                 </div>
             </div>
-
             <div id="content-status" class="content-section hidden">
                 <div class="card">
                     <div class="card-header">
@@ -88,25 +84,12 @@
                     <pre id="log-container" class="log-box"></pre>
                 </div>
             </div>
-
-            <div id="content-analyse" class="content-section hidden">
-                <div class="card">
-                    <h2>Analyse</h2>
-                    <p>Dieser Bereich wird noch implementiert.</p>
-                </div>
-            </div>
-            <div id="content-bridge-devices" class="content-section hidden">
-                <div class="card">
-                    <h2>Geräte</h2>
-                    <p>Dieser Bereich wird noch implementiert.</p>
-                </div>
-            </div>
             <div id="content-hilfe" class="content-section hidden">
                 <div class="card" id="help-content-container"></div>
             </div>
             <div id="content-einstellungen" class="content-section hidden">
                 <div class="card">
-                    <h2>Einstellungen</h2>
+                    <h2>Allgemein</h2>
                     <div class="setting-item">
                         <label for="theme-toggle">Dark Mode</label>
                         <label class="switch"><input type="checkbox" id="theme-toggle" role="switch"><span
@@ -125,9 +108,8 @@
                     </div>
                 </div>
             </div>
-
             <div class="save-button-wrapper">
-                <button type="button" id="save-button" class="button">Speichern und Alle Routinen neu starten</button>
+                <button type="button" id="save-button" class="button">Speichern und Konfiguration anwenden</button>
             </div>
         </main>
 

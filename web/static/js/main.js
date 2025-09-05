@@ -3,12 +3,11 @@ import * as api from "./modules/api.js";
 import * as ui from "./modules/ui.js";
 import { runSetupWizard } from "./modules/setup.js";
 
-// Definiere die Template-Funktionen im globalen Scope, damit sie überall verfügbar sind.
 function initializeTemplateFunctions() {
   window.showModal = (title, content, actions) => {
     const modalContainer = document.getElementById("demo-modal");
     if (!modalContainer) return;
-    const modalHTML = `
+    modalContainer.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>${title}</h3>
@@ -17,9 +16,7 @@ function initializeTemplateFunctions() {
                 <div id="modal-body">${content}</div>
                 <div class="modal-actions">${actions}</div>
             </div>`;
-    modalContainer.innerHTML = modalHTML;
     modalContainer.style.display = "flex";
-
     modalContainer
       .querySelectorAll(".modal-close-btn, [data-action='cancel-modal']")
       .forEach((btn) => {
@@ -47,24 +44,20 @@ function initializeTemplateFunctions() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   initializeTemplateFunctions();
-
-  // Initial das Haupt-Panel verstecken, damit es nicht kurz aufblitzt
   const mainApp = document.getElementById("main-app");
   if (mainApp) mainApp.classList.add("hidden");
 
   try {
     const status = await api.checkSetupStatus();
     if (status.setup_needed) {
-      document.getElementById("main-app").classList.add("hidden");
       document.getElementById("setup-wizard").classList.remove("hidden");
       runSetupWizard();
     } else {
-      document.getElementById("setup-wizard").classList.add("hidden");
       mainApp.classList.remove("hidden");
       runMainApp();
     }
   } catch (error) {
-    document.body.innerHTML = `<main class="container"><div class="card"><h2>Verbindung zum Server fehlgeschlagen</h2><p>Das Backend (main.py) läuft nicht oder ist nicht erreichbar. Bitte starte es und lade die Seite neu.</p><p><small>${error.message}</small></p></div></main>`;
+    document.body.innerHTML = `<main class="container"><div class="card"><h2>Verbindung zum Server fehlgeschlagen</h2><p>Das Backend (main.py) läuft nicht. Bitte starte es und lade die Seite neu.</p><p><small>${error.message}</small></p></div></main>`;
     console.error("Initialization failed:", error);
   }
 });
@@ -97,48 +90,58 @@ function runMainApp() {
   };
 
   const setupEventListeners = () => {
-    const addListener = (id, event, handler) => {
-      const element = document.getElementById(id);
-      if (element) element.addEventListener(event, handler);
-    };
-
-    addListener("save-button", "click", saveFullConfig);
-    addListener("btn-new-routine", "click", () =>
-      ui.openCreateRoutineModal(bridgeData, config)
-    );
-    addListener("btn-new-scene", "click", () => {
+    document
+      .getElementById("save-button")
+      ?.addEventListener("click", saveFullConfig);
+    document
+      .getElementById("btn-new-routine")
+      ?.addEventListener("click", () =>
+        ui.openCreateRoutineModal(bridgeData, config)
+      );
+    document.getElementById("btn-new-scene")?.addEventListener("click", () => {
       colorPicker = ui.openSceneModal(
         { status: true, bri: 128, ct: 366 },
         null,
         config
       );
     });
-
-    addListener("btn-refresh-status", "click", () => updateStatus(true));
-    addListener("btn-update-app", "click", () =>
-      api.systemAction(
-        "/api/system/update_app",
-        "Anwendung via 'git pull' aktualisieren?"
-      )
-    );
-    addListener("btn-restart-app", "click", () =>
-      api.systemAction("/api/system/restart", "Anwendung neu starten?")
-    );
-    addListener("btn-backup-config", "click", () =>
-      api.systemAction("/api/config/backup", "Konfiguration sichern?")
-    );
-    addListener("btn-restore-config", "click", () =>
-      api.systemAction(
-        "/api/config/restore",
-        "Konfiguration aus Backup wiederherstellen?"
-      )
-    );
-    addListener("btn-add-default-scenes", "click", () =>
-      api.systemAction(
-        "/api/system/scenes/add_defaults",
-        "Standard-Szenen hinzufügen?"
-      )
-    );
+    document
+      .getElementById("btn-refresh-status")
+      ?.addEventListener("click", () => updateStatus(true));
+    document
+      .getElementById("btn-update-app")
+      ?.addEventListener("click", () =>
+        api.systemAction(
+          "/api/system/update_app",
+          "Anwendung via 'git pull' aktualisieren?"
+        )
+      );
+    document
+      .getElementById("btn-restart-app")
+      ?.addEventListener("click", () =>
+        api.systemAction("/api/system/restart", "Anwendung neu starten?")
+      );
+    document
+      .getElementById("btn-backup-config")
+      ?.addEventListener("click", () =>
+        api.systemAction("/api/config/backup", "Konfiguration sichern?")
+      );
+    document
+      .getElementById("btn-restore-config")
+      ?.addEventListener("click", () =>
+        api.systemAction(
+          "/api/config/restore",
+          "Konfiguration aus Backup wiederherstellen?"
+        )
+      );
+    document
+      .getElementById("btn-add-default-scenes")
+      ?.addEventListener("click", () =>
+        api.systemAction(
+          "/api/system/scenes/add_defaults",
+          "Standard-Szenen hinzufügen?"
+        )
+      );
 
     document.body.addEventListener("click", (e) => {
       const button = e.target.closest("[data-action]");
@@ -149,8 +152,7 @@ function runMainApp() {
       const sceneCard = e.target.closest(".scene-card");
 
       const actions = {
-        "toggle-routine-details": () =>
-          ui.toggleAccordion(button.closest(".accordion-button")),
+        "toggle-routine-details": () => ui.toggleAccordion(button),
         "delete-scene": () => {
           if (confirm(`Szene "${sceneCard.dataset.name}" löschen?`)) {
             delete config.scenes[sceneCard.dataset.name];
@@ -227,6 +229,7 @@ function runMainApp() {
   const saveFullConfig = async () => {
     ui.showToast("Speichern...", "info");
     try {
+      // Hier Logik zum Sammeln der Einstellungsdaten einfügen
       await api.saveFullConfig(config);
       ui.showToast("Konfiguration gespeichert!", "success");
     } catch (err) {
@@ -280,7 +283,8 @@ function runMainApp() {
     };
     if (!config.routines) config.routines = [];
     config.routines.push(newRoutine);
-    if (!config.rooms.some((r) => r.name === groupName)) {
+    if (!config.rooms || !config.rooms.some((r) => r.name === groupName)) {
+      if (!config.rooms) config.rooms = [];
       config.rooms.push({ name: groupName, group_id: parseInt(groupId) });
     }
 

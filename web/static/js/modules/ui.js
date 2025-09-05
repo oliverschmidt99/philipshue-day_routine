@@ -159,7 +159,7 @@ export function renderStatus(statuses) {
               status.enabled ? "Aktiviert" : "Deaktiviert"
             }</p>
             <p><strong>Letzte Szene:</strong> ${status.last_scene}</p>
-            <p><strong>Bewegung:</strong> ${status.motion_status}</p>
+            <p><strong>Bewegung:</strong> ${status.motion_status || "N/A"}</p>
         `;
     statusContainer.appendChild(statusEl);
   });
