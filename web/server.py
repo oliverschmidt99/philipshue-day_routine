@@ -9,10 +9,12 @@ import logging
 from flask import Flask, render_template, send_from_directory
 
 # Fügt das Hauptverzeichnis (eine Ebene über 'web') zum Python-Pfad hinzu
+# Dies ist entscheidend, damit die 'src' und 'web' Module gefunden werden
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+# Importiere erst NACHDEM der Pfad gesetzt wurde
 from src.logger import Logger
 from src.config_manager import ConfigManager
 
@@ -27,14 +29,23 @@ STATUS_FILE = os.path.join(DATA_DIR, "status.json")
 
 def create_app():
     """Erstellt und konfiguriert die Flask-App (Application Factory)."""
-    app = Flask(__name__, static_folder="static", template_folder="templates")
+    # Wichtig: static_url_path explizit setzen, um Konflikte zu vermeiden
+    app = Flask(
+        __name__,
+        static_folder="static",
+        template_folder="templates",
+        static_url_path="/static",
+    )
 
+    # Instanzen für die Blueprints verfügbar machen
     app.logger_instance = Logger(LOG_FILE)
     app.config_manager = ConfigManager(CONFIG_FILE, app.logger_instance)
 
+    # Werkzeug-Logger auf ERROR setzen, um die Konsole sauber zu halten
     werkzeug_log = logging.getLogger("werkzeug")
     werkzeug_log.setLevel(logging.ERROR)
 
+    # Blueprints registrieren
     with app.app_context():
         from web.api.setup import setup_api
         from web.api.bridge import bridge_api
@@ -50,11 +61,13 @@ def create_app():
         app.register_blueprint(config_api, url_prefix="/api/config")
         app.register_blueprint(help_api, url_prefix="/api/help")
 
+    # Hauptroute, die immer index.html bedient
     @app.route("/")
     def index():
         """Zeigt die Hauptseite (index.html) an."""
         return render_template("index.html")
 
+    # Favicon-Route
     @app.route("/favicon.ico")
     def favicon():
         """Liefert das Favicon aus dem Static-Ordner aus."""
@@ -67,10 +80,9 @@ def create_app():
     return app
 
 
-# DIESER BLOCK IST ENTSCHEIDEND UND WURDE WIEDER HINZUGEFÜGT
 if __name__ == "__main__":
     flask_app = create_app()
     log = flask_app.logger_instance
-    log.info("Starte Flask-Server...")
-    # Port auf 5001 geändert, falls du den auch nutzt
-    flask_app.run(host="0.0.0.0", port=5001, debug=False)
+    log.info("Starte Flask-Server für Entwicklung...")
+    # Port 5001, um Konflikte zu vermeiden
+    flask_app.run(host="0.0.0.0", port=5001, debug=True)

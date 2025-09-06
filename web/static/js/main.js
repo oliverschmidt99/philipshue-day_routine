@@ -1,7 +1,14 @@
 // web/static/js/main.js
-import * as api from "./modules/api.js";
-import * as ui from "./modules/ui.js";
-import { runSetupWizard } from "./modules/setup.js";
+import * as api from "/static/js/modules/api.js";
+import * as ui from "/static/js/modules/ui.js";
+import { runSetupWizard } from "/static/js/modules/setup.js";
+import { initAnalysePage } from "/static/js/modules/analyse.js";
+import {
+  initStatusPage,
+  stopStatusUpdates,
+} from "/static/js/modules/status.js";
+import { initHelpPage } from "/static/js/modules/help.js";
+import { initDevicesPage } from "/static/js/modules/devices.js";
 
 function initializeTemplateFunctions() {
   window.showModal = (title, content, actions) => {
@@ -65,8 +72,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 function runMainApp() {
   let config = {};
   let bridgeData = {};
-  let colorPicker = null;
-  let statusInterval;
 
   const init = async () => {
     ui.updateClock();
@@ -99,15 +104,8 @@ function runMainApp() {
         ui.openCreateRoutineModal(bridgeData, config)
       );
     document.getElementById("btn-new-scene")?.addEventListener("click", () => {
-      colorPicker = ui.openSceneModal(
-        { status: true, bri: 128, ct: 366 },
-        null,
-        config
-      );
+      ui.openSceneModal({ status: true, bri: 128, ct: 366 }, null, config);
     });
-    document
-      .getElementById("btn-refresh-status")
-      ?.addEventListener("click", () => updateStatus(true));
     document
       .getElementById("btn-update-app")
       ?.addEventListener("click", () =>
@@ -169,7 +167,7 @@ function runMainApp() {
           }
         },
         "edit-scene": () => {
-          colorPicker = ui.openSceneModal(
+          ui.openSceneModal(
             config.scenes[sceneCard.dataset.name],
             sceneCard.dataset.name,
             config
@@ -196,40 +194,29 @@ function runMainApp() {
           section.classList.toggle("hidden", section.id !== tabId);
         });
 
-        if (statusInterval) clearInterval(statusInterval);
+        stopStatusUpdates();
 
-        if (link.dataset.tab === "status") startStatusUpdates();
+        switch (link.dataset.tab) {
+          case "status":
+            initStatusPage(config);
+            break;
+          case "analyse":
+            initAnalysePage(bridgeData);
+            break;
+          case "hilfe":
+            initHelpPage();
+            break;
+          case "bridge-devices":
+            initDevicesPage(bridgeData);
+            break;
+        }
       });
     });
-  };
-
-  const updateStatus = async (showNotification = false) => {
-    try {
-      const { statusData, logText } = await api.updateStatus();
-      ui.renderSunTimes(statusData.sun_times || null);
-      ui.renderStatus(statusData.routines || []);
-      ui.renderLog(logText);
-      if (showNotification)
-        ui.showToast("Status erfolgreich aktualisiert!", "success");
-    } catch (error) {
-      console.error("Fehler beim Abrufen des Status:", error);
-      if (showNotification)
-        ui.showToast("Fehler beim Aktualisieren des Status.", "error");
-    }
-  };
-
-  const startStatusUpdates = () => {
-    if (statusInterval) clearInterval(statusInterval);
-    updateStatus();
-    const refreshInterval =
-      (config.global_settings?.status_interval_s || 5) * 1000;
-    statusInterval = setInterval(() => updateStatus(false), refreshInterval);
   };
 
   const saveFullConfig = async () => {
     ui.showToast("Speichern...", "info");
     try {
-      // Hier Logik zum Sammeln der Einstellungsdaten einfügen
       await api.saveFullConfig(config);
       ui.showToast("Konfiguration gespeichert!", "success");
     } catch (err) {

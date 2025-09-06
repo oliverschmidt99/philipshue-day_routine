@@ -53,28 +53,26 @@ def get_all_bridge_items():
         return jsonify({"error": f"Bridge-Fehler: {e}"}), 500
 
 
-@bridge_api.route("/rename", methods=["POST"])
-def rename_item():
+@bridge_api.route("/<item_type>/<int:item_id>/rename", methods=["POST"])
+def rename_item(item_type, item_id):
     """Benennt ein Gerät auf der Bridge um."""
     bridge = get_bridge_instance()
     if not bridge:
         return jsonify({"error": "Bridge nicht erreichbar"}), 503
 
     data = request.get_json()
-    item_type = data.get("type")
-    item_id = data.get("id")
     new_name = data.get("name")
 
-    if not all([item_type, item_id, new_name]):
+    if not new_name:
         return jsonify({"error": "Fehlende Parameter"}), 400
 
     try:
         if item_type == "light":
-            bridge.set_light(int(item_id), "name", new_name)
+            bridge.set_light(item_id, "name", new_name)
         elif item_type == "group":
-            bridge.set_group(int(item_id), "name", new_name)
+            bridge.set_group(item_id, "name", new_name)
         elif item_type == "sensor":
-            bridge.set_sensor_config(int(item_id), {"name": new_name})
+            bridge.set_sensor_config(item_id, {"name": new_name})
         else:
             return jsonify({"error": "Ungültiger Gerätetyp"}), 400
         return jsonify({"message": f"{item_type} erfolgreich umbenannt."})
@@ -82,27 +80,21 @@ def rename_item():
         return jsonify({"error": f"Fehler beim Umbenennen: {e}"}), 500
 
 
-@bridge_api.route("/delete", methods=["POST"])
-def delete_item():
+@bridge_api.route("/<item_type>/<int:item_id>/delete", methods=["DELETE"])
+def delete_item(item_type, item_id):
     """Löscht ein Gerät von der Bridge."""
     bridge = get_bridge_instance()
     if not bridge:
         return jsonify({"error": "Bridge nicht erreichbar"}), 503
 
-    data = request.get_json()
-    item_type = data.get("type")
-    item_id = data.get("id")
-
-    if not all([item_type, item_id]):
-        return jsonify({"error": "Fehlende Parameter"}), 400
-
     try:
+        # pylint: disable=no-member
         if item_type == "light":
-            bridge.delete_light(int(item_id))
+            bridge.delete_light(item_id)
         elif item_type == "group":
-            bridge.delete_group(int(item_id))
+            bridge.delete_group(item_id)
         elif item_type == "sensor":
-            bridge.delete_sensor(int(item_id))
+            bridge.delete_sensor(item_id)
         else:
             return jsonify({"error": "Ungültiger Gerätetyp"}), 400
         return jsonify({"message": f"{item_type} erfolgreich gelöscht."})

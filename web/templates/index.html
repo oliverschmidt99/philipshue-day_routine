@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analyse.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/status.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/help.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/devices.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -77,11 +81,42 @@
                         <h2>Live-Zustand</h2>
                         <button type="button" id="btn-refresh-status" class="button secondary">Aktualisieren</button>
                     </div>
-                    <div id="status-container" class="card-content"></div>
+                    <div id="status-container" class="card-content grid-container"></div>
                 </div>
                 <div class="card">
                     <h2>Log-Datei</h2>
                     <pre id="log-container" class="log-box"></pre>
+                </div>
+            </div>
+            <div id="content-analyse" class="content-section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Analyse</h2>
+                    </div>
+                    <div class="chart-controls">
+                        <select id="sensor-select"></select>
+                        <select id="period-select">
+                            <option value="day">Tag</option>
+                            <option value="week">Woche</option>
+                        </select>
+                        <input type="date" id="date-select">
+                        <select id="avg-select">
+                            <option value="1">Rohdaten</option>
+                            <option value="5">5min Durchschnitt</option>
+                            <option value="15">15min Durchschnitt</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="analyse-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div id="content-bridge-devices" class="content-section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Geräte</h2>
+                    </div>
+                    <div id="bridge-devices-container"></div>
                 </div>
             </div>
             <div id="content-hilfe" class="content-section hidden">

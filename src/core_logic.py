@@ -169,8 +169,8 @@ class CoreLogic:
             name: Scene(**params) for name, params in config.get("scenes", {}).items()
         }
 
-        # KORREKTUR: Erstelle Room-Objekte sicher, indem explizit auf 'group_id' geprüft wird
         rooms = {}
+        room_to_sensor_map = {}
         for rc in config.get("rooms", []):
             if "name" in rc and "group_id" in rc:
                 rooms[rc["name"]] = Room(
@@ -179,6 +179,8 @@ class CoreLogic:
                     name=rc["name"],
                     group_id=rc["group_id"],
                 )
+                if "sensor_id" in rc:
+                    room_to_sensor_map[rc["name"]] = rc["sensor_id"]
             else:
                 self.log.warning(
                     f"Raumkonfiguration übersprungen, da 'name' oder 'group_id' fehlt: {rc}"
@@ -214,16 +216,7 @@ class CoreLogic:
             Routine(
                 r_conf["name"],
                 rooms.get(r_conf["room_name"]),
-                sensors.get(
-                    next(
-                        (
-                            r.get("sensor_id")
-                            for r in config.get("rooms", [])
-                            if r.get("name") == r_conf["room_name"]
-                        ),
-                        None,
-                    )
-                ),
+                sensors.get(room_to_sensor_map.get(r_conf["room_name"])),
                 r_conf,
                 scenes,
                 sun_times,

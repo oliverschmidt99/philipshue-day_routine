@@ -1,0 +1,13 @@
+/* web/static/css/analyse.css */
+.chart-container {
+    position: relative;
+    height: 60vh;
+    width: 100%;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}

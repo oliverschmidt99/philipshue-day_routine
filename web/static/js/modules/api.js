@@ -93,4 +93,4 @@ export const loadChartData = (sensorId, period, date, avg) =>
 // --- System & Hilfe ---
 export const addDefaultScenes = () =>
   fetchAPI("/api/system/scenes/add_defaults", { method: "POST" });
-export const loadHelpContent = () => fetchAPI("/api/system/help");
+export const loadHelpContent = () => fetchAPI("/api/help/");

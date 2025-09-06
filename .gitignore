@@ -26,6 +26,7 @@ htmlcov/
 .cache
 .pytest_cache/
 
+*.backup.yaml
 
 # C extensions
 *.so

@@ -44,7 +44,8 @@ SERVICE_NAME="hue_controller.service"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
 WORKING_DIRECTORY=$(pwd)
 VENV_PYTHON_PATH="$WORKING_DIRECTORY/$VENV_DIR/bin/python"
-SCRIPT_PATH="$WORKING_DIRECTORY/main.py"
+# KORRIGIERT: Verweist jetzt auf die neue app.py
+SCRIPT_PATH="$WORKING_DIRECTORY/app.py"
 
 log_info "Erstelle systemd Service-Datei..."
 sudo tee "$SERVICE_FILE" > /dev/null <<EOF
