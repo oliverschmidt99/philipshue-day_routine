@@ -6,7 +6,11 @@ Verwendet das Application Factory-Muster, um zirkuläre Importe zu vermeiden.
 import os
 import sys
 import logging
+import mimetypes
 from flask import Flask, render_template, send_from_directory
+
+# Behebt das Problem, dass JS-Module aufgrund eines falschen MIME-Typs blockiert werden.
+mimetypes.add_type('application/javascript', '.js')
 
 # Fügt das Hauptverzeichnis (eine Ebene über 'web') zum Python-Pfad hinzu
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
