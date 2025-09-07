@@ -1,14 +1,11 @@
 // web/static/js/main.js
-import * as api from "/static/js/modules/api.js";
-import * as ui from "/static/js/modules/ui.js";
-import { runSetupWizard } from "/static/js/modules/setup.js";
-import { initAnalysePage } from "/static/js/modules/analyse.js";
-import {
-  initStatusPage,
-  stopStatusUpdates,
-} from "/static/js/modules/status.js";
-import { initHelpPage } from "/static/js/modules/help.js";
-import { initDevicesPage } from "/static/js/modules/devices.js";
+import * as api from "./modules/api.js";
+import * as ui from "./modules/ui.js";
+import { runSetupWizard } from "./modules/setup.js";
+import { initAnalysePage } from "./modules/analyse.js";
+import { initStatusPage, stopStatusUpdates } from "./modules/status.js";
+import { initHelpPage } from "./modules/help.js";
+import { initDevicesPage } from "./modules/devices.js";
 
 function initializeTemplateFunctions() {
   window.showModal = (title, content, actions) => {
