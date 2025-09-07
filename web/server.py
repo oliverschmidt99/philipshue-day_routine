@@ -80,6 +80,13 @@ def create_app():
             mimetype="image/vnd.microsoft.icon",
         )
 
+    # Spezifische Route zum Servieren von JS-Modulen
+    @app.route('/static/js/modules/<path:filename>')
+    def serve_js_modules(filename):
+        """Liefert JS-Module aus dem entsprechenden Unterverzeichnis."""
+        module_dir = os.path.join(app.static_folder, 'js', 'modules')
+        return send_from_directory(module_dir, filename)
+
     return app
 
 
