@@ -25,6 +25,9 @@ LOG_FILE = os.path.join(DATA_DIR, "app.log")
 CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
 DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
 STATUS_FILE = os.path.join(DATA_DIR, "status.json")
+WEB_DIR = os.path.join(BASE_DIR, "web")
+TEMPLATE_DIR = os.path.join(WEB_DIR, "templates")
+STATIC_DIR = os.path.join(WEB_DIR, "static")
 
 
 def create_app():
@@ -32,8 +35,8 @@ def create_app():
     # Wichtig: static_url_path explizit setzen, um Konflikte zu vermeiden
     app = Flask(
         __name__,
-        static_folder="static",
-        template_folder="templates",
+        template_folder=TEMPLATE_DIR,
+        static_folder=STATIC_DIR,
         static_url_path="/static",
     )
 
@@ -72,7 +75,7 @@ def create_app():
     def favicon():
         """Liefert das Favicon aus dem Static-Ordner aus."""
         return send_from_directory(
-            os.path.join(app.root_path, "static"),
+            app.static_folder,
             "favicon.ico",
             mimetype="image/vnd.microsoft.icon",
         )
