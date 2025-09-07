@@ -48,26 +48,32 @@ function initializeTemplateFunctions() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  console.log("[main.js] DOMContentLoaded event fired.");
   initializeTemplateFunctions();
+  console.log("[main.js] Template functions initialized.");
 
-  // Initial das Haupt-Panel verstecken, damit es nicht kurz aufblitzt
   const mainApp = document.getElementById("main-app");
   if (mainApp) mainApp.classList.add("hidden");
 
   try {
+    console.log("[main.js] Checking setup status...");
     const status = await api.checkSetupStatus();
+    console.log("[main.js] Setup status received:", status);
+
     if (status.setup_needed) {
+      console.log("[main.js] Setup is needed. Running setup wizard.");
       document.getElementById("main-app").classList.add("hidden");
       document.getElementById("setup-wizard").classList.remove("hidden");
       runSetupWizard();
     } else {
+      console.log("[main.js] Setup is complete. Running main application.");
       document.getElementById("setup-wizard").classList.add("hidden");
       mainApp.classList.remove("hidden");
       runMainApp();
     }
   } catch (error) {
-    document.body.innerHTML = `<main class="container"><div class="card"><h2>Verbindung zum Server fehlgeschlagen</h2><p>Das Backend (main.py) läuft nicht oder ist nicht erreichbar. Bitte starte es und lade die Seite neu.</p><p><small>${error.message}</small></p></div></main>`;
-    console.error("Initialization failed:", error);
+    console.error("[main.js] Critical initialization failed:", error);
+    document.body.innerHTML = `<main class="container"><div class="card"><h2>Verbindung zum Server fehlgeschlagen</h2><p>Das Backend (main.py) läuft nicht oder ist nicht erreichbar. Bitte starte es und lade die Seite neu.</p><p><small>Fehlerdetails: ${error.message}</small></p></div></main>`;
   }
 });
 
@@ -78,18 +84,22 @@ function runMainApp() {
   let statusInterval;
 
   const init = async () => {
+    console.log("[runMainApp] Initializing...");
     ui.updateClock();
     setInterval(ui.updateClock, 1000);
     try {
+      console.log("[runMainApp] Loading config and bridge data...");
       [config, bridgeData] = await Promise.all([
         api.loadConfig(),
         api.loadBridgeData(),
       ]);
+      console.log("[runMainApp] Data loaded successfully:", { config, bridgeData });
       renderAll();
       setupEventListeners();
+      console.log("[runMainApp] Initialization complete.");
     } catch (error) {
+      console.error("[runMainApp] Error during initialization:", error);
       ui.showToast(`Initialisierungsfehler: ${error.message}`, "error");
-      console.error(error);
     }
   };
 

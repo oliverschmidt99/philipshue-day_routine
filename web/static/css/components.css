@@ -23,3 +23,10 @@ html[data-theme='dark'] .accordion-button:hover { background-color: #495057; }
 .accordion-button .icon-chevron { transition: transform 0.3s ease; }
 .accordion-button.active .icon-chevron { transform: rotate(180deg); }
 .accordion-content { padding: 0 1rem; background-color: var(--card-bg); max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+
+/* Grid Container für Szenen und andere Kachel-Layouts */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}

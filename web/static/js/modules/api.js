@@ -1,6 +1,13 @@
 // web/static/js/modules/api.js
 
-async function fetchAPI(url, options = {}) {
+/**
+ * Eine generische Funktion zum Abrufen von Daten vom Server.
+ * Sie verarbeitet JSON- und Text-Antworten und behandelt Fehler.
+ * @param {string} url - Die API-Endpunkt-URL.
+ * @param {object} options - Die Optionen für den fetch-Aufruf (z.B. Methode, Body).
+ * @returns {Promise<any>} - Die geparsten Daten von der API.
+ */
+export async function fetchJson(url, options = {}) {
   try {
     const response = await fetch(url, options);
     const contentType = response.headers.get("Content-Type") || "";
@@ -13,24 +20,27 @@ async function fetchAPI(url, options = {}) {
     }
 
     if (!response.ok) {
+      // Versucht, eine aussagekräftige Fehlermeldung aus der Antwort zu extrahieren.
       const errorMessage =
         typeof data === "object" && data.error
           ? data.error
-          : `HTTP-Fehler ${response.status}: ${data}`;
+          : `HTTP Error ${response.status}: ${await response.text()}`;
       throw new Error(errorMessage);
     }
     return data;
   } catch (error) {
-    console.error(`API-Fehler bei ${url}:`, error);
+    // Loggt den Fehler für Debugging-Zwecke und wirft ihn erneut,
+    // damit die aufrufende Funktion ihn behandeln kann.
+    console.error(`API Error at ${url}:`, error);
     throw error;
   }
 }
 
 // --- Setup ---
-export const checkSetupStatus = () => fetchAPI("/api/setup/status");
-export const discoverBridges = () => fetchAPI("/api/setup/discover");
+export const checkSetupStatus = () => fetchJson("/api/setup/status");
+export const discoverBridges = () => fetchJson("/api/setup/discover");
 export const connectToBridge = (ip) =>
-  fetchAPI("/api/setup/connect", {
+  fetchJson("/api/setup/connect", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ip }),
@@ -43,9 +53,9 @@ export const saveSetupConfig = (configData) =>
   });
 
 // --- Config ---
-export const loadConfig = () => fetchAPI("/api/config/");
+export const loadConfig = () => fetchJson("/api/config/");
 export const saveFullConfig = (config) =>
-  fetchAPI("/api/config/", {
+  fetchJson("/api/config/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(config),
@@ -53,7 +63,7 @@ export const saveFullConfig = (config) =>
 export const systemAction = async (url, confirmMessage) => {
   if (confirm(confirmMessage)) {
     try {
-      const result = await fetchAPI(url, { method: "POST" });
+      const result = await fetchJson(url, { method: "POST" });
       alert(result.message || "Aktion erfolgreich ausgeführt.");
       if (url.includes("restore") || url.includes("restart")) {
         setTimeout(() => window.location.reload(), 1000);
@@ -65,32 +75,32 @@ export const systemAction = async (url, confirmMessage) => {
 };
 
 // --- Bridge Data ---
-export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
+export const loadBridgeData = () => fetchJson("/api/bridge/all_items");
 export const renameBridgeItem = (type, id, newName) =>
-  fetchAPI(`/api/bridge/${type}/${id}/rename`, {
+  fetchJson(`/api/bridge/${type}/${id}/rename`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: newName }),
   });
 export const deleteBridgeItem = (type, id) =>
-  fetchAPI(`/api/bridge/${type}/${id}/delete`, { method: "DELETE" });
+  fetchJson(`/api/bridge/${type}/${id}/delete`, { method: "DELETE" });
 
 // --- Status & Logs ---
 export async function updateStatus() {
   const [statusData, logText] = await Promise.all([
-    fetchAPI("/api/data/status"),
-    fetchAPI("/api/data/log"),
+    fetchJson("/api/data/status"),
+    fetchJson("/api/data/log"),
   ]);
   return { statusData, logText };
 }
 
 // --- Analyse ---
 export const loadChartData = (sensorId, period, date, avg) =>
-  fetchAPI(
+  fetchJson(
     `/api/data/history?sensor_id=${sensorId}&period=${period}&date=${date}&avg=${avg}`
   );
 
 // --- System & Hilfe ---
 export const addDefaultScenes = () =>
-  fetchAPI("/api/system/scenes/add_defaults", { method: "POST" });
-export const loadHelpContent = () => fetchAPI("/api/system/help");
+  fetchJson("/api/system/scenes/add_defaults", { method: "POST" });
+export const loadHelpContent = () => fetchJson("/api/system/help");

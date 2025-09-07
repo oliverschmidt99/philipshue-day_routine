@@ -130,13 +130,6 @@ export function renderScenes(scenes) {
     sceneGrid.appendChild(sceneEl);
   }
   container.appendChild(sceneGrid);
-
-  if (!document.getElementById("scene-grid-styles")) {
-    const style = document.createElement("style");
-    style.id = "scene-grid-styles";
-    style.innerHTML = `.grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }`;
-    document.head.appendChild(style);
-  }
 }
 
 export function renderStatus(statuses) {
@@ -182,35 +175,21 @@ export function openSceneModal(scene, sceneName, config) {
   const title = isEditing ? "Szene bearbeiten" : "Neue Szene";
   const content = `
         <form id="form-scene" style="display: flex; flex-direction: column; gap: 1rem;">
-            <input type="hidden" id="scene-original-name" value="${
-              sceneName || ""
-            }">
+            <input type="hidden" id="scene-original-name" value="${ sceneName || "" }">
             <div>
                 <label for="scene-name">Name</label>
-                <input type="text" id="scene-name" value="${
-                  isEditing ? sceneName.replace(/_/g, " ") : ""
-                }" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                <input type="text" id="scene-name" value="${ isEditing ? sceneName.replace(/_/g, " ") : "" }" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
             </div>
             <div>
-                <label for="scene-bri">Helligkeit: <span id="bri-value">${
-                  scene.bri || 0
-                }</span></label>
-                <input type="range" id="scene-bri" min="0" max="254" value="${
-                  scene.bri || 0
-                }" oninput="document.getElementById('bri-value').textContent = this.value">
+                <label for="scene-bri">Helligkeit: <span id="bri-value">${ scene.bri || 0 }</span></label>
+                <input type="range" id="scene-bri" min="0" max="254" value="${ scene.bri || 0 }">
             </div>
              <div>
-                <label for="scene-ct">Farbtemperatur: <span id="ct-value">${
-                  scene.ct || 366
-                }</span></label>
-                <input type="range" id="scene-ct" min="153" max="500" value="${
-                  scene.ct || 366
-                }" oninput="document.getElementById('ct-value').textContent = this.value">
+                <label for="scene-ct">Farbtemperatur: <span id="ct-value">${ scene.ct || 366 }</span></label>
+                <input type="range" id="scene-ct" min="153" max="500" value="${ scene.ct || 366 }">
             </div>
              <div>
-                <label><input type="checkbox" id="scene-status" ${
-                  scene.status ? "checked" : ""
-                }> Licht an</label>
+                <label><input type="checkbox" id="scene-status" ${ scene.status ? "checked" : "" }> Licht an</label>
             </div>
         </form>`;
 
@@ -218,6 +197,23 @@ export function openSceneModal(scene, sceneName, config) {
                      <button type="button" class="button" data-action="save-scene">Speichern</button>`;
 
   window.showModal(title, content, actions);
+
+  // Event-Listener programmatisch hinzufügen
+  const briSlider = document.getElementById('scene-bri');
+  const ctSlider = document.getElementById('scene-ct');
+  const briValue = document.getElementById('bri-value');
+  const ctValue = document.getElementById('ct-value');
+
+  if (briSlider && briValue) {
+    briSlider.addEventListener('input', (e) => {
+      briValue.textContent = e.target.value;
+    });
+  }
+  if (ctSlider && ctValue) {
+    ctSlider.addEventListener('input', (e) => {
+      ctValue.textContent = e.target.value;
+    });
+  }
 }
 
 export function openCreateRoutineModal(bridgeData, config) {
