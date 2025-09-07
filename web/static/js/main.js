@@ -93,7 +93,10 @@ function runMainApp() {
         api.loadConfig(),
         api.loadBridgeData(),
       ]);
-      console.log("[runMainApp] Data loaded successfully:", { config, bridgeData });
+      console.log("[runMainApp] Data loaded successfully:", {
+        config,
+        bridgeData,
+      });
       renderAll();
       setupEventListeners();
       console.log("[runMainApp] Initialization complete.");

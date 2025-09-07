@@ -85,7 +85,7 @@ class CoreLogic:
                 self.data_logger_thread.join()
                 self.stop_event.clear()
 
-    def _connect_to_bridge(self, config: dict) -> Bridge | None:
+    def _connect_to_bridge(self, config: dict):
         """Versucht, eine Verbindung zur Hue Bridge herzustellen."""
         bridge_ip = config.get("bridge_ip")
         app_key = config.get("app_key")
@@ -113,7 +113,7 @@ class CoreLogic:
                 now_iso = datetime.now().isoformat()
                 measurements = []
 
-                for _, sensor_obj in sensors.items():
+                for sensor_obj in sensors.values():
                     brightness = sensor_obj.get_brightness()
                     temperature = sensor_obj.get_temperature()
 
@@ -144,10 +144,6 @@ class CoreLogic:
                             measurements,
                         )
                         con.commit()
-                    self.log.debug(
-                        f"{len(measurements)} neue Messwerte in die Datenbank geschrieben."
-                    )
-
             except (sqlite3.Error, PhueRequestTimeout, RequestsConnectionError) as e:
                 self.log.error(f"Fehler im Datenlogger-Thread: {e}", exc_info=True)
 
@@ -169,7 +165,6 @@ class CoreLogic:
             name: Scene(**params) for name, params in config.get("scenes", {}).items()
         }
 
-        # KORREKTUR: Erstelle Room-Objekte sicher, indem explizit auf 'group_id' geprüft wird
         rooms = {}
         for rc in config.get("rooms", []):
             if "name" in rc and "group_id" in rc:
@@ -179,22 +174,13 @@ class CoreLogic:
                     name=rc["name"],
                     group_id=rc["group_id"],
                 )
-            else:
-                self.log.warning(
-                    f"Raumkonfiguration übersprungen, da 'name' oder 'group_id' fehlt: {rc}"
-                )
 
         sensors = {}
         try:
-            all_bridge_sensors_dict = bridge.get_api().get("sensors", {})
-            for sensor_id, details in all_bridge_sensors_dict.items():
-                if details.get("type") == "ZLLPresence":
-                    int_sensor_id = int(sensor_id)
-                    if int_sensor_id not in sensors:
-                        sensors[int_sensor_id] = Sensor(bridge, int_sensor_id, self.log)
-            self.log.info(
-                f"{len(sensors)} Bewegungssensoren für das Daten-Logging gefunden."
-            )
+            all_bridge_sensors = bridge.get_sensor_objects("id")
+            for sensor_id, details in all_bridge_sensors.items():
+                if details.type == "ZLLPresence":
+                    sensors[sensor_id] = Sensor(bridge, sensor_id, self.log)
         except (PhueRequestTimeout, RequestsConnectionError) as e:
             self.log.error(f"Konnte Sensoren nicht von der Bridge abrufen: {e}")
 
@@ -241,9 +227,8 @@ class CoreLogic:
         while not self.stop_event.is_set():
             try:
                 if os.path.exists(RESTART_FLAG_FILE):
-                    self.log.info("Neustart-Signal erkannt. Beende die Anwendung...")
                     os.remove(RESTART_FLAG_FILE)
-                    self.stop_event.set()
+                    self.log.info("Neustart-Signal erkannt. Lade Logik neu.")
                     return
 
                 if self.config_manager.get_last_modified_time() > last_mod_time:
@@ -267,12 +252,10 @@ class CoreLogic:
                     f"Verbindung zur Bridge verloren: {e}. Starte Logik neu..."
                 )
                 return
-            except (TypeError, KeyError) as e:
+            except Exception as e:
                 self.log.error(
-                    f"Konfigurationsfehler: {e}. Bitte config.yaml prüfen.",
-                    exc_info=True,
+                    f"Unerwarteter Fehler: {e}. Starte Logik neu.", exc_info=True
                 )
-                time.sleep(15)
                 return
 
     def _get_sun_times(self, location_config):
@@ -301,14 +284,16 @@ class CoreLogic:
         """Schreibt den aktuellen Status in die status.json."""
         status_data = {
             "routines": [r.get_status() for r in routines],
-            "sun_times": sun_times,
+            "sun_times": (
+                {
+                    "sunrise": sun_times["sunrise"].isoformat(),
+                    "sunset": sun_times["sunset"].isoformat(),
+                }
+                if sun_times
+                else None
+            ),
         }
         try:
-            if status_data.get("sun_times"):
-                status_data["sun_times"] = {
-                    "sunrise": status_data["sun_times"]["sunrise"].isoformat(),
-                    "sunset": status_data["sun_times"]["sunset"].isoformat(),
-                }
             with open(STATUS_FILE + ".tmp", "w", encoding="utf-8") as f:
                 json.dump(status_data, f, indent=2)
             os.replace(STATUS_FILE + ".tmp", STATUS_FILE)

@@ -1,7 +1,10 @@
-# src/config_manager.py
-import yaml
+"""
+Verwaltet das Laden und Speichern der zentralen YAML-Konfigurationsdatei.
+"""
+
 import os
 import threading
+import yaml
 from .logger import Logger
 
 
@@ -45,7 +48,6 @@ class ConfigManager:
             with self._lock:
                 with open(self.config_file, "r", encoding="utf-8") as f:
                     config = yaml.safe_load(f)
-                    # Wenn die Datei leer ist, wird None zurückgegeben
                     return config if config is not None else {}
         except (FileNotFoundError, yaml.YAMLError) as e:
             self.log.error(
