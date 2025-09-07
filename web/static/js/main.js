@@ -2,6 +2,8 @@
 import * as api from "./modules/api.js";
 import * as ui from "./modules/ui.js";
 import { runSetupWizard } from "./modules/setup.js";
+import { init as initAnalyse } from "./modules/analyse.js";
+import { init as initDevices } from "./modules/devices.js";
 
 // Definiere die Template-Funktionen im globalen Scope, damit sie überall verfügbar sind.
 function initializeTemplateFunctions() {
@@ -196,7 +198,13 @@ function runMainApp() {
 
         if (statusInterval) clearInterval(statusInterval);
 
-        if (link.dataset.tab === "status") startStatusUpdates();
+        if (link.dataset.tab === "status") {
+          startStatusUpdates();
+        } else if (link.dataset.tab === "analyse") {
+          initAnalyse(bridgeData);
+        } else if (link.dataset.tab === "bridge-devices") {
+          initDevices();
+        }
       });
     });
   };
