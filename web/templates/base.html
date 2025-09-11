@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hue Controller{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo" id="header-logo">
+            <h1>Hue Controller</h1>
+        </div>
+        <nav id="main-nav">
+            <div class="nav-item"><a href="#" class="active" data-target="routines">Routinen</a></div>
+            <div class="nav-item"><a href="#" data-target="scenes">Szenen</a></div>
+            <div class="nav-item"><a href="#" data-target="status">Status</a></div>
+            <div class="nav-item"><a href="#" data-target="analysis">Analyse</a></div>
+            <div class="nav-item"><a href="#" data-target="devices">Geräte</a></div>
+            <div class="nav-item"><a href="#" data-target="settings">Einstellungen</a></div>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 - Hue Controller</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>
