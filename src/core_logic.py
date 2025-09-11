@@ -26,7 +26,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
 STATUS_FILE = os.path.join(DATA_DIR, "status.json")
-RESTART_FLAG_FILE = os.path.join(DATA_DIR, "restart.flag")
 
 
 class CoreLogic:
@@ -42,8 +41,6 @@ class CoreLogic:
     def _init_database(self):
         """Stellt sicher, dass die Datenbank und die Tabelle existieren."""
         try:
-            if os.path.exists(RESTART_FLAG_FILE):
-                os.remove(RESTART_FLAG_FILE)
             with sqlite3.connect(DB_FILE) as con:
                 cur = con.cursor()
                 cur.execute(
@@ -56,36 +53,30 @@ class CoreLogic:
                     """
                 )
             self.log.info("Datenbank initialisiert.")
-        except (sqlite3.Error, IOError) as e:
+        except sqlite3.Error as e:
             self.log.error(f"Datenbankfehler bei Initialisierung: {e}", exc_info=True)
 
     def run_main_loop(self):
         """
-        Die Endlosschleife, die die Logik am Laufen hält und bei
-        Fehlern oder Konfigurationsänderungen neu startet.
+        Prüft die Konfiguration und startet die Routine-Sitzung.
+        Gibt zurück, ob die Konfiguration vollständig war.
         """
-        while not self.stop_event.is_set():
-            config = self.config_manager.get_full_config()
-            if not config or not config.get("bridge_ip"):
-                self.log.warning(
-                    "Konfiguration unvollständig oder Bridge nicht eingerichtet. Warte 15s."
-                )
-                time.sleep(15)
-                continue
+        config = self.config_manager.get_full_config()
+        if not config or not config.get("bridge_ip"):
+            self.log.warning(
+                "Konfiguration unvollständig oder Bridge nicht eingerichtet."
+            )
+            return False # Signalisiert dem Aufrufer, dass er warten soll
 
-            bridge = self._connect_to_bridge(config)
-            if not bridge:
-                time.sleep(30)
-                continue
+        bridge = self._connect_to_bridge(config)
+        if not bridge:
+            return False # Signalisiert dem Aufrufer, dass er warten soll
 
-            self._execute_routine_session(bridge)
+        # Diese Methode blockiert, bis die Konfiguration geändert wird oder ein Fehler auftritt
+        self._execute_routine_session(bridge)
+        return True
 
-            if self.data_logger_thread and self.data_logger_thread.is_alive():
-                self.stop_event.set()
-                self.data_logger_thread.join()
-                self.stop_event.clear()
-
-    def _connect_to_bridge(self, config: dict):
+    def _connect_to_bridge(self, config: dict) -> Bridge | None:
         """Versucht, eine Verbindung zur Hue Bridge herzustellen."""
         bridge_ip = config.get("bridge_ip")
         app_key = config.get("app_key")
@@ -96,62 +87,12 @@ class CoreLogic:
             return None
         try:
             bridge = Bridge(bridge_ip, username=app_key)
-            bridge.get_api()
+            bridge.get_api()  # Testet die Verbindung
             self.log.info(f"Erfolgreich mit Bridge unter {bridge_ip} verbunden.")
             return bridge
         except (RequestsConnectionError, PhueRequestTimeout, OSError) as e:
             self.log.error(f"Netzwerkfehler zur Bridge: {e}.")
             return None
-
-    def _data_logger_worker(self, sensors: dict, interval_minutes: int):
-        """
-        Ein Worker-Thread, der periodisch Sensordaten in die Datenbank schreibt.
-        """
-        self.log.info(f"Datenlogger gestartet. Intervall: {interval_minutes} Minuten.")
-        while not self.stop_event.is_set():
-            try:
-                now_iso = datetime.now().isoformat()
-                measurements = []
-
-                for sensor_obj in sensors.values():
-                    brightness = sensor_obj.get_brightness()
-                    temperature = sensor_obj.get_temperature()
-
-                    if brightness is not None:
-                        measurements.append(
-                            (
-                                now_iso,
-                                sensor_obj.light_sensor_id,
-                                "brightness",
-                                brightness,
-                            )
-                        )
-                    if temperature is not None:
-                        measurements.append(
-                            (
-                                now_iso,
-                                sensor_obj.temp_sensor_id,
-                                "temperature",
-                                temperature,
-                            )
-                        )
-
-                if measurements:
-                    with sqlite3.connect(DB_FILE) as con:
-                        cur = con.cursor()
-                        cur.executemany(
-                            "INSERT OR IGNORE INTO measurements VALUES (?, ?, ?, ?)",
-                            measurements,
-                        )
-                        con.commit()
-            except (sqlite3.Error, PhueRequestTimeout, RequestsConnectionError) as e:
-                self.log.error(f"Fehler im Datenlogger-Thread: {e}", exc_info=True)
-
-            for _ in range(interval_minutes * 60):
-                if self.stop_event.is_set():
-                    break
-                time.sleep(1)
-        self.log.info("Datenlogger-Thread beendet.")
 
     def _execute_routine_session(self, bridge: Bridge):
         """
@@ -165,36 +106,15 @@ class CoreLogic:
             name: Scene(**params) for name, params in config.get("scenes", {}).items()
         }
 
-        rooms = {}
-        for rc in config.get("rooms", []):
-            if "name" in rc and "group_id" in rc:
-                rooms[rc["name"]] = Room(
-                    bridge=bridge,
-                    log=self.log,
-                    name=rc["name"],
-                    group_id=rc["group_id"],
-                )
+        rooms = {
+            rc["name"]: Room(bridge, self.log, **rc) for rc in config.get("rooms", [])
+        }
 
         sensors = {}
-        try:
-            all_bridge_sensors = bridge.get_sensor_objects("id")
-            for sensor_id, details in all_bridge_sensors.items():
-                if details.type == "ZLLPresence":
+        for room_config in config.get("rooms", []):
+            if sensor_id := room_config.get("sensor_id"):
+                if sensor_id not in sensors:
                     sensors[sensor_id] = Sensor(bridge, sensor_id, self.log)
-        except (PhueRequestTimeout, RequestsConnectionError) as e:
-            self.log.error(f"Konnte Sensoren nicht von der Bridge abrufen: {e}")
-
-        if (
-            not self.data_logger_thread or not self.data_logger_thread.is_alive()
-        ) and sensors:
-            self.stop_event.clear()
-            datalogger_interval = global_settings.get("datalogger_interval_minutes", 15)
-            self.data_logger_thread = threading.Thread(
-                target=self._data_logger_worker,
-                args=(sensors, datalogger_interval),
-                daemon=True,
-            )
-            self.data_logger_thread.start()
 
         routines = [
             Routine(
@@ -226,11 +146,6 @@ class CoreLogic:
         self.log.info(f"{len(routines)} Routinen werden jetzt ausgeführt...")
         while not self.stop_event.is_set():
             try:
-                if os.path.exists(RESTART_FLAG_FILE):
-                    os.remove(RESTART_FLAG_FILE)
-                    self.log.info("Neustart-Signal erkannt. Lade Logik neu.")
-                    return
-
                 if self.config_manager.get_last_modified_time() > last_mod_time:
                     self.log.info("Änderung in config.yaml erkannt. Lade Logik neu.")
                     return
@@ -252,10 +167,12 @@ class CoreLogic:
                     f"Verbindung zur Bridge verloren: {e}. Starte Logik neu..."
                 )
                 return
-            except Exception as e:
+            except (TypeError, KeyError) as e:
                 self.log.error(
-                    f"Unerwarteter Fehler: {e}. Starte Logik neu.", exc_info=True
+                    f"Konfigurationsfehler: {e}. Bitte config.yaml prüfen.",
+                    exc_info=True,
                 )
+                time.sleep(15)
                 return
 
     def _get_sun_times(self, location_config):
@@ -284,16 +201,14 @@ class CoreLogic:
         """Schreibt den aktuellen Status in die status.json."""
         status_data = {
             "routines": [r.get_status() for r in routines],
-            "sun_times": (
-                {
-                    "sunrise": sun_times["sunrise"].isoformat(),
-                    "sunset": sun_times["sunset"].isoformat(),
-                }
-                if sun_times
-                else None
-            ),
+            "sun_times": sun_times,
         }
         try:
+            if status_data.get("sun_times"):
+                status_data["sun_times"] = {
+                    "sunrise": status_data["sun_times"]["sunrise"].isoformat(),
+                    "sunset": status_data["sun_times"]["sunset"].isoformat(),
+                }
             with open(STATUS_FILE + ".tmp", "w", encoding="utf-8") as f:
                 json.dump(status_data, f, indent=2)
             os.replace(STATUS_FILE + ".tmp", STATUS_FILE)

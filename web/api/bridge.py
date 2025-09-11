@@ -5,10 +5,17 @@ from flask import Blueprint, jsonify, current_app
 from phue import Bridge, PhueException
 from requests.exceptions import RequestException
 
+# Importiere den Patch
+from src.hue_api_patch import apply_https_patch
+
 bridge_api = Blueprint("bridge_api", __name__)
 
 def get_bridge_instance():
     """Hilfsfunktion, um eine Bridge-Instanz aus der App-Konfiguration zu erstellen."""
+    
+    # Wende den Patch an, bevor die Bridge-Klasse verwendet wird
+    apply_https_patch()
+    
     config = current_app.config_manager.get_full_config()
     ip = config.get("bridge_ip")
     key = config.get("app_key")

@@ -1,6 +1,7 @@
 """
 Hauptanwendung für die Philips Hue Routine-Steuerung.
-Initialisiert und startet den Webserver und die Kernlogik.
+Initialisiert und startet den Webserver und die Kernlogik in einer
+Schleife, um Neustarts nach Konfigurationsänderungen zu ermöglichen.
 """
 
 import os
@@ -8,7 +9,8 @@ import sys
 import subprocess
 import atexit
 import logging
-import socket
+import time
+
 from src.logger import Logger
 from src.config_manager import ConfigManager
 from src.core_logic import CoreLogic
@@ -19,16 +21,7 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 LOG_FILE = os.path.join(DATA_DIR, "app.log")
 CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
 SERVER_SCRIPT = os.path.join(BASE_DIR, "web", "server.py")
-
-
-def get_local_ip():
-    """Ermittelt die primäre lokale IP-Adresse des Systems."""
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.connect(("8.8.8.8", 80))
-            return s.getsockname()[0]
-    except OSError:
-        return "127.0.0.1"
+RESTART_FLAG_FILE = os.path.join(DATA_DIR, "restart.flag")
 
 
 def cleanup(log, server_process):
@@ -58,17 +51,26 @@ def main():
     server_process = subprocess.Popen([sys.executable, SERVER_SCRIPT])
     log.info(f"Webserver-Prozess gestartet mit PID: {server_process.pid}")
 
-    local_ip = get_local_ip()
-    port = 5001
-    log.info("=====================================================")
-    log.info(f"  Web-UI erreichbar unter: http://{local_ip}:{port}")
-    log.info("=====================================================")
-
     atexit.register(cleanup, log, server_process)
 
-    config_manager = ConfigManager(CONFIG_FILE, log)
-    core_logic = CoreLogic(log, config_manager)
-    core_logic.run_main_loop()
+    while True:
+        if os.path.exists(RESTART_FLAG_FILE):
+            log.info("Neustart-Signal erkannt. Entferne Flag-Datei.")
+            os.remove(RESTART_FLAG_FILE)
+
+        log.info("Initialisiere Kernlogik...")
+        config_manager = ConfigManager(CONFIG_FILE, log)
+        core_logic = CoreLogic(log, config_manager)
+        
+        # Führe die Logik aus. Sie gibt `False` zurück, wenn gewartet werden soll.
+        config_is_complete = core_logic.run_main_loop()
+
+        if not config_is_complete:
+            log.info("Konfiguration unvollständig, warte 15 Sekunden...")
+            time.sleep(15)
+        else:
+            log.info("Kernlogik-Schleife wurde beendet. Warte 2 Sekunden vor Neustart.")
+            time.sleep(2)
 
 
 if __name__ == "__main__":

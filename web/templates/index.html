@@ -2,30 +2,40 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="container">
-    <div id="content-routines" class="content-section active">
-        <h2>Routinen</h2>
-        <p>Hier werden die Routinen verwaltet.</p>
-    </div>
-    <div id="content-scenes" class="content-section">
-        <h2>Szenen</h2>
-        <p>Hier werden die Szenen verwaltet.</p>
-    </div>
-    <div id="content-status" class="content-section">
-        <h2>Status</h2>
-        <p>Hier wird der Live-Status der Routinen angezeigt.</p>
-    </div>
-    <div id="content-analysis" class="content-section">
-        <h2>Analyse</h2>
-        <p>Hier werden die Sensordaten visualisiert.</p>
-    </div>
-    <div id="content-devices" class="content-section">
-        <h2>Geräte</h2>
-        <p>Hier werden die Geräte der Bridge angezeigt.</p>
-    </div>
-    <div id="content-settings" class="content-section">
-        <h2>Einstellungen</h2>
-        <p>Hier werden die globalen Einstellungen verwaltet.</p>
+
+{% include 'setup_wizard.html' %}
+
+<div id="main-app-container" class="hidden">
+    <div class="container">
+        <div id="content-routines" class="content-section active">
+            <div class="page-header">
+                <h2>Routinen</h2>
+                <button type="button" id="btn-new-routine" class="button">+ Neue Routine</button>
+            </div>
+            <div id="routines-container" class="grid-container"></div>
+        </div>
+
+        <div id="content-scenes" class="content-section">
+            <div class="page-header">
+                <h2>Szenen</h2>
+                <button type="button" id="btn-new-scene" class="button">+ Neue Szene</button>
+            </div>
+            <div id="scenes-container" class="grid-container"></div>
+        </div>
+        <div id="content-status" class="content-section">
+            <h2>Status</h2>
+        </div>
+        <div id="content-analysis" class="content-section">
+            <h2>Analyse</h2>
+        </div>
+        <div id="content-devices" class="content-section">
+            <h2>Geräte</h2>
+        </div>
+        <div id="content-settings" class="content-section">
+            <h2>Einstellungen</h2>
+        </div>
     </div>
 </div>
+
+<div id="modal-container"></div>
 {% endblock %}
