@@ -14,15 +14,13 @@ if project_root not in sys.path:
 from src.logger import Logger
 from src.config_manager import ConfigManager
 
-BASE_DIR = project_root
-DATA_DIR = os.path.join(BASE_DIR, "data")
-LOG_FILE = os.path.join(DATA_DIR, "app.log")
-CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
-DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
-STATUS_FILE = os.path.join(DATA_DIR, "status.json")
-
 def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
+    
+    DATA_DIR = os.path.join(project_root, "data")
+    LOG_FILE = os.path.join(DATA_DIR, "app.log")
+    CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
+
     app.logger_instance = Logger(LOG_FILE)
     app.config_manager = ConfigManager(CONFIG_FILE, app.logger_instance)
     
@@ -47,7 +45,7 @@ def create_app():
 
     @app.route("/favicon.ico")
     def favicon():
-        return send_from_directory(os.path.join(app.root_path, "static"), "favicon.ico", mimetype="image/vnd.microsoft.icon")
+        return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/vnd.microsoft.icon")
 
     return app
 

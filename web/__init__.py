@@ -53,8 +53,12 @@ def create_app():
     @app.route("/favicon.ico")
     def favicon():
         """Liefert das Favicon aus."""
-        return send_from_directory(
-            os.path.join(app.root_path, 'static', 'img'), "favicon.svg", mimetype="image/svg+xml"
-        )
+        # Der Pfad muss relativ zum 'static' Ordner sein
+        return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/vnd.microsoft.icon")
+
+    # Route, um die Hilfe-Seite zu laden
+    @app.route("/hilfe")
+    def hilfe():
+        return render_template("hilfe.html")
 
     return app

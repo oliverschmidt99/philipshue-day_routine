@@ -1,41 +1,28 @@
 <!DOCTYPE html>
-{% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
-{% block content %}
+<html lang="de">
 
-{% include 'setup_wizard.html' %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hue Routine und Scene Editor</title>
 
-<div id="main-app-container" class="hidden">
-    <div class="container">
-        <div id="content-routines" class="content-section active">
-            <div class="page-header">
-                <h2>Routinen</h2>
-                <button type="button" id="btn-new-routine" class="button">+ Neue Routine</button>
-            </div>
-            <div id="routines-container" class="grid-container"></div>
-        </div>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
 
-        <div id="content-scenes" class="content-section">
-            <div class="page-header">
-                <h2>Szenen</h2>
-                <button type="button" id="btn-new-scene" class="button">+ Neue Szene</button>
-            </div>
-            <div id="scenes-container" class="grid-container"></div>
-        </div>
-        <div id="content-status" class="content-section">
-            <h2>Status</h2>
-        </div>
-        <div id="content-analysis" class="content-section">
-            <h2>Analyse</h2>
-        </div>
-        <div id="content-devices" class="content-section">
-            <h2>Geräte</h2>
-        </div>
-        <div id="content-settings" class="content-section">
-            <h2>Einstellungen</h2>
-        </div>
-    </div>
-</div>
+<body class="bg-gray-100 text-gray-800">
 
-<div id="modal-container"></div>
-{% endblock %}
+    {% include 'setup_wizard.html' %}
+    {% include 'main_app.html' %}
+    {% include 'modals.html' %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
+</body>
+
+</html>

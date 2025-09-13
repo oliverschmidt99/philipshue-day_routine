@@ -23,7 +23,6 @@ DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
 STATUS_FILE = os.path.join(DATA_DIR, "status.json")
 
 class CoreLogic:
-    """Führt die Hauptschleife aus, verbindet sich mit der Bridge und steuert die Routinen."""
     def __init__(self, log: Logger, config_manager: ConfigManager):
         self.log = log
         self.config_manager = config_manager
