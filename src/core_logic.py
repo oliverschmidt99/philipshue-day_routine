@@ -9,11 +9,11 @@ import sqlite3
 import threading
 from datetime import datetime, date
 
-from phue import Bridge, PhueRequestTimeout
-from requests.exceptions import ConnectionError as RequestsConnectionError
 from astral import LocationInfo
 from astral.sun import sun
 
+# Importiere den neuen Wrapper anstelle der phue-Bibliothek
+from src.hue_wrapper import HueBridge
 from src.scene import Scene
 from src.room import Room
 from src.sensor import Sensor
@@ -76,7 +76,7 @@ class CoreLogic:
         self._execute_routine_session(bridge)
         return True
 
-    def _connect_to_bridge(self, config: dict) -> Bridge | None:
+    def _connect_to_bridge(self, config: dict) -> HueBridge | None:
         """Versucht, eine Verbindung zur Hue Bridge herzustellen."""
         bridge_ip = config.get("bridge_ip")
         app_key = config.get("app_key")
@@ -85,16 +85,17 @@ class CoreLogic:
                 "Bridge-IP oder App-Key fehlen in config.yaml. Steuerung pausiert."
             )
             return None
-        try:
-            bridge = Bridge(bridge_ip, username=app_key)
-            bridge.get_api()  # Testet die Verbindung
+
+        # Nutze den Wrapper für die Verbindung
+        bridge = HueBridge(ip=bridge_ip, username=app_key, logger=self.log)
+        if bridge.is_connected():
             self.log.info(f"Erfolgreich mit Bridge unter {bridge_ip} verbunden.")
             return bridge
-        except (RequestsConnectionError, PhueRequestTimeout, OSError) as e:
-            self.log.error(f"Netzwerkfehler zur Bridge: {e}.")
+        else:
+            self.log.error(f"Netzwerkfehler zur Bridge: Verbindung konnte nicht hergestellt werden.")
             return None
 
-    def _execute_routine_session(self, bridge: Bridge):
+    def _execute_routine_session(self, bridge: HueBridge):
         """
         Initialisiert und führt alle Routinen aus, bis eine Änderung der
         Konfigurationsdatei erkannt wird.
@@ -162,18 +163,15 @@ class CoreLogic:
 
                 time.sleep(global_settings.get("loop_interval_s", 1))
 
-            except (RequestsConnectionError, PhueRequestTimeout, OSError) as e:
+            except Exception as e:
+                # Allgemeinere Fehlerbehandlung, da der Wrapper spezifische Fehler abfängt
                 self.log.error(
-                    f"Verbindung zur Bridge verloren: {e}. Starte Logik neu..."
+                    f"Ein unerwarteter Fehler ist in der Hauptschleife aufgetreten: {e}. Starte Logik neu...",
+                    exc_info=True
                 )
+                time.sleep(5) # Kurze Pause vor dem Neustart der Logik
                 return
-            except (TypeError, KeyError) as e:
-                self.log.error(
-                    f"Konfigurationsfehler: {e}. Bitte config.yaml prüfen.",
-                    exc_info=True,
-                )
-                time.sleep(15)
-                return
+
 
     def _get_sun_times(self, location_config):
         """Berechnet Sonnenauf- und -untergang."""

@@ -4,12 +4,10 @@ Umfasst die Bridge-Suche, das Koppeln und das Speichern der initialen Konfigurat
 """
 import requests
 import json
-import os # Importiere os
+import os
 from flask import Blueprint, jsonify, request, current_app
-from phue import Bridge, PhueException
 
-# Importiere den Patch
-from src.hue_api_patch import apply_https_patch
+# KEIN Import aus 'src' hier auf oberster Ebene
 
 setup_api = Blueprint("setup_api", __name__)
 
@@ -32,8 +30,8 @@ def get_setup_status():
 def discover_bridges():
     """Sucht nach Hue Bridges im Netzwerk."""
     log = current_app.logger_instance
+    # HIER WAR DER FEHLER: Der Doppelpunkt nach 'try' hat gefehlt.
     try:
-        # Die discover-API funktioniert weiterhin über HTTP
         response = requests.get("https://discovery.meethue.com/", timeout=10)
         response.raise_for_status()
         return jsonify([b["internalipaddress"] for b in response.json()])
@@ -45,37 +43,32 @@ def discover_bridges():
 @setup_api.route("/connect", methods=["POST"])
 def connect_to_bridge():
     """Versucht, sich mit einer Bridge zu verbinden."""
+    # Importiere den Wrapper hier, innerhalb der Funktion
+    from src.hue_wrapper import HueBridge
+    
     log = current_app.logger_instance
-    
-    # Wende den Patch an, bevor die Bridge-Klasse verwendet wird
-    apply_https_patch()
-    
     ip_address = request.json.get("ip")
     if not ip_address:
         return jsonify({"error": "IP-Adresse fehlt."}), 400
-    try:
-        # phue.Bridge() ruft intern connect() auf, was jetzt unsere gepatchte Methode verwendet
-        bridge = Bridge(ip_address)
-        log.info(f"Erfolgreich mit Bridge {ip_address} verbunden und App-Key erhalten.")
+
+    bridge = HueBridge(ip=ip_address, logger=log)
+    if bridge.connect():
         return jsonify({"app_key": bridge.username})
-    except PhueException as e:
-        log.error(f"Phue-Fehler beim Verbinden mit Bridge {ip_address}: {e}")
-        error_message = str(e)
-        if "101" in error_message:
-            error_message = "Der Link-Button auf der Bridge wurde nicht gedrückt. Bitte erneut versuchen."
+    else:
+        error_message = "Verbindung fehlgeschlagen. Bitte den Link-Button auf der Bridge drücken und erneut versuchen."
         return jsonify({"error": error_message}), 500
-    except Exception as e:
-        log.error(f"Allgemeiner Fehler bei der Verbindung mit der Bridge {ip_address}: {e}", exc_info=True)
-        return jsonify({"error": f"Ein unerwarteter Fehler ist aufgetreten: {e}"}), 500
 
 
 @setup_api.route("/save", methods=["POST"])
 def save_setup_config():
-    """Speichert die initiale Konfiguration und löst einen Neustart aus."""
+    """Speichert die initiale Konfiguration."""
     config_manager = current_app.config_manager
     log = current_app.logger_instance
     try:
         data = request.get_json()
+        if not all(data.get(key) for key in ["bridge_ip", "app_key"]):
+            return jsonify({"error": "Unvollständige Daten erhalten."}), 400
+
         initial_config = {
             "bridge_ip": data.get("bridge_ip"),
             "app_key": data.get("app_key"),
@@ -88,11 +81,9 @@ def save_setup_config():
         }
         if config_manager.safe_write(initial_config):
             log.info("Ersteinrichtung abgeschlossen und Konfiguration gespeichert.")
-            # Erstelle die Neustart-Datei als Signal für den Hauptprozess
-            with open(RESTART_FLAG_FILE, "w", encoding="utf-8") as f:
-                pass
-            return jsonify({"message": "Konfiguration gespeichert. Anwendung startet neu."})
-        return jsonify({"error": "Speichern fehlgeschlagen."}), 500
+            return jsonify({"message": "Konfiguration gespeichert."})
+        
+        return jsonify({"error": "Speichern der Konfiguration fehlgeschlagen."}), 500
     except (TypeError, KeyError, IOError) as e:
         log.error(f"Fehler beim Speichern der Setup-Konfiguration: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500

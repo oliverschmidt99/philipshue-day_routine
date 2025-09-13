@@ -3,7 +3,8 @@ Liest und interpretiert Daten von einem Hue Bewegungssensor,
 inklusive der zugehörigen Unter-Sensoren für Helligkeit und Temperatur.
 """
 
-from phue import PhueException
+# Importiere den Wrapper anstelle von phue
+from .hue_wrapper import HueBridge
 from .logger import Logger
 
 
@@ -13,7 +14,8 @@ class Sensor:
     Verwendet die +1/+2 Logik, um die zugehörigen Licht- und Temperatursensoren zu finden.
     """
 
-    def __init__(self, bridge, sensor_id, log: Logger):
+    # Passe den Konstruktor an, um eine HueBridge-Instanz zu erhalten
+    def __init__(self, bridge: HueBridge, sensor_id, log: Logger):
         """Initialisiert das Sensor-Objekt und die zugehörigen IDs."""
         self.bridge = bridge
         self.log = log
@@ -37,24 +39,21 @@ class Sensor:
         """Holt einen bestimmten Wert aus dem 'state'-Dictionary eines bestimmten Sensors."""
         if sensor_id is None:
             return default_value
-        try:
-            sensor_data = self.bridge.get_sensor(sensor_id)
+        
+        # Nutze die Wrapper-Methode
+        sensor_data = self.bridge.get_sensor(sensor_id)
 
-            if sensor_data is None:
-                self.log.debug(f"Sensor {sensor_id} nicht auf der Bridge gefunden.")
-                return None
-
-            state = sensor_data.get("state")
-            if state:
-                return state.get(key, default_value)
-
-            self.log.warning(f"Kein 'state' für Sensor {sensor_id} empfangen.")
+        if sensor_data is None:
+            # Fehler werden bereits im Wrapper geloggt, hier nur eine Debug-Meldung
+            self.log.debug(f"Keine Daten für Sensor {sensor_id} erhalten.")
             return None
-        except (PhueException, TypeError) as e:
-            self.log.error(
-                f"Fehler beim Abrufen des Zustands für Sensor {sensor_id}: {e}"
-            )
-            return None
+
+        state = sensor_data.get("state")
+        if state:
+            return state.get(key, default_value)
+
+        self.log.warning(f"Kein 'state' für Sensor {sensor_id} empfangen.")
+        return None
 
     def get_motion(self) -> bool:
         """Gibt True zurück, wenn eine Bewegung erkannt wird, sonst False."""
