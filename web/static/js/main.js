@@ -1,4 +1,3 @@
-// web/static/js/main.js
 import * as api from "./modules/api.js";
 import * as ui from "./modules/ui.js";
 import { runSetupWizard } from "./modules/setup.js";
@@ -27,7 +26,7 @@ async function runMainApp() {
   let colorPicker = null;
   let statusInterval;
   let chartInstance = null;
-  let openStatusCards = []; // Speichert die Namen der geöffneten Statuskarten
+  let openStatusCards = [];
 
   const init = async () => {
     ui.updateClock();
@@ -37,11 +36,9 @@ async function runMainApp() {
         api.loadConfig(),
         api.loadBridgeData(),
       ]);
-      ui.renderSunTimes(config.sun_times); // Sonnenzeiten aus der geladenen Config
+      ui.renderSunTimes(config.sun_times);
       renderAll();
       setupEventListeners();
-
-      // Initial den Status-Tab laden, wenn die App startet
       document.getElementById("tab-status")?.click();
     } catch (error) {
       ui.showToast(`Initialisierungsfehler: ${error.message}`, true);
@@ -49,9 +46,41 @@ async function runMainApp() {
     }
   };
 
+  const renderSettings = (config) => {
+    const bridgeIpEl = document.getElementById("setting-bridge-ip");
+    if (bridgeIpEl) bridgeIpEl.value = config.bridge_ip || "";
+
+    if (config.location) {
+      const latEl = document.getElementById("setting-latitude");
+      if (latEl) latEl.value = config.location.latitude || "";
+      const lonEl = document.getElementById("setting-longitude");
+      if (lonEl) lonEl.value = config.location.longitude || "";
+    }
+
+    if (config.global_settings) {
+      const hysteresisEl = document.getElementById("setting-hysteresis");
+      if (hysteresisEl)
+        hysteresisEl.value = config.global_settings.hysteresis_percent || 25;
+      const dataloggerEl = document.getElementById(
+        "setting-datalogger-interval"
+      );
+      if (dataloggerEl)
+        dataloggerEl.value =
+          config.global_settings.datalogger_interval_minutes || 15;
+      const loopEl = document.getElementById("setting-loop-interval");
+      if (loopEl) loopEl.value = config.global_settings.loop_interval_s || 1;
+      const statusEl = document.getElementById("setting-status-interval");
+      if (statusEl)
+        statusEl.value = config.global_settings.status_interval_s || 5;
+      const logEl = document.getElementById("setting-loglevel");
+      if (logEl) logEl.value = config.global_settings.log_level || "INFO";
+    }
+  };
+
   const renderAll = () => {
     ui.renderRoutines(config, bridgeData);
     ui.renderScenes(config.scenes);
+    renderSettings(config);
   };
 
   const setupEventListeners = () => {
@@ -104,11 +133,20 @@ async function runMainApp() {
     if (contentId === "content-status") startStatusUpdates();
     if (contentId === "content-analyse") setupAnalyseTab();
     if (contentId === "content-hilfe") loadHelpContent();
+    if (contentId === "content-bridge-devices") setupBridgeDevicesTab();
   };
 
   const handleGlobalClick = (e) => {
     const button = e.target.closest("[data-action]");
     if (!button) return;
+
+    if (
+      e.target.closest(".modal-backdrop") &&
+      !e.target.closest(".modal-backdrop > div")
+    ) {
+      ui.closeModal();
+      return;
+    }
 
     const action = button.dataset.action;
     const routineCard = e.target.closest("[data-index]");
@@ -228,7 +266,7 @@ async function runMainApp() {
     let roomConf = config.rooms?.find((r) => r.name === groupName);
     if (!roomConf) {
       if (!config.rooms) config.rooms = [];
-      roomConf = { name: groupName, group_id: groupId };
+      roomConf = { name: groupName, group_ids: [groupId] }; // Wichtig: group_ids als Liste
       config.rooms.push(roomConf);
     }
     if (sensorSelect.value) {
@@ -362,7 +400,6 @@ async function runMainApp() {
   const loadHelpContent = async () => {
     const container = document.getElementById("help-content-container");
     if (container && !container.innerHTML) {
-      // Nur laden, wenn noch nicht geladen
       try {
         const response = await fetch("/hilfe");
         if (response.ok) {
@@ -376,8 +413,8 @@ async function runMainApp() {
     }
   };
 
-  const setupBridgeDevicesTab = async () => {
-    // Future implementation
+  const setupBridgeDevicesTab = () => {
+    ui.renderBridgeDevices(bridgeData);
   };
 
   await init();

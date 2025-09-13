@@ -40,12 +40,8 @@ export function showToast(message, isError = false) {
     isError ? "bg-red-600" : "bg-gray-900"
   } translate-y-20 opacity-0`;
   toastElement.classList.remove("hidden");
-
-  // Force reflow
   void toastElement.offsetWidth;
-
   toastElement.classList.remove("translate-y-20", "opacity-0");
-
   setTimeout(() => {
     toastElement.classList.add("translate-y-20", "opacity-0");
     setTimeout(() => toastElement.classList.add("hidden"), 300);
@@ -94,7 +90,6 @@ export function renderStatus(statuses, sunTimes, openStates = []) {
   statuses.forEach((status) => {
     statusContainer.innerHTML += renderStatusTimeline(status, sunTimes);
   });
-
   document.querySelectorAll(".status-card").forEach((card) => {
     const name = card.querySelector("h4")?.textContent;
     if (name && openStates.includes(name)) {
@@ -148,20 +143,8 @@ export function renderChart(chartInstance, data) {
     return null;
   }
 
-  const getMinMax = (arr) => {
-    const validValues = arr.filter((v) => v !== null && isFinite(v));
-    if (validValues.length === 0) return {};
-    let minVal = Math.min(...validValues);
-    let maxVal = Math.max(...validValues);
-    const padding = (maxVal - minVal) * 0.1 || 5;
-    return {
-      min: Math.floor(minVal - padding),
-      max: Math.ceil(maxVal + padding),
-    };
-  };
-
-  const brightnessRange = getMinMax(data.brightness_avg);
-  const temperatureRange = getMinMax(data.temperature_avg);
+  const brightnessData = data.brightness || [];
+  const temperatureData = data.temperature || [];
 
   return new Chart(ctx, {
     type: "line",
@@ -169,16 +152,16 @@ export function renderChart(chartInstance, data) {
       labels: data.labels,
       datasets: [
         {
-          label: "Helligkeit (Avg)",
-          data: data.brightness_avg,
+          label: "Helligkeit",
+          data: brightnessData,
           borderColor: "rgba(234, 179, 8, 1)",
           yAxisID: "y",
           tension: 0.2,
           pointRadius: 0,
         },
         {
-          label: "Temperatur (°C, Avg)",
-          data: data.temperature_avg,
+          label: "Temperatur (°C)",
+          data: temperatureData,
           borderColor: "rgba(37, 99, 235, 1)",
           yAxisID: "y1",
           tension: 0.2,
@@ -197,13 +180,11 @@ export function renderChart(chartInstance, data) {
         y: {
           position: "left",
           title: { display: true, text: "Helligkeit", color: "#b45309" },
-          ...brightnessRange,
         },
         y1: {
           position: "right",
           title: { display: true, text: "Temperatur (°C)", color: "#2563eb" },
           grid: { drawOnChartArea: false },
-          ...temperatureRange,
         },
       },
     },
@@ -231,48 +212,46 @@ export function renderRoutines(config, bridgeData) {
     const sensorHtml = sensor
       ? `<span class="mx-2 text-gray-400">|</span> <span class="flex items-center"><i class="fas fa-satellite-dish mr-2 text-teal-500"></i> ${sensor.name}</span>`
       : "";
-
     const dailyTime = routine.daily_time || {};
     const isEnabled = routine.enabled !== false;
 
     routineEl.innerHTML = `
-            <div class="routine-header p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center" data-action="toggle-routine-details">
-                <div>
-                    <div class="flex items-center">
-                        <h3 class="text-2xl font-semibold">${routine.name}</h3>
-                        <i class="fas fa-chevron-down ml-4 text-gray-400 transition-transform"></i>
-                    </div>
-                    <div class="flex items-center text-gray-500 text-sm mt-1">
-                        <p><i class="fas fa-layer-group mr-2 text-indigo-500"></i>${
-                          routine.room_name
-                        }</p>
-                        ${sensorHtml}
-                        <span class="mx-2 text-gray-400">|</span>
-                        <p><i class="far fa-clock mr-2 text-blue-500"></i>Aktiv: ${String(
-                          dailyTime.H1 || 0
-                        ).padStart(2, "0")}:${String(
-      dailyTime.M1 || 0
-    ).padStart(2, "0")} - ${String(dailyTime.H2 || 23).padStart(
+        <div class="routine-header p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center" data-action="toggle-routine-details">
+            <div>
+                <div class="flex items-center">
+                    <h3 class="text-2xl font-semibold">${routine.name}</h3>
+                    <i class="fas fa-chevron-down ml-4 text-gray-400 transition-transform"></i>
+                </div>
+                <div class="flex items-center text-gray-500 text-sm mt-1">
+                    <p><i class="fas fa-layer-group mr-2 text-indigo-500"></i>${
+                      routine.room_name
+                    }</p>
+                    ${sensorHtml}
+                    <span class="mx-2 text-gray-400">|</span>
+                    <p><i class="far fa-clock mr-2 text-blue-500"></i>Aktiv: ${String(
+                      dailyTime.H1 || 0
+                    ).padStart(2, "0")}:${String(dailyTime.M1 || 0).padStart(
       2,
       "0"
-    )}:${String(dailyTime.M2 || 59).padStart(2, "0")}</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <label class="relative inline-flex items-center cursor-pointer" title="Routine an/aus" data-action="stop-propagation">
-                        <input type="checkbox" data-action="toggle-routine" class="sr-only peer" ${
-                          isEnabled ? "checked" : ""
-                        }>
-                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-checked:after:translate-x-full after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                    <button type="button" data-action="edit-routine" class="text-blue-600 hover:text-blue-800 font-medium">Bearbeiten</button>
-                    <button type="button" data-action="delete-routine" class="text-red-600 hover:text-red-800 font-medium">Löschen</button>
+    )} - ${String(dailyTime.H2 || 23).padStart(2, "0")}:${String(
+      dailyTime.M2 || 59
+    ).padStart(2, "0")}</p>
                 </div>
             </div>
-            <div class="routine-details px-4 pb-4 hidden">
-                <div class="space-y-2 border-t pt-4 mt-2">
-                    </div>
-            </div>`;
+            <div class="flex items-center space-x-4">
+                <label class="relative inline-flex items-center cursor-pointer" title="Routine an/aus" data-action="stop-propagation">
+                    <input type="checkbox" data-action="toggle-routine" class="sr-only peer" ${
+                      isEnabled ? "checked" : ""
+                    }>
+                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-checked:after:translate-x-full after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <button type="button" data-action="edit-routine" class="text-blue-600 hover:text-blue-800 font-medium">Bearbeiten</button>
+                <button type="button" data-action="delete-routine" class="text-red-600 hover:text-red-800 font-medium">Löschen</button>
+            </div>
+        </div>
+        <div class="routine-details px-4 pb-4 hidden">
+            <div class="space-y-2 border-t pt-4 mt-2"></div>
+        </div>`;
     routinesContainer.appendChild(routineEl);
   });
 }
@@ -294,7 +273,7 @@ export function renderScenes(scenes) {
       if (scene.hue !== undefined && scene.sat !== undefined) {
         const hue = (scene.hue / 65535) * 360;
         const sat = (scene.sat / 254) * 100;
-        const bri = Math.min(100, Math.max(20, (scene.bri / 254) * 100)); // HSL Helligkeit
+        const bri = Math.min(100, Math.max(20, (scene.bri / 254) * 100));
         colorPreviewStyle = `background-color: hsl(${hue}, ${sat}%, ${bri}%);`;
       } else if (scene.ct !== undefined) {
         const tempPercent = Math.min(
@@ -410,10 +389,8 @@ export function updateStatusTimelines() {
   document.querySelectorAll(".timeline-svg").forEach((svg) => {
     const sunEmoji = svg.querySelector(".sun-emoji-indicator");
     if (!sunEmoji) return;
-
     const sunriseMins = parseInt(sunEmoji.dataset.sunriseMins);
     const sunsetMins = parseInt(sunEmoji.dataset.sunsetMins);
-
     const now = new Date();
     const nowMins = now.getHours() * 60 + now.getMinutes();
 
@@ -422,19 +399,15 @@ export function updateStatusTimelines() {
       return;
     }
     sunEmoji.style.display = "block";
-
     const dayDuration = sunsetMins - sunriseMins;
     const progress = (nowMins - sunriseMins) / dayDuration;
-
     const arcStartX = parseFloat(svg.dataset.arcStartX);
     const arcRadiusX = parseFloat(svg.dataset.radiusX);
     const arcRadiusY = parseFloat(svg.dataset.radiusY);
     const centerX = parseFloat(svg.dataset.centerX);
-
     const angle = Math.PI * progress;
     const x = centerX - Math.cos(angle) * arcRadiusX;
     const y = 180 - Math.sin(angle) * arcRadiusY;
-
     sunEmoji.setAttribute("transform", `translate(${x}, ${y})`);
   });
 }
@@ -449,24 +422,20 @@ function renderStatusTimeline(status, sunTimes) {
   const eveningEndMins = timeToMinutes(routineStart.H2, routineStart.M2);
   const sunriseMins = sunrise
     ? timeToMinutes(sunrise.getHours(), sunrise.getMinutes())
-    : 390; // Fallback 6:30
+    : 390;
   const sunsetMins = sunset
     ? timeToMinutes(sunset.getHours(), sunset.getMinutes())
-    : 1260; // Fallback 21:00
-
+    : 1260;
   const timeToPercent = (mins) => 10 + (mins / 1439) * 80;
-
   const morningStartPercent = timeToPercent(morningStartMins);
   const eveningEndPercent = timeToPercent(eveningEndMins);
   const sunrisePercent = timeToPercent(sunriseMins);
   const sunsetPercent = timeToPercent(sunsetMins);
-
   const arcStartX = sunrisePercent * 10;
   const arcEndX = sunsetPercent * 10;
   const arcRadiusX = (arcEndX - arcStartX) / 2;
   const arcRadiusY = Math.min(150, arcRadiusX * 0.9);
   const centerX = arcStartX + arcRadiusX;
-
   const periodEmoji = { morning: "🌅", day: "☀️", evening: "🌇", night: "🌙" };
   const primaryEmoji = periodEmoji[status.period] || "🗓️";
   const primaryText =
@@ -506,6 +475,40 @@ function renderStatusTimeline(status, sunTimes) {
                  }</span>
              </div>
         </div>
-    </div>
-    `;
+    </div>`;
+}
+
+export function renderBridgeDevices(bridgeData) {
+  if (!bridgeDevicesContainer) return;
+  bridgeDevicesContainer.innerHTML = "";
+
+  let content = `
+    <div>
+      <h3 class="text-xl font-semibold mb-3 text-gray-700">Bewegungssensoren</h3>
+      <div class="space-y-2">`;
+  if (bridgeData.sensors && bridgeData.sensors.length > 0) {
+    bridgeData.sensors.forEach((sensor) => {
+      content += `
+        <div class="bg-white p-3 rounded-lg shadow-sm border flex justify-between items-center">
+          <span class="font-medium text-gray-800">${sensor.name}</span>
+          <span class="text-sm text-gray-500 font-mono">ID: ${sensor.id}</span>
+        </div>`;
+    });
+  } else {
+    content += `<p class="text-gray-500">Keine Bewegungssensoren gefunden.</p>`;
+  }
+  content += `</div></div><div><h3 class="text-xl font-semibold mb-3 text-gray-700">Räume & Zonen</h3><div class="space-y-2">`;
+  if (bridgeData.groups && bridgeData.groups.length > 0) {
+    bridgeData.groups.forEach((group) => {
+      content += `
+        <div class="bg-white p-3 rounded-lg shadow-sm border flex justify-between items-center">
+          <span class="font-medium text-gray-800">${group.name}</span>
+          <span class="text-sm text-gray-500 font-mono">ID: ${group.id}</span>
+        </div>`;
+    });
+  } else {
+    content += `<p class="text-gray-500">Keine Räume oder Zonen gefunden.</p>`;
+  }
+  content += `</div></div>`;
+  bridgeDevicesContainer.innerHTML = content;
 }
