@@ -50,6 +50,10 @@ export const saveFullConfig = (config) =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(config),
   });
+export const backupConfig = () =>
+  fetchAPI("/api/config/backup", { method: "POST" });
+export const restoreConfig = () =>
+  fetchAPI("/api/config/restore", { method: "POST" });
 
 // --- Bridge Data ---
 export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
@@ -70,3 +74,7 @@ export const loadChartData = (sensorId, date) =>
 // --- System ---
 export const addDefaultScenes = () =>
   fetchAPI("/api/system/scenes/add_defaults", { method: "POST" });
+export const restartApp = () =>
+  fetchAPI("/api/system/restart", { method: "POST" });
+export const updateApp = () =>
+  fetchAPI("/api/system/update_app", { method: "POST" });

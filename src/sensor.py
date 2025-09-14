@@ -12,15 +12,19 @@ class Sensor:
         self.log = log
         self.device_id = device_id
         self._device_data = None
+        self._not_found = False
 
     def _get_device_data(self):
         """Holt die Daten für das spezifische Gerät, falls noch nicht vorhanden."""
+        if self._not_found:
+            return None
         if not self._device_data:
             if not self.bridge.is_connected():
                 return None
             self._device_data = self.bridge.get_device_by_id(self.device_id)
             if not self._device_data:
-                self.log.warning(f"Kein Gerät mit ID {self.device_id} gefunden.")
+                self.log.warning(f"Kein Sensor-Gerät mit ID {self.device_id} gefunden.")
+                self._not_found = True
         return self._device_data
 
     def _get_service_data(self, service_type: str):
@@ -33,7 +37,12 @@ class Sensor:
         if not service_ref:
             return None
         
-        return self.bridge._hue.bridge.get(service_type, service_ref['rid'])
+        try:
+            # KORRIGIERT: Verwendet die korrekte interne Methode '_get_by_id' der Bridge-Bibliothek.
+            return self.bridge._hue.bridge._get_by_id(service_type, service_ref['rid'])
+        except Exception as e:
+            self.log.error(f"Fehler beim Abrufen des Service '{service_type}' für Gerät {self.device_id}: {e}")
+            return None
 
     def get_motion(self) -> bool:
         """Gibt True zurück, wenn eine Bewegung erkannt wird, sonst False."""

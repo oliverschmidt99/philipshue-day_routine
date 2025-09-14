@@ -46,56 +46,17 @@ async function runMainApp() {
     }
   };
 
-  const renderSettings = (config) => {
-    const bridgeIpEl = document.getElementById("setting-bridge-ip");
-    if (bridgeIpEl) bridgeIpEl.value = config.bridge_ip || "";
-
-    if (config.location) {
-      const latEl = document.getElementById("setting-latitude");
-      if (latEl) latEl.value = config.location.latitude || "";
-      const lonEl = document.getElementById("setting-longitude");
-      if (lonEl) lonEl.value = config.location.longitude || "";
-    }
-
-    if (config.global_settings) {
-      const hysteresisEl = document.getElementById("setting-hysteresis");
-      if (hysteresisEl)
-        hysteresisEl.value = config.global_settings.hysteresis_percent || 25;
-      const dataloggerEl = document.getElementById(
-        "setting-datalogger-interval"
-      );
-      if (dataloggerEl)
-        dataloggerEl.value =
-          config.global_settings.datalogger_interval_minutes || 15;
-      const loopEl = document.getElementById("setting-loop-interval");
-      if (loopEl) loopEl.value = config.global_settings.loop_interval_s || 1;
-      const statusEl = document.getElementById("setting-status-interval");
-      if (statusEl)
-        statusEl.value = config.global_settings.status_interval_s || 5;
-      const logEl = document.getElementById("setting-loglevel");
-      if (logEl) logEl.value = config.global_settings.log_level || "INFO";
-    }
-  };
-
   const renderAll = () => {
     ui.renderRoutines(config, bridgeData);
     ui.renderScenes(config.scenes);
-    renderSettings(config);
-    document.querySelectorAll(".routine-details[data-index]").forEach((el) => {
-      const index = parseInt(el.dataset.index, 10);
-      const routine = config.routines[index];
-      if (routine) {
-        el.innerHTML = ui.renderRoutineDetails(routine, config.scenes);
-      }
-    });
   };
 
   const setupEventListeners = () => {
     document.body.addEventListener("click", handleGlobalClick);
     document
-      .getElementById("bridge-devices-tabs")
-      ?.addEventListener("click", handleBridgeDeviceTabClick);
-    document.body.addEventListener("input", handleGlobalInput);
+      .getElementById("devices-tabs")
+      ?.addEventListener("click", handleDeviceTabClick);
+
     document
       .getElementById("save-button")
       ?.addEventListener("click", saveFullConfig);
@@ -120,36 +81,20 @@ async function runMainApp() {
     document.querySelectorAll('nav button[id^="tab-"]').forEach((button) => {
       button.addEventListener("click", handleTabClick);
     });
-  };
 
-  const handleGlobalInput = (e) => {
-    const input = e.target;
-    const routineDetails = input.closest(".routine-details");
-    if (!routineDetails) return;
-
-    const index = parseInt(routineDetails.dataset.index, 10);
-    const routine = config.routines[index];
-    const period = input.dataset.period;
-    const key = input.dataset.key;
-    const value =
-      input.type === "checkbox"
-        ? input.checked
-        : input.type.startsWith("time") ||
-          input.type.startsWith("range") ||
-          input.type.startsWith("number")
-        ? input.valueAsNumber || 0
-        : input.value;
-
-    if (routine && period && key) {
-      if (period === "daily_time") {
-        routine.daily_time[key] = value;
-      } else if (key.startsWith("wait_time")) {
-        const subkey = key.split(".")[1];
-        routine[period].wait_time[subkey] = value;
-      } else {
-        routine[period][key] = value;
-      }
-    }
+    // NEU: Event Listeners für System-Aktionen
+    document
+      .getElementById("btn-update-app")
+      ?.addEventListener("click", handleUpdateApp);
+    document
+      .getElementById("btn-restart-app")
+      ?.addEventListener("click", handleRestartApp);
+    document
+      .getElementById("btn-backup-config")
+      ?.addEventListener("click", handleBackupConfig);
+    document
+      .getElementById("btn-restore-config")
+      ?.addEventListener("click", handleRestoreConfig);
   };
 
   const handleTabClick = (e) => {
@@ -169,15 +114,14 @@ async function runMainApp() {
     clearInterval(statusInterval);
     if (contentId === "content-status") startStatusUpdates();
     if (contentId === "content-analyse") setupAnalyseTab();
-    if (contentId === "content-hilfe") loadHelpContent();
     if (contentId === "content-bridge-devices") setupBridgeDevicesTab();
   };
 
-  const handleBridgeDeviceTabClick = (e) => {
-    const button = e.target.closest(".bridge-device-tab");
+  const handleDeviceTabClick = (e) => {
+    const button = e.target.closest(".device-tab");
     if (!button) return;
     const tabId = button.dataset.tab;
-    document.querySelectorAll(".bridge-device-tab").forEach((btn) => {
+    document.querySelectorAll(".device-tab").forEach((btn) => {
       btn.classList.remove("text-blue-600", "border-blue-600");
       btn.classList.add(
         "text-gray-500",
@@ -193,10 +137,10 @@ async function runMainApp() {
       "hover:border-gray-300",
       "border-transparent"
     );
-    document.querySelectorAll(".bridge-device-content-pane").forEach((pane) => {
+    document.querySelectorAll(".device-content-pane").forEach((pane) => {
       pane.classList.add("hidden");
     });
-    const contentPane = document.getElementById(`bridge-content-${tabId}`);
+    const contentPane = document.getElementById(`devices-content-${tabId}`);
     if (contentPane) {
       contentPane.classList.remove("hidden");
     }
@@ -241,17 +185,16 @@ async function runMainApp() {
       "create-routine": handleCreateRoutine,
       "edit-routine": () => {
         const index = routineCard.dataset.index;
-        document.getElementById("tab-routines").click();
-        setTimeout(() => {
-          const header = document.querySelector(
-            `.routine-header[data-index='${index}']`
-          );
-          if (header) {
-            ui.toggleDetails(header, true);
-            header.scrollIntoView({ behavior: "smooth", block: "center" });
-          }
-        }, 100);
+        ui.openEditRoutineModal(
+          config.routines[index],
+          index,
+          Object.keys(config.scenes),
+          config.rooms,
+          bridgeData.groups,
+          bridgeData.sensors
+        );
       },
+      "save-routine": () => handleSaveRoutine(routineCard),
       "delete-routine": () => {
         const index = routineCard.dataset.index;
         if (
@@ -271,13 +214,55 @@ async function runMainApp() {
           }. Speichern nicht vergessen.`
         );
       },
-      "stop-propagation": (e) => e.stopPropagation(),
     };
 
     if (actions[action]) {
       e.preventDefault();
       actions[action](e);
     }
+  };
+
+  const handleSaveRoutine = () => {
+    const form = document.getElementById("form-routine-edit");
+    const index = parseInt(form.dataset.index, 10);
+    const routine = config.routines[index];
+
+    routine.name = document.getElementById("edit-routine-name").value;
+    const [groupId, groupName] = document
+      .getElementById("edit-routine-group")
+      .value.split("|");
+    routine.room_name = groupName;
+
+    let roomConf = config.rooms.find((r) => r.name === groupName);
+    if (!roomConf) {
+      if (!config.rooms) config.rooms = [];
+      roomConf = { name: groupName, group_id: groupId };
+      config.rooms.push(roomConf);
+    }
+    roomConf.sensor_id = document.getElementById("edit-routine-sensor").value;
+
+    ["morning", "day", "evening", "night"].forEach((period) => {
+      form.querySelectorAll(`[data-period="${period}"]`).forEach((input) => {
+        const key = input.dataset.key;
+        const value =
+          input.type === "checkbox"
+            ? input.checked
+            : input.type === "number"
+            ? parseInt(input.value)
+            : input.value;
+
+        if (key.includes(".")) {
+          const [mainKey, subKey] = key.split(".");
+          routine[period][mainKey][subKey] = value;
+        } else {
+          routine[period][key] = value;
+        }
+      });
+    });
+
+    renderAll();
+    ui.closeModal();
+    ui.showToast("Routine gespeichert. Speichern nicht vergessen.");
   };
 
   const handleDeleteScene = (sceneCard) => {
@@ -442,6 +427,62 @@ async function runMainApp() {
     }
   };
 
+  // NEUE HANDLER FÜR SYSTEM-AKTIONEN
+  const handleUpdateApp = async () => {
+    if (
+      confirm(
+        "Möchtest du die Anwendung wirklich via 'git pull' aktualisieren?"
+      )
+    ) {
+      try {
+        const result = await api.updateApp();
+        ui.showToast(result.message);
+        setTimeout(() => window.location.reload(), 2000);
+      } catch (error) {
+        ui.showToast(error.message, true);
+      }
+    }
+  };
+
+  const handleRestartApp = async () => {
+    if (confirm("Möchtest du die Anwendung wirklich neu starten?")) {
+      try {
+        const result = await api.restartApp();
+        ui.showToast(
+          result.message + " Die Seite wird in 5 Sekunden neu geladen."
+        );
+        setTimeout(() => window.location.reload(), 5000);
+      } catch (error) {
+        ui.showToast(error.message, true);
+      }
+    }
+  };
+
+  const handleBackupConfig = async () => {
+    try {
+      const result = await api.backupConfig();
+      ui.showToast(result.message);
+    } catch (error) {
+      ui.showToast(error.message, true);
+    }
+  };
+
+  const handleRestoreConfig = async () => {
+    if (
+      confirm(
+        "Möchtest du die Konfiguration wirklich aus dem letzten Backup wiederherstellen? Nicht gespeicherte Änderungen gehen verloren."
+      )
+    ) {
+      try {
+        const result = await api.restoreConfig();
+        ui.showToast(result.message + " Die Seite wird neu geladen.");
+        setTimeout(() => window.location.reload(), 2000);
+      } catch (error) {
+        ui.showToast(error.message, true);
+      }
+    }
+  };
+
   const startStatusUpdates = () => {
     updateStatus();
     const statusIntervalTime =
@@ -476,22 +517,6 @@ async function runMainApp() {
     } finally {
       button.disabled = false;
       button.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Daten laden';
-    }
-  };
-
-  const loadHelpContent = async () => {
-    const container = document.getElementById("help-content-container");
-    if (container && !container.innerHTML) {
-      try {
-        const response = await fetch("/hilfe");
-        if (response.ok) {
-          container.innerHTML = await response.text();
-        } else {
-          container.innerHTML = "<p>Hilfe konnte nicht geladen werden.</p>";
-        }
-      } catch (error) {
-        container.innerHTML = "<p>Fehler beim Laden der Hilfe.</p>";
-      }
     }
   };
 

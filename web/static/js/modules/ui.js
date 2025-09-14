@@ -257,85 +257,128 @@ export function renderRoutines(config, bridgeData) {
   });
 }
 
-export function renderRoutineDetails(routine, scenes) {
-  const sceneOptions = Object.keys(scenes)
+export function openEditRoutineModal(
+  routine,
+  index,
+  scenes,
+  rooms,
+  bridgeGroups,
+  bridgeSensors
+) {
+  const sceneOptions = scenes
     .map(
-      (name) =>
-        `<option value="${name}" ${
-          name === "aus" ? "selected" : ""
-        }>${name.replace(/_/g, " ")}</option>`
+      (name) => `<option value="${name}">${name.replace(/_/g, " ")}</option>`
+    )
+    .join("");
+  const groupOptions = bridgeGroups
+    .map(
+      (g) =>
+        `<option value="${g.id}|${g.name}" ${
+          g.name === routine.room_name ? "selected" : ""
+        }>${g.name}</option>`
+    )
+    .join("");
+  const roomConf = rooms.find((r) => r.name === routine.room_name);
+  const sensorId = roomConf ? roomConf.sensor_id : null;
+  const sensorOptions = bridgeSensors
+    .map(
+      (s) =>
+        `<option value="${s.id}" ${s.id == sensorId ? "selected" : ""}>${
+          s.name
+        }</option>`
     )
     .join("");
 
-  return `
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border-t pt-4 mt-2">
-        <div>
-            <h4 class="text-lg font-semibold mb-2 text-gray-700">Allgemeiner Zeitplan</h4>
-            <div class="flex items-center space-x-2">
-                <input type="time" data-period="daily_time" data-key="H1" value="${String(
-                  routine.daily_time.H1 || 0
-                ).padStart(2, "0")}:${String(
-    routine.daily_time.M1 || 0
-  ).padStart(2, "0")}" class="p-2 border rounded-md">
-                <span>bis</span>
-                <input type="time" data-period="daily_time" data-key="H2" value="${String(
-                  routine.daily_time.H2 || 23
-                ).padStart(2, "0")}:${String(
-    routine.daily_time.M2 || 59
-  ).padStart(2, "0")}" class="p-2 border rounded-md">
+  modalRoutineContainer.innerHTML = `
+        <div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl m-4">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-4">Routine bearbeiten</h3>
+                    <form id="form-routine-edit" data-index="${index}" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-4">
+                            <div>
+                                <label class="block text-sm font-medium">Name</label>
+                                <input type="text" id="edit-routine-name" value="${
+                                  routine.name
+                                }" class="mt-1 w-full rounded-md border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Raum / Zone</label>
+                                <select id="edit-routine-group" class="mt-1 w-full rounded-md border-gray-300">${groupOptions}</select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Sensor</label>
+                                <select id="edit-routine-sensor" class="mt-1 w-full rounded-md border-gray-300">
+                                    <option value="">Kein Sensor</option>
+                                    ${sensorOptions}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            ${["morning", "day", "evening", "night"]
+                              .map(
+                                (period) => `
+                                <div class="p-4 rounded-lg border ${
+                                  sectionColors[period]
+                                }">
+                                    <h5 class="font-bold text-xl mb-3 flex items-center">${
+                                      icons[period]
+                                    } ${periodNames[period]}</h5>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex items-center justify-between">
+                                            <label>Normal-Szene:</label>
+                                            <select data-period="${period}" data-key="scene_name" class="p-1 border rounded-md w-40">${sceneOptions.replace(
+                                  `value="${routine[period].scene_name}"`,
+                                  `value="${routine[period].scene_name}" selected`
+                                )}</select>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <label>Bewegungs-Szene:</label>
+                                            <select data-period="${period}" data-key="x_scene_name" class="p-1 border rounded-md w-40">${sceneOptions.replace(
+                                  `value="${routine[period].x_scene_name}"`,
+                                  `value="${routine[period].x_scene_name}" selected`
+                                )}</select>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <label>Wartezeit (Min/Sek):</label>
+                                            <div class="flex items-center space-x-1">
+                                                <input type="number" min="0" data-period="${period}" data-key="wait_time.min" value="${
+                                  routine[period].wait_time.min
+                                }" class="w-16 p-1 border rounded-md">
+                                                <input type="number" min="0" max="59" data-period="${period}" data-key="wait_time.sec" value="${
+                                  routine[period].wait_time.sec
+                                }" class="w-16 p-1 border rounded-md">
+                                            </div>
+                                        </div>
+                                        <div class="border-t pt-3 space-y-2">
+                                            <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="motion_check" ${
+                                  routine[period].motion_check ? "checked" : ""
+                                } class="mr-2 h-4 w-4"> Auf Bewegung reagieren</label>
+                                            <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="do_not_disturb" ${
+                                  routine[period].do_not_disturb
+                                    ? "checked"
+                                    : ""
+                                } class="mr-2 h-4 w-4"> Bitte nicht stören</label>
+                                            <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="bri_check" ${
+                                  routine[period].bri_check ? "checked" : ""
+                                } class="mr-2 h-4 w-4"> Helligkeits-Check</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            `
+                              )
+                              .join("")}
+                        </div>
+                    </form>
+                </div>
+                <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
+                    <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button>
+                    <button type="button" data-action="save-routine" class="bg-blue-600 text-white py-2 px-4 rounded-md">Speichern</button>
+                </div>
             </div>
         </div>
-        <div> </div>
-        ${["morning", "day", "evening", "night"]
-          .map(
-            (period) => `
-        <div class="p-4 rounded-lg border ${sectionColors[period]}">
-            <h5 class="font-bold text-xl mb-3 flex items-center">${
-              icons[period]
-            } ${periodNames[period]}</h5>
-            <div class="space-y-3 text-sm">
-                <div class="flex items-center justify-between">
-                    <label>Normal-Szene:</label>
-                    <select data-period="${period}" data-key="scene_name" class="p-1 border rounded-md">${sceneOptions.replace(
-              `value="${routine[period].scene_name}"`,
-              `value="${routine[period].scene_name}" selected`
-            )}</select>
-                </div>
-                <div class="flex items-center justify-between">
-                    <label>Bewegungs-Szene:</label>
-                    <select data-period="${period}" data-key="x_scene_name" class="p-1 border rounded-md">${sceneOptions.replace(
-              `value="${routine[period].x_scene_name}"`,
-              `value="${routine[period].x_scene_name}" selected`
-            )}</select>
-                </div>
-                <div class="flex items-center justify-between">
-                    <label>Wartezeit (Min/Sek):</label>
-                    <div class="flex items-center space-x-1">
-                       <input type="number" min="0" data-period="${period}" data-key="wait_time.min" value="${
-              routine[period].wait_time.min
-            }" class="w-16 p-1 border rounded-md">
-                       <input type="number" min="0" max="59" data-period="${period}" data-key="wait_time.sec" value="${
-              routine[period].wait_time.sec
-            }" class="w-16 p-1 border rounded-md">
-                    </div>
-                </div>
-                <div class="border-t pt-3 space-y-2">
-                    <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="motion_check" ${
-              routine[period].motion_check ? "checked" : ""
-            } class="mr-2 h-4 w-4"> Auf Bewegung reagieren</label>
-                    <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="do_not_disturb" ${
-              routine[period].do_not_disturb ? "checked" : ""
-            } class="mr-2 h-4 w-4"> Bitte nicht stören</label>
-                    <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="bri_check" ${
-              routine[period].bri_check ? "checked" : ""
-            } class="mr-2 h-4 w-4"> Helligkeits-Check</label>
-                </div>
-            </div>
-        </div>
-        `
-          )
-          .join("")}
-    </div>`;
+    `;
+  modalRoutineContainer.classList.remove("hidden");
 }
 
 export function renderScenes(scenes) {
@@ -572,42 +615,49 @@ function renderStatusTimeline(status, sunTimes) {
 }
 
 export function renderBridgeDevices(bridgeData) {
-  const roomsContainer = document.getElementById("bridge-content-rooms");
-  const zonesContainer = document.getElementById("bridge-content-zones");
-  const sensorsContainer = document.getElementById("bridge-content-sensors");
-
-  if (!roomsContainer || !zonesContainer || !sensorsContainer) return;
-
-  // --- Räume rendern ---
-  roomsContainer.innerHTML = createDeviceListHTML(
-    bridgeData.rooms,
-    "Raum",
-    "Anzahl Lichter"
+  const lightsContainer = document.getElementById(
+    "devices-content-lights_and_plugs"
   );
+  const switchesContainer = document.getElementById("devices-content-switches");
+  const sensorsContainer = document.getElementById("devices-content-sensors");
+  const groupsContainer = document.getElementById("devices-content-groups");
 
-  // --- Zonen rendern ---
-  zonesContainer.innerHTML = createDeviceListHTML(
-    bridgeData.zones,
-    "Zone",
-    "Anzahl Lichter"
-  );
-
-  // --- Sensoren rendern ---
-  let sensorsHTML = "";
   if (
-    bridgeData.sensors_categorized &&
-    Object.keys(bridgeData.sensors_categorized).length > 0
-  ) {
-    for (const [category, sensorList] of Object.entries(
-      bridgeData.sensors_categorized
-    )) {
-      sensorsHTML += `<h3 class="text-xl font-semibold mb-3 mt-4 text-gray-700">${category}</h3>`;
-      sensorsHTML += createDeviceListHTML(sensorList, "Gerätename", "Modell");
-    }
-  } else {
-    sensorsHTML = `<p class="text-gray-500">Keine Sensoren gefunden.</p>`;
-  }
-  sensorsContainer.innerHTML = sensorsHTML;
+    !lightsContainer ||
+    !switchesContainer ||
+    !sensorsContainer ||
+    !groupsContainer
+  )
+    return;
+
+  // Lights & Plugs
+  lightsContainer.innerHTML = createDeviceListHTML(
+    bridgeData.devices?.lights_and_plugs,
+    "Gerätename",
+    "Modell"
+  );
+
+  // Switches
+  switchesContainer.innerHTML = createDeviceListHTML(
+    bridgeData.devices?.switches,
+    "Gerätename",
+    "Modell"
+  );
+
+  // Sensors
+  sensorsContainer.innerHTML = createDeviceListHTML(
+    bridgeData.devices?.sensors,
+    "Gerätename",
+    "Modell"
+  );
+
+  // Groups (Rooms and Zones)
+  const allGroups = [...(bridgeData.rooms || []), ...(bridgeData.zones || [])];
+  groupsContainer.innerHTML = createDeviceListHTML(
+    allGroups,
+    "Gruppenname",
+    "Anzahl Lichter"
+  );
 }
 
 /**
@@ -624,9 +674,9 @@ function createDeviceListHTML(items, nameHeader, detailHeader) {
     if (item.lights) {
       // Für Räume/Zonen
       detail = `${item.lights.length}`;
-    } else if (item.productname) {
-      // Für Sensoren
-      detail = item.productname;
+    } else if (item.product_name) {
+      // Für Sensoren/Lichter etc.
+      detail = item.product_name;
     }
 
     html += `

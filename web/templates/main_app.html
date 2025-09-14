@@ -38,7 +38,7 @@
                     <button type="button" id="tab-einstellungen"
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-green-500 hover:text-green-700 hover:border-green-300">Einstellungen</button>
                     <button type="button" id="tab-bridge-devices"
-                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-500 hover:text-indigo-700 hover:border-indigo-300">Bridge-Geräte</button>
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-500 hover:text-indigo-700 hover:border-indigo-300">Geräte</button>
                     <button type="button" id="tab-hilfe"
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-yellow-500 hover:text-yellow-700 hover:border-yellow-300">Hilfe</button>
                 </nav>
@@ -178,6 +178,18 @@
                     <div class="bg-white p-6 rounded-lg shadow-md mt-6">
                         <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">System-Aktionen</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <button type="button" id="btn-update-app"
+                                class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700">Anwendung
+                                aktualisieren (Git Pull)</button>
+                            <button type="button" id="btn-restart-app"
+                                class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
+                                neu starten</button>
+                            <button type="button" id="btn-backup-config"
+                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Konfiguration
+                                sichern</button>
+                            <button type="button" id="btn-restore-config"
+                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Backup
+                                wiederherstellen</button>
                             <button type="button" id="btn-add-default-scenes"
                                 class="w-full bg-teal-500 text-white py-2 px-4 rounded-md hover:bg-teal-600">Standard-Szenen
                                 hinzufügen</button>
@@ -186,24 +198,28 @@
                 </div>
 
                 <div id="content-bridge-devices" class="content-section hidden">
-                    <h2 class="text-2xl font-semibold mb-4">Gefundene Bridge-Geräte</h2>
+                    <h2 class="text-2xl font-semibold mb-4">Alle Hue Geräte</h2>
 
                     <div class="border-b border-gray-200 mb-4">
-                        <nav class="-mb-px flex space-x-6" id="bridge-devices-tabs" aria-label="Gerätetypen">
-                            <button type="button" data-tab="rooms"
-                                class="bridge-device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-600">Räume</button>
-                            <button type="button" data-tab="zones"
-                                class="bridge-device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">Zonen</button>
+                        <nav class="-mb-px flex space-x-6" id="devices-tabs" aria-label="Gerätetypen">
+                            <button type="button" data-tab="lights_and_plugs"
+                                class="device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-600">Beleuchtung
+                                &amp; Smart Plugs</button>
+                            <button type="button" data-tab="switches"
+                                class="device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">Schalter</button>
                             <button type="button" data-tab="sensors"
-                                class="bridge-device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">Sensoren
-                                &amp; Schalter</button>
+                                class="device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">Sensoren</button>
+                            <button type="button" data-tab="groups"
+                                class="device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">Gruppen
+                                (Räume &amp; Zonen)</button>
                         </nav>
                     </div>
 
-                    <div id="bridge-devices-content">
-                        <div id="bridge-content-rooms" class="bridge-device-content-pane"></div>
-                        <div id="bridge-content-zones" class="bridge-device-content-pane hidden"></div>
-                        <div id="bridge-content-sensors" class="bridge-device-content-pane hidden"></div>
+                    <div id="devices-content">
+                        <div id="devices-content-lights_and_plugs" class="device-content-pane"></div>
+                        <div id="devices-content-switches" class="device-content-pane hidden"></div>
+                        <div id="devices-content-sensors" class="device-content-pane hidden"></div>
+                        <div id="devices-content-groups" class="device-content-pane hidden"></div>
                     </div>
                 </div>
 
