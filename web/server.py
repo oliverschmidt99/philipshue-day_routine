@@ -1,12 +1,14 @@
 """
 Flask-Webserver für die Philips Hue Routine-Steuerung.
-Verwendet das Application Factory-Muster.
+Verwendet das Application Factory-Muster, um zirkuläre Importe zu vermeiden.
 """
+
 import os
 import sys
 import logging
 from flask import Flask, render_template, send_from_directory
 
+# Fügt das Hauptverzeichnis (eine Ebene über 'web') zum Python-Pfad hinzu
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -14,17 +16,26 @@ if project_root not in sys.path:
 from src.logger import Logger
 from src.config_manager import ConfigManager
 
+# --- Globale Pfade ---
+BASE_DIR = project_root
+DATA_DIR = os.path.join(BASE_DIR, "data")
+LOG_FILE = os.path.join(DATA_DIR, "app.log")
+CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
+DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
+STATUS_FILE = os.path.join(DATA_DIR, "status.json")
+
+
 def create_app():
-    app = Flask(__name__, static_folder="static", template_folder="templates")
-    
-    DATA_DIR = os.path.join(project_root, "data")
-    LOG_FILE = os.path.join(DATA_DIR, "app.log")
-    CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
+    """Erstellt und konfiguriert die Flask-App (Application Factory)."""
+    # KORREKTUR: static_folder zeigt jetzt auf 'web/static'
+    app = Flask(__name__, static_folder="static", template_folder="templates", static_url_path='/static')
+
 
     app.logger_instance = Logger(LOG_FILE)
     app.config_manager = ConfigManager(CONFIG_FILE, app.logger_instance)
-    
-    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+
+    werkzeug_log = logging.getLogger("werkzeug")
+    werkzeug_log.setLevel(logging.ERROR)
 
     with app.app_context():
         from web.api.setup import setup_api
@@ -41,15 +52,24 @@ def create_app():
 
     @app.route("/")
     def index():
+        """Zeigt die Hauptseite (index.html) an."""
         return render_template("index.html")
 
     @app.route("/favicon.ico")
     def favicon():
-        return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/vnd.microsoft.icon")
+        """Liefert das Favicon aus dem Static-Ordner aus."""
+        return send_from_directory(
+            os.path.join(app.root_path, "static"),
+            "favicon.ico",
+            mimetype="image/vnd.microsoft.icon",
+        )
 
     return app
 
+
 if __name__ == "__main__":
     flask_app = create_app()
-    flask_app.logger_instance.info("Starte Flask-Server...")
+    log = flask_app.logger_instance
+    log.info("Starte Flask-Server...")
+    # Port auf 9090 geändert, um Konflikte zu vermeiden
     flask_app.run(host="0.0.0.0", port=9090, debug=True)

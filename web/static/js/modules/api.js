@@ -1,9 +1,6 @@
-// web/static/js/modules/api.js
-
 async function fetchAPI(url, options = {}) {
   try {
     const response = await fetch(url, options);
-    // Log ist reiner Text, der Rest JSON
     const data = response.headers
       .get("Content-Type")
       ?.includes("application/json")
@@ -11,7 +8,6 @@ async function fetchAPI(url, options = {}) {
       : await response.text();
 
     if (!response.ok) {
-      // Wenn der Server JSON-Fehler schickt, nutze die Nachricht
       const errorMessage =
         typeof data === "object" && data.error
           ? data.error
@@ -20,13 +16,12 @@ async function fetchAPI(url, options = {}) {
     }
     return data;
   } catch (error) {
-    // Fängt Netzwerkfehler ab
     console.error(`API-Fehler bei ${url}:`, error);
     throw error;
   }
 }
 
-// --- Setup ---
+// Setup
 export const checkSetupStatus = () => fetchAPI("/api/setup/status");
 export const discoverBridges = () => fetchAPI("/api/setup/discover");
 export const connectToBridge = (ip) =>
@@ -42,7 +37,7 @@ export const saveSetupConfig = (configData) =>
     body: JSON.stringify(configData),
   });
 
-// --- Config ---
+// Config
 export const loadConfig = () => fetchAPI("/api/config/");
 export const saveFullConfig = (config) =>
   fetchAPI("/api/config/", {
@@ -55,23 +50,23 @@ export const backupConfig = () =>
 export const restoreConfig = () =>
   fetchAPI("/api/config/restore", { method: "POST" });
 
-// --- Bridge Data ---
+// Bridge Data
 export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
 
-// --- Status & Logs ---
+// Status & Logs
 export async function updateStatus() {
   const [statusData, logText] = await Promise.all([
     fetchAPI("/api/data/status"),
-    fetchAPI("/api/data/log"), // Log ist reiner Text
+    fetchAPI("/api/data/log"),
   ]);
   return { statusData, logText };
 }
 
-// --- Analyse ---
+// Analyse
 export const loadChartData = (sensorId, date) =>
   fetchAPI(`/api/data/history?sensor_id=${sensorId}&date=${date}`);
 
-// --- System ---
+// System
 export const addDefaultScenes = () =>
   fetchAPI("/api/system/scenes/add_defaults", { method: "POST" });
 export const restartApp = () =>

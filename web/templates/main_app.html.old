@@ -8,6 +8,25 @@
         integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
         crossorigin="anonymous" referrerpolicy="no-referrer">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('main-app').classList.remove('hidden');
+            const tabs = ['routines', 'scenes', 'status', 'analyse', 'einstellungen', 'hilfe', 'bridge-devices'];
+            tabs.forEach(tab => {
+                const btn = document.getElementById(`tab-${tab}`);
+                btn.addEventListener('click', () => {
+                    tabs.forEach(t => {
+                        document.getElementById(`content-${t}`).classList.add('hidden');
+                        document.getElementById(`tab-${t}`).classList.remove('tab-active');
+                        document.getElementById(`tab-${t}`).classList.add('text-gray-500');
+                    });
+                    document.getElementById(`content-${tab}`).classList.remove('hidden');
+                    btn.classList.remove('text-gray-500');
+                    btn.classList.add('tab-active');
+                });
+            });
+        });
+    </script>
 </head>
 
 <body class="bg-gray-100 text-gray-900">
@@ -38,14 +57,14 @@
                     <button type="button" id="tab-einstellungen"
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-green-500 hover:text-green-700 hover:border-green-300">Einstellungen</button>
                     <button type="button" id="tab-bridge-devices"
-                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-500 hover:text-indigo-700 hover:border-indigo-300">Geräte</button>
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-500 hover:text-indigo-700 hover:border-indigo-300">Bridge-Geräte</button>
                     <button type="button" id="tab-hilfe"
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-yellow-500 hover:text-yellow-700 hover:border-yellow-300">Hilfe</button>
                 </nav>
             </div>
 
             <main>
-                <div id="content-routines" class="content-section">
+                <div id="content-routines">
                     <div class="flex justify-end mb-4">
                         <button type="button" id="btn-new-routine"
                             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
@@ -55,7 +74,7 @@
                     <div id="routines-container" class="space-y-6"></div>
                 </div>
 
-                <div id="content-scenes" class="content-section hidden">
+                <div id="content-scenes" class="hidden">
                     <div class="flex justify-end mb-4">
                         <button type="button" id="btn-new-scene"
                             class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
@@ -65,7 +84,7 @@
                     <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
 
-                <div id="content-status" class="content-section hidden space-y-8">
+                <div id="content-status" class="hidden space-y-8">
                     <div>
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-2xl font-semibold">Live-Zustand der Routinen</h2>
@@ -81,26 +100,49 @@
                     </div>
                 </div>
 
-                <div id="content-analyse" class="content-section hidden space-y-6">
+                <div id="content-analyse" class="hidden space-y-6">
                     <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
                     <div class="bg-white p-6 rounded-lg shadow-lg">
                         <div class="flex flex-wrap items-center gap-4 mb-4">
                             <select id="analyse-sensor"
                                 class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
-                            <input type="date" id="analyse-day-picker"
-                                class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <div class="flex items-center space-x-2">
+                                <label class="font-medium">Ansicht:</label>
+                                <select id="analyse-period"
+                                    class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="day">Tagesverlauf</option>
+                                    <option value="week">Wochenverlauf</option>
+                                </select>
+                            </div>
+                            <div id="day-options" class="flex items-center space-x-2">
+                                <label for="analyse-day-picker" class="font-medium">Datum:</label>
+                                <input type="date" id="analyse-day-picker"
+                                    class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div id="week-options" class="hidden items-center space-x-2">
+                                <label for="analyse-week-picker" class="font-medium">Kalenderwoche:</label>
+                                <input type="week" id="analyse-week-picker"
+                                    class="p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <label for="analyse-avg-window" class="font-medium">Glättung (Messpunkte):</label>
+                                <input type="number" id="analyse-avg-window" value="15" min="0"
+                                    class="p-2 border rounded-lg w-24 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
                             <button type="button" id="btn-fetch-data"
                                 class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600">
                                 <i class="fas fa-sync-alt mr-2"></i>Daten laden
                             </button>
                         </div>
-                        <div class="chart-container relative h-96 w-full border rounded-lg bg-gray-50">
-                            <canvas id="sensor-chart"></canvas>
+                        <div class="chart-container relative w-full border rounded-lg bg-gray-50 overflow-x-auto">
+                            <div class="chart-inner-wrapper h-full">
+                                <canvas id="sensor-chart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="content-einstellungen" class="content-section hidden space-y-6">
+                <div id="content-einstellungen" class="hidden space-y-6">
                     <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-6">
@@ -139,6 +181,7 @@
                                             class="block text-sm font-medium text-gray-700">Hysterese (%)</label>
                                         <input type="number" id="setting-hysteresis" min="0"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                        <p class="mt-1 text-xs text-gray-500">Standard: 25%</p>
                                     </div>
                                     <div>
                                         <label for="setting-datalogger-interval"
@@ -146,6 +189,8 @@
                                             (Minuten)</label>
                                         <input type="number" id="setting-datalogger-interval" min="1"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                        <p class="mt-1 text-xs text-gray-500">Wie oft Sensordaten für die Analyse
+                                            gespeichert werden.</p>
                                     </div>
                                     <div>
                                         <label for="setting-loop-interval"
@@ -166,8 +211,8 @@
                                             class="block text-sm font-medium text-gray-700">Log-Level</label>
                                         <select id="setting-loglevel"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                                            <option value="INFO">Info</option>
-                                            <option value="DEBUG">Debug</option>
+                                            <option value="INFO">Standard (Info)</option>
+                                            <option value="DEBUG">Detailliert (Debug)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -180,7 +225,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <button type="button" id="btn-update-app"
                                 class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700">Anwendung
-                                aktualisieren (Git Pull)</button>
+                                aktualisieren (Git)</button>
                             <button type="button" id="btn-restart-app"
                                 class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">Anwendung
                                 neu starten</button>
@@ -188,7 +233,7 @@
                                 class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Konfiguration
                                 sichern</button>
                             <button type="button" id="btn-restore-config"
-                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Backup
+                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Konfiguration
                                 wiederherstellen</button>
                             <button type="button" id="btn-add-default-scenes"
                                 class="w-full bg-teal-500 text-white py-2 px-4 rounded-md hover:bg-teal-600">Standard-Szenen
@@ -197,38 +242,18 @@
                     </div>
                 </div>
 
-                <div id="content-bridge-devices" class="content-section hidden">
-                    <h2 class="text-2xl font-semibold mb-4">Alle Hue Geräte</h2>
-
-                    <div class="border-b border-gray-200 mb-4">
-                        <nav class="-mb-px flex space-x-6" id="devices-tabs" aria-label="Gerätetypen">
-                            <button type="button" data-tab="lights_and_plugs"
-                                class="device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-600">Beleuchtung
-                                &amp; Smart Plugs</button>
-                            <button type="button" data-tab="switches"
-                                class="device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">Schalter</button>
-                            <button type="button" data-tab="sensors"
-                                class="device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">Sensoren</button>
-                            <button type="button" data-tab="groups"
-                                class="device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">Gruppen
-                                (Räume &amp; Zonen)</button>
-                        </nav>
-                    </div>
-
-                    <div id="devices-content">
-                        <div id="devices-content-lights_and_plugs" class="device-content-pane"></div>
-                        <div id="devices-content-switches" class="device-content-pane hidden"></div>
-                        <div id="devices-content-sensors" class="device-content-pane hidden"></div>
-                        <div id="devices-content-groups" class="device-content-pane hidden"></div>
+                <div id="content-bridge-devices" class="hidden">
+                    <h2 class="text-2xl font-semibold mb-4">Bridge-Geräte verwalten</h2>
+                    <div id="bridge-devices-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     </div>
                 </div>
 
-                <div id="content-hilfe" class="content-section hidden">
+                <div id="content-hilfe" class="hidden">
                     <div id="help-content-container"></div>
                 </div>
             </main>
 
-            <footer class="mt-12 text-center" aria-label="Haupt-Aktionsleiste">
+            <footer class="mt-12 text-center">
                 <button type="button" id="save-button"
                     class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
                     Speichern und Alle Routinen neu starten

@@ -7,7 +7,6 @@
     <title>Hue Routine und Scene Editor</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,7 +19,7 @@
 <body class="bg-gray-100 text-gray-800">
 
     {% include 'setup_wizard.html' %}
-    {% include 'main_app.html' %}
+    {% include 'main_layout.html' %}
     {% include 'modals.html' %}
 
     <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>

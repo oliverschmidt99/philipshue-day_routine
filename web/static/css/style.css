@@ -39,6 +39,20 @@ body {
     transition: transform 0.3s ease-in-out;
 }
 
+/* Stile für die interaktive Zeitleiste im Routine-Editor */
+.timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 32px;
+    background: #3b82f6; border-radius: 4px;
+    cursor: pointer; pointer-events: auto;
+    margin-top: -12px;
+}
+.timeline-slider::-moz-range-thumb {
+    width: 16px; height: 32px;
+    background: #3b82f6; border-radius: 4px;
+    cursor: pointer; pointer-events: auto;
+}
+
 /* Stile für Helligkeits- und Farbtemperatur-Slider */
 .brightness-slider, .ct-slider {
     -webkit-appearance: none; appearance: none;
