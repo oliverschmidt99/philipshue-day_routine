@@ -35,7 +35,7 @@ class CoreLogic:
                 cur.execute(
                     """
                     CREATE TABLE IF NOT EXISTS measurements (
-                        timestamp TEXT NOT NULL, sensor_id INTEGER NOT NULL,
+                        timestamp TEXT NOT NULL, sensor_id TEXT NOT NULL,
                         measurement_type TEXT NOT NULL, value REAL NOT NULL,
                         PRIMARY KEY (timestamp, sensor_id, measurement_type)
                     )
@@ -66,9 +66,8 @@ class CoreLogic:
         if not bridge_ip or not app_key:
             return None
         
-        bridge = HueBridge(ip=bridge_ip, username=app_key, logger=self.log)
+        bridge = HueBridge(ip=bridge_ip, app_key=app_key, logger=self.log)
         if bridge.is_connected():
-            self.log.info(f"Erfolgreich mit Bridge unter {bridge_ip} verbunden.")
             return bridge
         else:
             self.log.error("Netzwerkfehler zur Bridge: Verbindung konnte nicht hergestellt werden.")
@@ -79,10 +78,25 @@ class CoreLogic:
         global_settings = config.get("global_settings", {})
         sun_times = self._get_sun_times(config.get("location"))
         scenes = {name: Scene(**params) for name, params in config.get("scenes", {}).items()}
-        rooms = {rc["name"]: Room(bridge, self.log, **rc) for rc in config.get("rooms", [])}
-        sensors = {room_config.get("sensor_id"): Sensor(bridge, room_config.get("sensor_id"), self.log) for room_config in config.get("rooms", []) if room_config.get("sensor_id")}
         
-        routines = [Routine(r_conf["name"], rooms.get(r_conf["room_name"]), sensors.get(next((r.get("sensor_id") for r in config.get("rooms", []) if r.get("name") == r_conf["room_name"]), None)), r_conf, scenes, sun_times, self.log, global_settings) for r_conf in config.get("routines", []) if rooms.get(r_conf["room_name"])]
+        bridge_data = bridge.get_api_data()
+        all_rooms_and_zones = bridge_data.get("rooms", []) + bridge_data.get("zones", [])
+
+        rooms = {}
+        for room_conf in config.get("rooms", []):
+            bridge_group = next((g for g in all_rooms_and_zones if g['metadata']['name'] == room_conf["name"]), None)
+            if bridge_group:
+                rooms[room_conf["name"]] = Room(bridge, self.log, name=room_conf["name"], group_id=bridge_group["id"])
+
+        sensors = {}
+        for room_conf in config.get("rooms", []):
+            if room_conf.get("sensor_id"):
+                sensors[room_conf["sensor_id"]] = Sensor(bridge, room_conf["sensor_id"], self.log)
+
+        routines = [
+            Routine(r_conf["name"], rooms.get(r_conf["room_name"]), sensors.get(next((r.get("sensor_id") for r in config.get("rooms", []) if r.get("name") == r_conf["room_name"]), None)), r_conf, scenes, sun_times, self.log, global_settings) 
+            for r_conf in config.get("routines", []) if rooms.get(r_conf["room_name"])
+        ]
 
         last_mod_time = self.config_manager.get_last_modified_time()
         last_status_write = 0

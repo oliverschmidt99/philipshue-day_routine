@@ -28,11 +28,11 @@ def connect_to_bridge():
     if not ip_address:
         return jsonify({"error": "IP-Adresse fehlt."}), 400
     
-    new_app_key = HueBridge.connect(ip=ip_address)
+    new_app_key = HueBridge.create_app_key(ip=ip_address, logger=current_app.logger_instance)
     if new_app_key:
         return jsonify({"app_key": new_app_key})
     else:
-        return jsonify({"error": "Der Link-Button auf der Bridge wurde nicht gedrückt."}), 500
+        return jsonify({"error": "Der Link-Button auf der Bridge wurde nicht gedrückt oder ein Fehler ist aufgetreten."}), 500
 
 @setup_api.route("/save", methods=["POST"])
 def save_setup_config():

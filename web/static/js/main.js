@@ -81,10 +81,21 @@ async function runMainApp() {
     ui.renderRoutines(config, bridgeData);
     ui.renderScenes(config.scenes);
     renderSettings(config);
+    document.querySelectorAll(".routine-details[data-index]").forEach((el) => {
+      const index = parseInt(el.dataset.index, 10);
+      const routine = config.routines[index];
+      if (routine) {
+        el.innerHTML = ui.renderRoutineDetails(routine, config.scenes);
+      }
+    });
   };
 
   const setupEventListeners = () => {
     document.body.addEventListener("click", handleGlobalClick);
+    document
+      .getElementById("bridge-devices-tabs")
+      ?.addEventListener("click", handleBridgeDeviceTabClick);
+    document.body.addEventListener("input", handleGlobalInput);
     document
       .getElementById("save-button")
       ?.addEventListener("click", saveFullConfig);
@@ -111,6 +122,36 @@ async function runMainApp() {
     });
   };
 
+  const handleGlobalInput = (e) => {
+    const input = e.target;
+    const routineDetails = input.closest(".routine-details");
+    if (!routineDetails) return;
+
+    const index = parseInt(routineDetails.dataset.index, 10);
+    const routine = config.routines[index];
+    const period = input.dataset.period;
+    const key = input.dataset.key;
+    const value =
+      input.type === "checkbox"
+        ? input.checked
+        : input.type.startsWith("time") ||
+          input.type.startsWith("range") ||
+          input.type.startsWith("number")
+        ? input.valueAsNumber || 0
+        : input.value;
+
+    if (routine && period && key) {
+      if (period === "daily_time") {
+        routine.daily_time[key] = value;
+      } else if (key.startsWith("wait_time")) {
+        const subkey = key.split(".")[1];
+        routine[period].wait_time[subkey] = value;
+      } else {
+        routine[period][key] = value;
+      }
+    }
+  };
+
   const handleTabClick = (e) => {
     const button = e.currentTarget;
     document.querySelectorAll('nav button[id^="tab-"]').forEach((btn) => {
@@ -120,20 +161,45 @@ async function runMainApp() {
     document
       .querySelectorAll(".content-section")
       .forEach((content) => content.classList.add("hidden"));
-
     button.classList.add("tab-active");
     button.classList.remove("text-gray-500", "border-transparent");
-
     const contentId = button.id.replace("tab-", "content-");
     const contentElement = document.getElementById(contentId);
     if (contentElement) contentElement.classList.remove("hidden");
-
     clearInterval(statusInterval);
-
     if (contentId === "content-status") startStatusUpdates();
     if (contentId === "content-analyse") setupAnalyseTab();
     if (contentId === "content-hilfe") loadHelpContent();
     if (contentId === "content-bridge-devices") setupBridgeDevicesTab();
+  };
+
+  const handleBridgeDeviceTabClick = (e) => {
+    const button = e.target.closest(".bridge-device-tab");
+    if (!button) return;
+    const tabId = button.dataset.tab;
+    document.querySelectorAll(".bridge-device-tab").forEach((btn) => {
+      btn.classList.remove("text-blue-600", "border-blue-600");
+      btn.classList.add(
+        "text-gray-500",
+        "hover:text-gray-700",
+        "hover:border-gray-300",
+        "border-transparent"
+      );
+    });
+    button.classList.add("text-blue-600", "border-blue-600");
+    button.classList.remove(
+      "text-gray-500",
+      "hover:text-gray-700",
+      "hover:border-gray-300",
+      "border-transparent"
+    );
+    document.querySelectorAll(".bridge-device-content-pane").forEach((pane) => {
+      pane.classList.add("hidden");
+    });
+    const contentPane = document.getElementById(`bridge-content-${tabId}`);
+    if (contentPane) {
+      contentPane.classList.remove("hidden");
+    }
   };
 
   const handleGlobalClick = (e) => {
@@ -173,6 +239,19 @@ async function runMainApp() {
       "save-scene": handleSaveScene,
       "cancel-modal": ui.closeModal,
       "create-routine": handleCreateRoutine,
+      "edit-routine": () => {
+        const index = routineCard.dataset.index;
+        document.getElementById("tab-routines").click();
+        setTimeout(() => {
+          const header = document.querySelector(
+            `.routine-header[data-index='${index}']`
+          );
+          if (header) {
+            ui.toggleDetails(header, true);
+            header.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 100);
+      },
       "delete-routine": () => {
         const index = routineCard.dataset.index;
         if (
@@ -192,6 +271,7 @@ async function runMainApp() {
           }. Speichern nicht vergessen.`
         );
       },
+      "stop-propagation": (e) => e.stopPropagation(),
     };
 
     if (actions[action]) {
@@ -266,7 +346,7 @@ async function runMainApp() {
     let roomConf = config.rooms?.find((r) => r.name === groupName);
     if (!roomConf) {
       if (!config.rooms) config.rooms = [];
-      roomConf = { name: groupName, group_ids: [groupId] }; // Wichtig: group_ids als Liste
+      roomConf = { name: groupName, group_ids: [groupId] };
       config.rooms.push(roomConf);
     }
     if (sensorSelect.value) {
@@ -364,7 +444,9 @@ async function runMainApp() {
 
   const startStatusUpdates = () => {
     updateStatus();
-    statusInterval = setInterval(updateStatus, 5000);
+    const statusIntervalTime =
+      (config?.global_settings?.status_interval_s || 5) * 1000;
+    statusInterval = setInterval(updateStatus, statusIntervalTime);
   };
 
   const setupAnalyseTab = () => {

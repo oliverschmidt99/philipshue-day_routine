@@ -7,49 +7,45 @@ from .logger import Logger
 
 class Sensor:
     """Liest Daten von einem Hue-Bewegungssensor und stellt sie bereit."""
-    def __init__(self, bridge: HueBridge, sensor_id, log: Logger):
+    def __init__(self, bridge: HueBridge, device_id: str, log: Logger):
         self.bridge = bridge
         self.log = log
-        try:
-            self.motion_sensor_id = int(sensor_id)
-        except (ValueError, TypeError):
-            self.log.error(f"Ungültige Sensor-ID: {sensor_id}. Sensor wird ignoriert.")
-            self.motion_sensor_id = None
+        self.device_id = device_id
+        self._device_data = None
 
-        if self.motion_sensor_id is not None:
-            self.light_sensor_id = self.motion_sensor_id + 1
-            self.temp_sensor_id = self.motion_sensor_id + 2
-            self.log.info(f"Initialisiere Sensor-Einheit für Bewegungs-ID: {self.motion_sensor_id}")
-        else:
-            self.light_sensor_id = None
-            self.temp_sensor_id = None
+    def _get_device_data(self):
+        """Holt die Daten für das spezifische Gerät, falls noch nicht vorhanden."""
+        if not self._device_data:
+            if not self.bridge.is_connected():
+                return None
+            self._device_data = self.bridge.get_device_by_id(self.device_id)
+            if not self._device_data:
+                self.log.warning(f"Kein Gerät mit ID {self.device_id} gefunden.")
+        return self._device_data
 
-    def _get_state_value(self, sensor_id, key, default_value):
-        if sensor_id is None:
-            return default_value
-        
-        sensor_data = self.bridge.get_sensor(sensor_id)
-        if sensor_data is None:
-            self.log.debug(f"Keine Daten für Sensor {sensor_id} erhalten.")
+    def _get_service_data(self, service_type: str):
+        """Holt die vollen Daten eines spezifischen Services (z.B. motion) des Geräts."""
+        device = self._get_device_data()
+        if not device or 'services' not in device:
             return None
-
-        state = sensor_data.get("state")
-        if state:
-            return state.get(key, default_value)
-
-        self.log.warning(f"Kein 'state' für Sensor {sensor_id} empfangen.")
-        return None
+        
+        service_ref = next((s for s in device['services'] if s.get('rtype') == service_type), None)
+        if not service_ref:
+            return None
+        
+        return self.bridge._hue.bridge.get(service_type, service_ref['rid'])
 
     def get_motion(self) -> bool:
         """Gibt True zurück, wenn eine Bewegung erkannt wird, sonst False."""
-        presence = self._get_state_value(self.motion_sensor_id, "presence", False)
-        return presence is True
+        motion_data = self._get_service_data('motion')
+        return motion_data.get('motion', {}).get('motion', False) if motion_data else False
 
     def get_brightness(self) -> int | None:
-        """Gibt den Helligkeitswert (lightlevel) vom Lichtsensor zurück."""
-        return self._get_state_value(self.light_sensor_id, "lightlevel", None)
+        """Gibt den Helligkeitswert (light_level) vom Lichtsensor zurück."""
+        light_data = self._get_service_data('light_level')
+        return light_data.get('light', {}).get('light_level') if light_data else None
 
     def get_temperature(self) -> float | None:
         """Gibt die Temperatur in Grad Celsius vom Temperatursensor zurück."""
-        temp_raw = self._get_state_value(self.temp_sensor_id, "temperature", None)
-        return temp_raw / 100.0 if temp_raw is not None else None
+        temp_data = self._get_service_data('temperature')
+        return temp_data.get('temperature', {}).get('temperature') if temp_data else None

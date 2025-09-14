@@ -1,14 +1,14 @@
 """
-API-Endpunkte für die direkte Kommunikation mit der Philips Hue Bridge.
+API-Endpunkte für die direkte Kommunikation mit der Philips Hue Bridge (v2 API).
 """
 from flask import Blueprint, jsonify, current_app
 from src.hue_wrapper import HueBridge
 
 bridge_api = Blueprint("bridge_api", __name__)
 
-def get_bridge_instance():
+def get_bridge_instance() -> HueBridge | None:
     config = current_app.config_manager.get_full_config()
-    bridge = HueBridge(ip=config.get("bridge_ip"), username=config.get("app_key"), logger=current_app.logger_instance)
+    bridge = HueBridge(ip=config.get("bridge_ip"), app_key=config.get("app_key"), logger=current_app.logger_instance)
     return bridge if bridge.is_connected() else None
 
 @bridge_api.route("/all_items")
@@ -17,17 +17,33 @@ def get_all_bridge_items():
     if not bridge:
         return jsonify({"error": "Bridge nicht erreichbar oder konfiguriert"}), 503
     
-    full_state = bridge.get_api()
-    if not full_state:
-        return jsonify({"error": "Bridge-Fehler: Konnte API-Status nicht abrufen."}), 500
-
-    sensors = full_state.get("sensors", {})
-    groups = full_state.get("groups", {})
-
-    # Filtert nur die Bewegungssensoren heraus
-    motion_sensors = [{"id": sid, "name": s["name"]} for sid, s in sensors.items() if s.get("type") == "ZLLPresence"]
+    bridge_data = bridge.get_api_data()
     
-    # Holt jetzt ALLE Gruppen (Räume, Zonen und Bewegungszonen)
-    bridge_groups = [{"id": gid, "name": g["name"]} for gid, g in groups.items()]
+    rooms = [{"id": r['id'], "name": r['metadata']['name'], "lights": [s['rid'] for s in r.get('services', []) if s.get('rtype') == 'light']} for r in bridge_data.get("rooms", [])]
+    zones = [{"id": z['id'], "name": z['metadata']['name'], "lights": [s['rid'] for s in z.get('services', []) if s.get('rtype') == 'light']} for z in bridge_data.get("zones", [])]
+    all_groups_for_routines = rooms + zones
+
+    all_sensors_flat = []
+    categorized_sensors = {}
     
-    return jsonify({"sensors": motion_sensors, "groups": bridge_groups})
+    for device in bridge_data.get("devices", []):
+        is_sensor = False
+        sensor_info = {"id": device['id'], "name": device['metadata']['name'], "productname": device['product_data']['product_name']}
+        
+        for service in device.get('services', []):
+            rtype = service.get('rtype')
+            if rtype == 'motion':
+                if "Bewegung" not in categorized_sensors: categorized_sensors["Bewegung"] = []
+                categorized_sensors["Bewegung"].append(sensor_info)
+                is_sensor = True
+        
+        if is_sensor:
+            all_sensors_flat.append(sensor_info)
+
+    return jsonify({
+        "rooms": rooms,
+        "zones": zones,
+        "groups": all_groups_for_routines,
+        "sensors_categorized": categorized_sensors,
+        "sensors": all_sensors_flat
+    })

@@ -1,34 +1,23 @@
 """
-Ein Wrapper für die huesdk-Bibliothek, um die API zu kapseln und die
-Testbarkeit sowie die zukünftige Wartung zu erleichtern.
-Die nach außen gerichteten Methoden sind an die alte phue-Bibliothek angelehnt,
-um die Umstellung des restlichen Codes zu minimieren.
+Ein Wrapper für die python-hue-v2 Bibliothek, um die neue v2 API zu kapseln
+und die Umstellung des restlichen Codes zu minimieren.
 """
-import warnings
-from huesdk import Hue
+from typing import Optional, Dict, List, Union
+from python_hue_v2.hue import Hue
+from python_hue_v2.room import Room as HueRoom
+from python_hue_v2.zone import Zone as HueZone
 
 class HueBridge:
     """
-    Eine Klasse, die eine einzelne Verbindung zur Philips Hue Bridge verwaltet
-    und die Methoden der huesdk-Bibliothek kapselt.
+    Eine Klasse, die eine Verbindung zur Philips Hue Bridge über die v2 API verwaltet.
     """
 
-    def __init__(self, ip: str = None, username: str = None, logger=None):
-        """
-        Initialisiert die Bridge-Verbindung mit der huesdk-Bibliothek.
-        """
+    def __init__(self, ip: str = None, app_key: str = None, logger=None):
         self.ip = ip
-        self.username = username
+        self.app_key = app_key
         self.log = logger
-        self._bridge = None
-
-        warnings.filterwarnings("ignore", message="Unverified HTTPS request")
-
-        if ip and username:
-            try:
-                self._bridge = Hue(bridge_ip=self.ip, username=self.username)
-            except Exception as e:
-                self._log_error(f"Fehler bei der Initialisierung der Bridge: {e}")
+        self._hue: Optional[Hue] = None
+        self.connect()
 
     def _log_error(self, message: str, exc_info=False):
         if self.log:
@@ -36,53 +25,75 @@ class HueBridge:
         else:
             print(f"ERROR: {message}")
 
-    @staticmethod
-    def connect(ip: str) -> str | None:
+    def connect(self):
+        """Stellt die Verbindung zur Bridge her."""
+        if not self.ip or not self.app_key:
+            return
         try:
-            return Hue.connect(bridge_ip=ip)
-        except Exception:
+            self._hue = Hue(self.ip, self.app_key)
+            self._hue.bridge.get_bridge()
+            self.log.info(f"Erfolgreich mit Bridge unter {self.ip} (v2 API) verbunden.")
+        except Exception as e:
+            self._log_error(f"Fehler bei der Initialisierung der v2 Bridge: {e}")
+            self._hue = None
+    
+    @staticmethod
+    def create_app_key(ip: str, logger=None) -> Optional[str]:
+        """
+        Führt den Prozess zum Erstellen eines neuen App-Keys durch.
+        Der physische Knopf auf der Bridge muss gedrückt werden.
+        """
+        try:
+            hue = Hue(ip)
+            app_key = hue.bridge.connect()
+            if logger: logger.info(f"Neuer App-Key für Bridge {ip} erfolgreich erstellt.")
+            return app_key
+        except Exception as e:
+            if logger: logger.error(f"Fehler beim Erstellen des App-Keys: {e}")
             return None
 
     def is_connected(self) -> bool:
-        if not self._bridge:
-            return False
-        try:
-            self._bridge.get_lights()
-            return True
-        except Exception:
-            return False
+        return self._hue is not None
 
-    def get_api(self) -> dict | None:
-        if not self._bridge:
-            return None
-        try:
-            return self._bridge.get(f'/{self.username}')
-        except Exception as e:
-            self._log_error(f"Fehler beim Abrufen des API-Status: {e}")
-            return None
+    def get_api_data(self) -> Dict:
+        """Holt alle relevanten Daten von der Bridge als Dictionaries."""
+        if not self.is_connected(): return {}
+        return {
+            "devices": self._hue.bridge.get_devices(),
+            "rooms": self._hue.bridge.get_rooms(),
+            "zones": self._hue.bridge.get_zones(),
+        }
 
-    def get_sensor(self, sensor_id: int) -> dict | None:
-        if not self._bridge:
-            return None
+    def get_device_by_id(self, device_id: str) -> Optional[Dict]:
+        """Holt die Daten eines einzelnen Geräts als Dictionary."""
+        if not self.is_connected(): return None
         try:
-            return self._bridge.get(f'/{self.username}/sensors/{sensor_id}')
-        except Exception as e:
-            self._log_error(f"Fehler beim Abrufen von Sensor {sensor_id}: {e}")
+            return self._hue.bridge.get_device(device_id)
+        except ConnectionError:
+            self.log.warning(f"Gerät mit ID {device_id} konnte nicht gefunden werden.")
             return None
 
-    def get_group(self, group_id: int) -> dict | None:
-        if not self._bridge:
-            return None
-        try:
-            return self._bridge.get(f'/{self.username}/groups/{group_id}')
-        except Exception as e:
-            self._log_error(f"Fehler beim Abrufen von Gruppe {group_id}: {e}")
-            return None
+    def get_group_object_by_id(self, group_id: str) -> Optional[Union[HueRoom, HueZone]]:
+        """Holt das Bibliotheks-Objekt für einen Raum oder eine Zone."""
+        if not self.is_connected(): return None
+        return next((g for g in self._hue.rooms + self._hue.zones if g.id == group_id), None)
 
-    def set_group(self, group_id: int, state: dict):
-        if not self._bridge:
-            return
+    def set_group_state(self, group_id: str, state: dict):
+        """Setzt den Zustand für eine Gruppe (Raum oder Zone)."""
+        if not self.is_connected(): return
+
         try:
-            self._bridge.put(f'/{self.username}/groups/{group_id}/action', state)
+            target_grouped_light = next((gl for gl in self._hue.grouped_lights if gl.owner.rid == group_id), None)
+            
+            if not target_grouped_light:
+                self._log_error(f"Kein steuerbarer Licht-Service für Gruppe {group_id} gefunden.")
+                return
+
+            on = state.get("on")
+            brightness = (state.get("bri") / 254) * 100 if "bri" in state and state.get("bri") is not None else None
+            mirek = state.get("ct")
+            
+            target_grouped_light.set_state(on=on, brightness=brightness, mirek=mirek)
+
         except Exception as e:
-            self._log_error(f"Fehler beim Setzen des Zustands für Gruppe {group_id}: {e}")
+            self._log_error(f"Fehler beim Setzen des Zustands für Gruppe {group_id}: {e}", exc_info=True)

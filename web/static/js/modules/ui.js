@@ -29,9 +29,6 @@ const clockElement = document.getElementById("clock");
 const sunTimesContainer = document.getElementById("sun-times");
 const modalSceneContainer = document.getElementById("modal-scene");
 const modalRoutineContainer = document.getElementById("modal-routine");
-const bridgeDevicesContainer = document.getElementById(
-  "bridge-devices-container"
-);
 
 export function showToast(message, isError = false) {
   if (!toastElement) return;
@@ -113,11 +110,16 @@ export function populateAnalyseSensors(sensors) {
   const sensorSelect = document.getElementById("analyse-sensor");
   if (!sensorSelect) return;
   sensorSelect.innerHTML = "";
-  if (!sensors || sensors.length === 0) {
-    sensorSelect.innerHTML = "<option>Keine Sensoren gefunden</option>";
+
+  // Filtert nur Sensoren, die für die Analyse relevant sind (z.B. Bewegungssensoren)
+  const relevantSensors = sensors.filter((s) => s.type === "ZLLPresence");
+
+  if (!relevantSensors || relevantSensors.length === 0) {
+    sensorSelect.innerHTML =
+      "<option>Keine Bewegungssensoren gefunden</option>";
     return;
   }
-  sensors.forEach((sensor) => {
+  relevantSensors.forEach((sensor) => {
     const option = document.createElement("option");
     option.value = sensor.id;
     option.textContent = sensor.name;
@@ -207,7 +209,7 @@ export function renderRoutines(config, bridgeData) {
     const roomConf = config.rooms.find((r) => r.name === routine.room_name);
     const sensorId = roomConf ? roomConf.sensor_id : null;
     const sensor = sensorId
-      ? bridgeData.sensors.find((s) => s.id == sensorId)
+      ? bridgeData.sensors.find((s) => s.id == sensorId) // Dieser Teil funktioniert jetzt wieder
       : null;
     const sensorHtml = sensor
       ? `<span class="mx-2 text-gray-400">|</span> <span class="flex items-center"><i class="fas fa-satellite-dish mr-2 text-teal-500"></i> ${sensor.name}</span>`
@@ -216,7 +218,7 @@ export function renderRoutines(config, bridgeData) {
     const isEnabled = routine.enabled !== false;
 
     routineEl.innerHTML = `
-        <div class="routine-header p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center" data-action="toggle-routine-details">
+        <div class="routine-header p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-center" data-action="toggle-routine-details" data-index="${index}">
             <div>
                 <div class="flex items-center">
                     <h3 class="text-2xl font-semibold">${routine.name}</h3>
@@ -249,11 +251,91 @@ export function renderRoutines(config, bridgeData) {
                 <button type="button" data-action="delete-routine" class="text-red-600 hover:text-red-800 font-medium">Löschen</button>
             </div>
         </div>
-        <div class="routine-details px-4 pb-4 hidden">
-            <div class="space-y-2 border-t pt-4 mt-2"></div>
-        </div>`;
+        <div class="routine-details px-4 pb-4 hidden" data-index="${index}">
+            </div>`;
     routinesContainer.appendChild(routineEl);
   });
+}
+
+export function renderRoutineDetails(routine, scenes) {
+  const sceneOptions = Object.keys(scenes)
+    .map(
+      (name) =>
+        `<option value="${name}" ${
+          name === "aus" ? "selected" : ""
+        }>${name.replace(/_/g, " ")}</option>`
+    )
+    .join("");
+
+  return `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border-t pt-4 mt-2">
+        <div>
+            <h4 class="text-lg font-semibold mb-2 text-gray-700">Allgemeiner Zeitplan</h4>
+            <div class="flex items-center space-x-2">
+                <input type="time" data-period="daily_time" data-key="H1" value="${String(
+                  routine.daily_time.H1 || 0
+                ).padStart(2, "0")}:${String(
+    routine.daily_time.M1 || 0
+  ).padStart(2, "0")}" class="p-2 border rounded-md">
+                <span>bis</span>
+                <input type="time" data-period="daily_time" data-key="H2" value="${String(
+                  routine.daily_time.H2 || 23
+                ).padStart(2, "0")}:${String(
+    routine.daily_time.M2 || 59
+  ).padStart(2, "0")}" class="p-2 border rounded-md">
+            </div>
+        </div>
+        <div> </div>
+        ${["morning", "day", "evening", "night"]
+          .map(
+            (period) => `
+        <div class="p-4 rounded-lg border ${sectionColors[period]}">
+            <h5 class="font-bold text-xl mb-3 flex items-center">${
+              icons[period]
+            } ${periodNames[period]}</h5>
+            <div class="space-y-3 text-sm">
+                <div class="flex items-center justify-between">
+                    <label>Normal-Szene:</label>
+                    <select data-period="${period}" data-key="scene_name" class="p-1 border rounded-md">${sceneOptions.replace(
+              `value="${routine[period].scene_name}"`,
+              `value="${routine[period].scene_name}" selected`
+            )}</select>
+                </div>
+                <div class="flex items-center justify-between">
+                    <label>Bewegungs-Szene:</label>
+                    <select data-period="${period}" data-key="x_scene_name" class="p-1 border rounded-md">${sceneOptions.replace(
+              `value="${routine[period].x_scene_name}"`,
+              `value="${routine[period].x_scene_name}" selected`
+            )}</select>
+                </div>
+                <div class="flex items-center justify-between">
+                    <label>Wartezeit (Min/Sek):</label>
+                    <div class="flex items-center space-x-1">
+                       <input type="number" min="0" data-period="${period}" data-key="wait_time.min" value="${
+              routine[period].wait_time.min
+            }" class="w-16 p-1 border rounded-md">
+                       <input type="number" min="0" max="59" data-period="${period}" data-key="wait_time.sec" value="${
+              routine[period].wait_time.sec
+            }" class="w-16 p-1 border rounded-md">
+                    </div>
+                </div>
+                <div class="border-t pt-3 space-y-2">
+                    <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="motion_check" ${
+              routine[period].motion_check ? "checked" : ""
+            } class="mr-2 h-4 w-4"> Auf Bewegung reagieren</label>
+                    <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="do_not_disturb" ${
+              routine[period].do_not_disturb ? "checked" : ""
+            } class="mr-2 h-4 w-4"> Bitte nicht stören</label>
+                    <label class="flex items-center"><input type="checkbox" data-period="${period}" data-key="bri_check" ${
+              routine[period].bri_check ? "checked" : ""
+            } class="mr-2 h-4 w-4"> Helligkeits-Check</label>
+                </div>
+            </div>
+        </div>
+        `
+          )
+          .join("")}
+    </div>`;
 }
 
 export function renderScenes(scenes) {
@@ -458,6 +540,17 @@ function renderStatusTimeline(status, sunTimes) {
                 <svg class="h-full w-full timeline-svg" viewBox="0 0 1000 240" font-family="Inter, sans-serif" font-size="12px" data-center-x="${centerX}" data-radius-x="${arcRadiusX}" data-radius-y="${arcRadiusY}" data-arc-start-x="${arcStartX}" data-arc-end-x="${arcEndX}">
                      <line x1="2%" y1="180" x2="98%" y2="180" stroke="#9ca3af" stroke-width="2" />
                      <path d="M 978 175 L 988 180 L 978 185 Z" fill="#9ca3af" />
+                     <path d="M ${arcStartX} 180 A ${arcRadiusX} ${arcRadiusY} 0 0 1 ${arcEndX} 180" stroke="#f97316" stroke-width="2" fill="none" />
+                    
+                     <line x1="${morningStartPercent}%" y1="175" x2="${morningStartPercent}%" y2="185" stroke="#4b5563" stroke-width="2" />
+                     <text x="${morningStartPercent}%" y="205" text-anchor="middle" font-size="12px">${String(
+    routineStart.H1 || 0
+  ).padStart(2, "0")}:${String(routineStart.M1 || 0).padStart(2, "0")}</text>
+                     <line x1="${eveningEndPercent}%" y1="175" x2="${eveningEndPercent}%" y2="185" stroke="#4b5563" stroke-width="2" />
+                     <text x="${eveningEndPercent}%" y="205" text-anchor="middle" font-size="12px">${String(
+    routineStart.H2 || 23
+  ).padStart(2, "0")}:${String(routineStart.M2 || 59).padStart(2, "0")}</text>
+
                      <g class="sun-emoji-indicator" data-sunrise-mins="${sunriseMins}" data-sunset-mins="${sunsetMins}"><text x="0" y="0" text-anchor="middle" font-size="28">${
     icons.sun
   }</text></g>
@@ -479,36 +572,72 @@ function renderStatusTimeline(status, sunTimes) {
 }
 
 export function renderBridgeDevices(bridgeData) {
-  if (!bridgeDevicesContainer) return;
-  bridgeDevicesContainer.innerHTML = "";
+  const roomsContainer = document.getElementById("bridge-content-rooms");
+  const zonesContainer = document.getElementById("bridge-content-zones");
+  const sensorsContainer = document.getElementById("bridge-content-sensors");
 
-  let content = `
-    <div>
-      <h3 class="text-xl font-semibold mb-3 text-gray-700">Bewegungssensoren</h3>
-      <div class="space-y-2">`;
-  if (bridgeData.sensors && bridgeData.sensors.length > 0) {
-    bridgeData.sensors.forEach((sensor) => {
-      content += `
-        <div class="bg-white p-3 rounded-lg shadow-sm border flex justify-between items-center">
-          <span class="font-medium text-gray-800">${sensor.name}</span>
-          <span class="text-sm text-gray-500 font-mono">ID: ${sensor.id}</span>
-        </div>`;
-    });
+  if (!roomsContainer || !zonesContainer || !sensorsContainer) return;
+
+  // --- Räume rendern ---
+  roomsContainer.innerHTML = createDeviceListHTML(
+    bridgeData.rooms,
+    "Raum",
+    "Anzahl Lichter"
+  );
+
+  // --- Zonen rendern ---
+  zonesContainer.innerHTML = createDeviceListHTML(
+    bridgeData.zones,
+    "Zone",
+    "Anzahl Lichter"
+  );
+
+  // --- Sensoren rendern ---
+  let sensorsHTML = "";
+  if (
+    bridgeData.sensors_categorized &&
+    Object.keys(bridgeData.sensors_categorized).length > 0
+  ) {
+    for (const [category, sensorList] of Object.entries(
+      bridgeData.sensors_categorized
+    )) {
+      sensorsHTML += `<h3 class="text-xl font-semibold mb-3 mt-4 text-gray-700">${category}</h3>`;
+      sensorsHTML += createDeviceListHTML(sensorList, "Gerätename", "Modell");
+    }
   } else {
-    content += `<p class="text-gray-500">Keine Bewegungssensoren gefunden.</p>`;
+    sensorsHTML = `<p class="text-gray-500">Keine Sensoren gefunden.</p>`;
   }
-  content += `</div></div><div><h3 class="text-xl font-semibold mb-3 text-gray-700">Räume & Zonen</h3><div class="space-y-2">`;
-  if (bridgeData.groups && bridgeData.groups.length > 0) {
-    bridgeData.groups.forEach((group) => {
-      content += `
+  sensorsContainer.innerHTML = sensorsHTML;
+}
+
+/**
+ * Helfer-Funktion, um eine HTML-Liste für Geräte zu erstellen.
+ */
+function createDeviceListHTML(items, nameHeader, detailHeader) {
+  if (!items || items.length === 0) {
+    return `<p class="text-gray-500">Keine Geräte in dieser Kategorie gefunden.</p>`;
+  }
+
+  let html = `<div class="space-y-2">`;
+  items.forEach((item) => {
+    let detail = "";
+    if (item.lights) {
+      // Für Räume/Zonen
+      detail = `${item.lights.length}`;
+    } else if (item.productname) {
+      // Für Sensoren
+      detail = item.productname;
+    }
+
+    html += `
         <div class="bg-white p-3 rounded-lg shadow-sm border flex justify-between items-center">
-          <span class="font-medium text-gray-800">${group.name}</span>
-          <span class="text-sm text-gray-500 font-mono">ID: ${group.id}</span>
+          <div>
+            <span class="font-medium text-gray-800">${item.name}</span>
+            <span class="block text-xs text-gray-500">${detailHeader}: ${detail}</span>
+          </div>
+          <span class="text-sm text-gray-500 font-mono">ID: ${item.id}</span>
         </div>`;
-    });
-  } else {
-    content += `<p class="text-gray-500">Keine Räume oder Zonen gefunden.</p>`;
-  }
-  content += `</div></div>`;
-  bridgeDevicesContainer.innerHTML = content;
+  });
+  html += `</div>`;
+  return html;
 }
