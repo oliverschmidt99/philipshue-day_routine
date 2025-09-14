@@ -24,7 +24,10 @@ def get_all_bridge_items():
     sensors = full_state.get("sensors", {})
     groups = full_state.get("groups", {})
 
+    # Filtert nur die Bewegungssensoren heraus
     motion_sensors = [{"id": sid, "name": s["name"]} for sid, s in sensors.items() if s.get("type") == "ZLLPresence"]
+    
+    # Holt jetzt ALLE Gruppen (Räume, Zonen und Bewegungszonen)
     bridge_groups = [{"id": gid, "name": g["name"]} for gid, g in groups.items()]
     
     return jsonify({"sensors": motion_sensors, "groups": bridge_groups})

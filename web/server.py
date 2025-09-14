@@ -52,4 +52,4 @@ def create_app():
 if __name__ == "__main__":
     flask_app = create_app()
     flask_app.logger_instance.info("Starte Flask-Server...")
-    flask_app.run(host="0.0.0.0", port=5000, debug=False)
+    flask_app.run(host="0.0.0.0", port=9090, debug=True)
