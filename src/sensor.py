@@ -33,7 +33,8 @@ class Sensor:
         if not service_ref:
             return None
         
-        return self.bridge._hue.bridge.get(service_type, service_ref['rid'])
+        # Korrigierte Methode, um auf die Ressourcen zuzugreifen
+        return self.bridge.get_resource(service_type, service_ref['rid'])
 
     def get_motion(self) -> bool:
         """Gibt True zurück, wenn eine Bewegung erkannt wird, sonst False."""

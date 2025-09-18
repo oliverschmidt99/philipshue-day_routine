@@ -1,5 +1,5 @@
 """
-API-Endpunkte für das Management der Konfigurationsdatei (config.yaml).
+API-Endpunkte für das Management der Konfigurationsdateien.
 """
 import os
 import shutil
@@ -9,8 +9,13 @@ config_api = Blueprint("config_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
-CONFIG_BACKUP_FILE = os.path.join(DATA_DIR, "config.backup.yaml")
+SETTINGS_FILE = os.path.join(DATA_DIR, "settings.yaml")
+AUTOMATION_FILE = os.path.join(DATA_DIR, "automation.yaml")
+HOME_FILE = os.path.join(DATA_DIR, "home.yaml")
+SETTINGS_BACKUP_FILE = os.path.join(DATA_DIR, "settings.backup.yaml")
+AUTOMATION_BACKUP_FILE = os.path.join(DATA_DIR, "automation.backup.yaml")
+HOME_BACKUP_FILE = os.path.join(DATA_DIR, "home.backup.yaml")
+
 
 @config_api.route("/", methods=["GET"])
 def get_config():
@@ -25,7 +30,23 @@ def save_config():
     if not isinstance(data, dict):
         return jsonify({"error": "Ungültiges Format, JSON-Objekt erwartet."}), 400
     
-    if current_app.config_manager.safe_write(data):
+    settings_data = {
+        "app_key": data.get("app_key"),
+        "bridge_ip": data.get("bridge_ip"),
+        "global_settings": data.get("global_settings"),
+        "location": data.get("location")
+    }
+    automation_data = {
+        "routines": data.get("routines"),
+        "scenes": data.get("scenes")
+    }
+    home_data = {
+        "rooms": data.get("rooms")
+    }
+
+    if current_app.config_manager.safe_write(SETTINGS_FILE, settings_data) and \
+       current_app.config_manager.safe_write(AUTOMATION_FILE, automation_data) and \
+       current_app.config_manager.safe_write(HOME_FILE, home_data):
         current_app.logger_instance.info("Konfiguration wurde über die API gespeichert.")
         return jsonify({"message": "Konfiguration erfolgreich gespeichert."})
     
@@ -33,20 +54,24 @@ def save_config():
 
 @config_api.route("/backup", methods=["POST"])
 def backup_config():
-    """Erstellt ein Backup der aktuellen Konfigurationsdatei."""
+    """Erstellt ein Backup der aktuellen Konfigurationsdateien."""
     try:
-        shutil.copy(CONFIG_FILE, CONFIG_BACKUP_FILE)
-        return jsonify({"message": f"Konfiguration wurde als '{os.path.basename(CONFIG_BACKUP_FILE)}' gesichert."})
+        shutil.copy(SETTINGS_FILE, SETTINGS_BACKUP_FILE)
+        shutil.copy(AUTOMATION_FILE, AUTOMATION_BACKUP_FILE)
+        shutil.copy(HOME_FILE, HOME_BACKUP_FILE)
+        return jsonify({"message": "Konfiguration wurde gesichert."})
     except (IOError, OSError) as e:
         return jsonify({"error": f"Dateifehler beim Sichern: {e}"}), 500
 
 @config_api.route("/restore", methods=["POST"])
 def restore_config():
     """Stellt die Konfiguration aus einem Backup wieder her."""
-    if not os.path.exists(CONFIG_BACKUP_FILE):
-        return jsonify({"error": "Keine Backup-Datei gefunden."}), 404
+    if not os.path.exists(SETTINGS_BACKUP_FILE) or not os.path.exists(AUTOMATION_BACKUP_FILE) or not os.path.exists(HOME_BACKUP_FILE):
+        return jsonify({"error": "Keine vollstaendige Backup-Datei gefunden."}), 404
     try:
-        shutil.copy(CONFIG_BACKUP_FILE, CONFIG_FILE)
+        shutil.copy(SETTINGS_BACKUP_FILE, SETTINGS_FILE)
+        shutil.copy(AUTOMATION_BACKUP_FILE, AUTOMATION_FILE)
+        shutil.copy(HOME_BACKUP_FILE, HOME_FILE)
         return jsonify({"message": "Konfiguration aus Backup wiederhergestellt."})
     except (IOError, OSError) as e:
         return jsonify({"error": f"Dateifehler bei Wiederherstellung: {e}"}), 500

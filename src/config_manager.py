@@ -1,5 +1,5 @@
 """
-Verwaltet das Laden und Speichern der zentralen YAML-Konfigurationsdatei.
+Verwaltet das Laden und Speichern der zentralen YAML-Konfigurationsdateien.
 """
 
 import os
@@ -9,32 +9,35 @@ from .logger import Logger
 
 
 class ConfigManager:
-    """Verwaltet das Laden und Speichern der zentralen YAML-Konfigurationsdatei."""
+    """Verwaltet das Laden und Speichern der zentralen YAML-Konfigurationsdateien."""
 
-    def __init__(self, config_file: str, log: Logger):
-        self.config_file = config_file
+    def __init__(self, settings_file: str, automation_file: str, home_file: str, log: Logger):
+        self.settings_file = settings_file
+        self.automation_file = automation_file
+        self.home_file = home_file
         self.log = log
         self._lock = threading.Lock()
-        self._ensure_config_file()
+        self._ensure_config_files()
 
-    def _ensure_config_file(self):
-        """Stellt sicher, dass die Konfigurationsdatei existiert."""
-        if not os.path.exists(self.config_file):
-            self.safe_write({})
-            self.log.info(
-                f"Leere Konfigurationsdatei '{self.config_file}' wurde erstellt."
-            )
+    def _ensure_config_files(self):
+        """Stellt sicher, dass die Konfigurationsdateien existieren."""
+        for file_path in [self.settings_file, self.automation_file, self.home_file]:
+            if not os.path.exists(file_path):
+                self.safe_write(file_path, {})
+                self.log.info(
+                    f"Leere Konfigurationsdatei '{file_path}' wurde erstellt."
+                )
 
-    def safe_write(self, data: dict) -> bool:
+    def safe_write(self, file_path: str, data: dict) -> bool:
         """Schreibt Daten atomar in die YAML-Datei, um Datenverlust zu vermeiden."""
-        temp_file = self.config_file + ".tmp"
+        temp_file = file_path + ".tmp"
         try:
             with self._lock:
                 with open(temp_file, "w", encoding="utf-8") as f:
                     yaml.dump(
                         data, f, indent=2, allow_unicode=True, default_flow_style=False
                     )
-                os.replace(temp_file, self.config_file)
+                os.replace(temp_file, file_path)
             return True
         except (IOError, yaml.YAMLError) as e:
             self.log.error(f"Fehler beim Schreiben der Konfiguration: {e}")
@@ -43,22 +46,28 @@ class ConfigManager:
             return False
 
     def get_full_config(self) -> dict:
-        """Lädt die gesamte Konfiguration aus der YAML-Datei."""
-        try:
-            with self._lock:
-                with open(self.config_file, "r", encoding="utf-8") as f:
-                    config = yaml.safe_load(f)
-                    return config if config is not None else {}
-        except (FileNotFoundError, yaml.YAMLError) as e:
-            self.log.error(
-                f"Konfiguration konnte nicht geladen werden: {e}. Erstelle eine leere Konfiguration."
-            )
-            self._ensure_config_file()
-            return {}
+        """Lädt die gesamte Konfiguration aus den YAML-Dateien und führt sie zusammen."""
+        config = {}
+        for file_path in [self.settings_file, self.automation_file, self.home_file]:
+            try:
+                with self._lock:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        content = yaml.safe_load(f)
+                        if content:
+                            config.update(content)
+            except (FileNotFoundError, yaml.YAMLError) as e:
+                self.log.error(
+                    f"Konfiguration konnte nicht geladen werden: {e}. Erstelle eine leere Konfiguration."
+                )
+                self._ensure_config_files()
+        return config
 
     def get_last_modified_time(self) -> float:
-        """Gibt den Zeitstempel der letzten Änderung der Konfigurationsdatei zurück."""
-        try:
-            return os.path.getmtime(self.config_file)
-        except FileNotFoundError:
-            return 0
+        """Gibt den Zeitstempel der letzten Änderung der Konfigurationsdateien zurück."""
+        latest_time = 0
+        for file_path in [self.settings_file, self.automation_file, self.home_file]:
+            try:
+                latest_time = max(latest_time, os.path.getmtime(file_path))
+            except FileNotFoundError:
+                pass
+        return latest_time

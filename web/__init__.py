@@ -23,12 +23,14 @@ def create_app():
 
     # Pfaddefinitionen
     DATA_DIR = os.path.join(project_root, "data")
-    CONFIG_FILE = os.path.join(DATA_DIR, "config.yaml")
+    SETTINGS_FILE = os.path.join(DATA_DIR, "settings.yaml")
+    AUTOMATION_FILE = os.path.join(DATA_DIR, "automation.yaml")
+    HOME_FILE = os.path.join(DATA_DIR, "home.yaml")
     LOG_FILE = os.path.join(DATA_DIR, "app.log")
 
     # Hänge Logger und Config Manager an die App an, damit sie global verfügbar sind
     app.logger_instance = Logger(LOG_FILE)
-    app.config_manager = ConfigManager(CONFIG_FILE, app.logger_instance)
+    app.config_manager = ConfigManager(SETTINGS_FILE, AUTOMATION_FILE, HOME_FILE, app.logger_instance)
 
     # Benutze den App-Kontext, um die Blueprints sicher zu registrieren
     with app.app_context():

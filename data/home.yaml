@@ -1,0 +1,5 @@
+rooms:
+- group_ids:
+  - 378ebe35-b7a8-46e6-a509-83814c6bcfd8
+  name: Zone_Olli
+  sensor_id: f33c18a7-c56c-4a89-b672-e35e5e97e4fe

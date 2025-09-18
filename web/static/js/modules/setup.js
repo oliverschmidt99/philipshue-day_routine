@@ -9,9 +9,12 @@ export function runSetupWizard() {
   const step3 = document.getElementById("setup-step-3");
   const step4 = document.getElementById("setup-step-4");
 
+  const discoverBtn = document.getElementById("btn-discover-bridges");
   const loader1 = document.getElementById("setup-loader-1");
   const bridgeList = document.getElementById("setup-bridge-list");
   const manualIpInput = document.getElementById("setup-manual-ip");
+  const defaultIpBtn = document.getElementById("btn-default-ip");
+  const connectManualBtn = document.getElementById("btn-connect-manual-ip");
   const error1 = document.getElementById("setup-error-1");
 
   const selectedIpSpan = document.getElementById("setup-selected-ip");
@@ -31,9 +34,9 @@ export function runSetupWizard() {
   const findBridges = async () => {
     loader1.style.display = "block";
     error1.textContent = "";
+    bridgeList.innerHTML = "";
     try {
       const ips = await discoverBridges();
-      bridgeList.innerHTML = "";
       if (ips.length > 0) {
         ips.forEach((ip) => {
           const btn = document.createElement("button");
@@ -49,7 +52,7 @@ export function runSetupWizard() {
           '<p class="text-gray-500">Keine Bridges automatisch gefunden.</p>';
       }
     } catch (e) {
-      error1.textContent = "Fehler bei der Bridge-Suche.";
+      error1.textContent = e.message || "Fehler bei der Bridge-Suche.";
     } finally {
       loader1.style.display = "none";
     }
@@ -62,9 +65,24 @@ export function runSetupWizard() {
     showStep(2);
   };
 
+  discoverBtn.addEventListener("click", findBridges);
+
+  defaultIpBtn.addEventListener("click", () => {
+    manualIpInput.value = "192.168.178.";
+    manualIpInput.focus();
+  });
+
+  const connectManualIp = () => {
+    const ip = manualIpInput.value.trim();
+    if (ip) {
+      selectBridge(ip);
+    }
+  };
+
+  connectManualBtn.addEventListener("click", connectManualIp);
   manualIpInput.addEventListener("keyup", (e) => {
     if (e.key === "Enter") {
-      selectBridge(manualIpInput.value.trim());
+      connectManualIp();
     }
   });
 
@@ -105,6 +123,4 @@ export function runSetupWizard() {
       saveBtn.querySelector("i").classList.add("hidden");
     }
   });
-
-  findBridges();
 }

@@ -1,25 +1,45 @@
 <!DOCTYPE html>
-<!-- Setup Wizard Container -->
 <div id="setup-wizard" class="hidden min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-2xl bg-white rounded-xl shadow-2xl p-8 space-y-6">
         <h1 class="text-3xl font-bold text-center text-gray-800">Willkommen! Richten wir alles ein.</h1>
 
-        <!-- Step 1: Discover Bridge -->
         <div id="setup-step-1">
             <h2 class="text-xl font-semibold text-gray-700">Schritt 1: Hue Bridge finden</h2>
-            <p class="text-gray-500 mt-2">Wir suchen nach Hue Bridges in deinem Netzwerk. Wähle deine Bridge aus oder
-                gib die IP-Adresse manuell ein.</p>
-            <div id="setup-loader-1" class="mt-4 text-center">
-                <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
-                <p class="mt-2">Suche läuft...</p>
+            <p class="text-gray-500 mt-2">Bitte gib die IP-Adresse deiner Hue Bridge manuell ein. Du findest sie in der
+                Regel in den Einstellungen deines Routers.</p>
+
+            <div class="mt-4 flex items-center space-x-2">
+                <input id="setup-manual-ip" type="text" placeholder="IP-Adresse manuell eingeben"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <button type="button" id="btn-connect-manual-ip"
+                    class="bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700">
+                    Verbinden
+                </button>
             </div>
-            <div id="setup-bridge-list" class="mt-4 space-y-3"></div>
-            <input id="setup-manual-ip" type="text" placeholder="Oder IP-Adresse manuell eingeben"
-                class="w-full mt-3 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            <p id="setup-error-1" class="text-red-500 mt-2"></p>
+            <div class="mt-4 flex items-center justify-center space-x-2">
+                <button type="button" id="btn-default-ip"
+                    class="bg-gray-200 text-gray-700 font-semibold py-2 px-3 rounded-lg hover:bg-gray-300 text-sm"
+                    title="Fügt die Standard-IP für Fritz!Boxen ein">
+                    192.168.178.?
+                </button>
+            </div>
+
+
+            <div class="mt-6 border-t pt-4 text-center">
+                <p class="text-sm text-gray-500 mb-2">Falls du die IP nicht kennst:</p>
+                <button type="button" id="btn-discover-bridges"
+                    class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700">
+                    <i class="fas fa-search mr-2"></i>
+                    Automatisch suchen
+                </button>
+                <div id="setup-loader-1" class="mt-2 text-center hidden">
+                    <i class="fas fa-spinner fa-spin text-xl text-blue-500"></i>
+                </div>
+                <div id="setup-bridge-list" class="mt-2 space-y-2"></div>
+            </div>
+            <p id="setup-error-1" class="text-red-500 mt-2 text-center"></p>
         </div>
 
-        <!-- Step 2: Connect -->
         <div id="setup-step-2" class="hidden">
             <h2 class="text-xl font-semibold text-gray-700">Schritt 2: Bridge verbinden</h2>
             <div class="mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
@@ -37,7 +57,6 @@
             <p id="setup-error-2" class="text-red-500 mt-4 text-center"></p>
         </div>
 
-        <!-- Step 3: Location -->
         <div id="setup-step-3" class="hidden">
             <h2 class="text-xl font-semibold text-gray-700">Schritt 3: Standort festlegen</h2>
             <p class="text-gray-500 mt-2">Für die dynamische Anpassung an Sonnenauf- und -untergang benötigen wir deinen
@@ -64,7 +83,6 @@
             <p id="setup-error-3" class="text-red-500 mt-4 text-center"></p>
         </div>
 
-        <!-- Step 4: Finishing -->
         <div id="setup-step-4" class="hidden text-center">
             <i class="fas fa-check-circle text-5xl text-green-500"></i>
             <h2 class="text-2xl font-semibold text-gray-800 mt-4">Einrichtung abgeschlossen!</h2>

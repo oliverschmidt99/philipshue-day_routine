@@ -1,0 +1,8 @@
+app_key: Moerx3s4SFDkEdFQTPGlQfiaRjd6TxIDqbLhgB83
+bridge_ip: 192.168.178.147
+global_settings:
+  loop_interval_s: 1
+  status_interval_s: 5
+location:
+  latitude: '53.58'
+  longitude: '7.25'

@@ -1,0 +1,46 @@
+routines:
+- daily_time:
+    H1: 7
+    H2: 23
+    M1: 0
+    M2: 0
+  day:
+    bri_check: false
+    do_not_disturb: false
+    motion_check: true
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: konzentrieren
+  enabled: true
+  evening:
+    bri_check: false
+    do_not_disturb: false
+    motion_check: true
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: entspannen
+  morning:
+    bri_check: false
+    do_not_disturb: false
+    motion_check: true
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: entspannen
+  name: Olli
+  night:
+    bri_check: false
+    do_not_disturb: false
+    motion_check: true
+    scene_name: aus
+    wait_time:
+      min: 1
+      sec: 0
+    x_scene_name: nachtlicht
+  room_name: Zone_Olli
+scenes: {}

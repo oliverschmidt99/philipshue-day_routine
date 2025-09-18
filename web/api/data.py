@@ -19,14 +19,18 @@ STATUS_FILE = os.path.join(BASE_DIR, "data", "status.json")
 def get_data_history():
     """Gibt historische Sensordaten aus der Datenbank zurück."""
     try:
-        sensor_id = int(request.args.get("sensor_id"))
+        sensor_id_str = request.args.get("sensor_id")
+        if not sensor_id_str or not sensor_id_str.isdigit():
+            return jsonify({"labels": [], "brightness": [], "temperature": []})
+
+        sensor_id = int(sensor_id_str)
         date_str = request.args.get("date")
         start_date = datetime.fromisoformat(date_str)
         end_date = start_date + timedelta(days=1)
         
         with sqlite3.connect(DB_FILE) as con:
-            query = "SELECT timestamp, measurement_type, value FROM measurements WHERE sensor_id IN (?, ?) AND timestamp >= ? AND timestamp < ?"
-            df = pd.read_sql_query(query, con, params=(sensor_id + 1, sensor_id + 2, start_date.isoformat(), end_date.isoformat()))
+            query = "SELECT timestamp, measurement_type, value FROM measurements WHERE sensor_id = ? AND timestamp >= ? AND timestamp < ?"
+            df = pd.read_sql_query(query, con, params=(sensor_id, start_date.isoformat(), end_date.isoformat()))
 
         if df.empty:
             return jsonify({"labels": [], "brightness": [], "temperature": []})
