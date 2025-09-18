@@ -53,6 +53,12 @@ export const saveFullConfig = (config) =>
 
 // --- Bridge Data ---
 export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
+export const loadGroupedLights = () =>
+  fetchAPI("/api/bridge/all_grouped_lights");
+export const toggleGroupPower = (groupId, action) =>
+  fetchAPI(`/api/bridge/grouped_light/${groupId}/${action}`, {
+    method: "POST",
+  });
 
 // --- Status & Logs ---
 export async function updateStatus() {

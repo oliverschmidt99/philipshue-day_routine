@@ -75,32 +75,25 @@ class HueBridge:
 
     def get_resource(self, resource_type: str, resource_id: str) -> Optional[Dict]:
         """Holt die rohen Daten einer spezifischen Ressource (Service)."""
-        if not self.is_connected():
-            return None
+        if not self.is_connected(): return None
         try:
-            # Korrekte Zuordnung der Ressourcentypen zu den Attributen des Hue-Objekts
-            resource_map = {
-                "motion": self._hue.motion_sensors,
-                "light_level": self._hue.light_level_sensors,
-                "temperature": self._hue.temperature_sensors,
-                "grouped_light": self._hue.grouped_lights
-            }
-            
-            resource_list = resource_map.get(resource_type)
-            
-            if resource_list:
-                for item in resource_list:
-                    if item.id == resource_id:
-                        return item.raw  # Gibt die Rohdaten als Dictionary zurück
-                self.log.warning(f"Ressource mit ID {resource_id} im Typ '{resource_type}' nicht gefunden.")
-                return None
-            else:
-                self.log.warning(f"Unbekannter Ressourcen-Typ '{resource_type}' angefragt.")
-                return None
-                
+            # Dies ist die korrekte Methode, die wir im Test verifiziert haben.
+            return self._hue.bridge._get_by_id(resource_type, resource_id)
         except Exception as e:
-            self._log_error(f"Fehler beim Abrufen der Ressource {resource_type}/{resource_id}: {e}", exc_info=True)
+            self._log_error(f"Fehler beim Abrufen der Ressource {resource_type}/{resource_id}: {e}")
             return None
+            
+    def get_lights(self) -> List[Dict]:
+        if not self.is_connected(): return []
+        return self._hue.bridge.get_lights()
+
+    def get_scenes(self) -> List[Dict]:
+        if not self.is_connected(): return []
+        return self._hue.bridge.get_scenes()
+        
+    def get_grouped_lights(self) -> List[Dict]:
+        if not self.is_connected(): return []
+        return self._hue.bridge.get_grouped_lights()
 
     def get_group_object_by_id(self, group_id: str) -> Optional[Union[HueRoom, HueZone]]:
         """Holt das Bibliotheks-Objekt für einen Raum oder eine Zone."""
@@ -112,17 +105,21 @@ class HueBridge:
         if not self.is_connected(): return
 
         try:
-            target_grouped_light = next((gl for gl in self._hue.grouped_lights if gl.owner.rid == group_id), None)
-            
-            if not target_grouped_light:
-                self._log_error(f"Kein steuerbarer Licht-Service für Gruppe {group_id} gefunden.")
-                return
+            # Finde die grouped_light ID, die zu unserem Raum/Zone gehört
+            owner_rid = None
+            all_groups = self._hue.bridge.get_rooms() + self._hue.bridge.get_zones()
+            group_to_control = next((g for g in all_groups if g['id'] == group_id), None)
 
-            on = state.get("on")
-            brightness = (state.get("bri") / 254) * 100 if "bri" in state and state.get("bri") is not None else None
-            mirek = state.get("ct")
-            
-            target_grouped_light.set_state(on=on, brightness=brightness, mirek=mirek)
+            if group_to_control and group_to_control.get('services'):
+                grouped_light_service = next((s for s in group_to_control['services'] if s.get('rtype') == 'grouped_light'), None)
+                if grouped_light_service:
+                    owner_rid = grouped_light_service['rid']
+
+            if not owner_rid:
+                 self.log.error(f"Kein grouped_light Service für Gruppe {group_id} gefunden.")
+                 return
+
+            self._hue.bridge.set_grouped_light_service(owner_rid, state)
 
         except Exception as e:
             self._log_error(f"Fehler beim Setzen des Zustands für Gruppe {group_id}: {e}", exc_info=True)

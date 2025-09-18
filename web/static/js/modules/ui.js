@@ -29,6 +29,7 @@ const clockElement = document.getElementById("clock");
 const sunTimesContainer = document.getElementById("sun-times");
 const modalSceneContainer = document.getElementById("modal-scene");
 const modalRoutineContainer = document.getElementById("modal-routine");
+const homeContainer = document.getElementById("home-container");
 
 export function showToast(message, isError = false) {
   if (!toastElement) return;
@@ -75,6 +76,106 @@ export function renderSunTimes(sunData) {
       sunTimesContainer.innerHTML = `<span>--:--</span>`;
     }
   }
+}
+
+export function renderHome(bridgeData, groupedLights) {
+  if (!homeContainer) return;
+
+  const groups = [...bridgeData.rooms, ...bridgeData.zones];
+  homeContainer.innerHTML = ""; // Clear existing cards
+
+  groups.forEach((group) => {
+    const groupedLight = groupedLights.find((gl) => gl.owner.rid === group.id);
+    if (!groupedLight) return;
+
+    const isOn = groupedLight.on.on;
+    const brightness = isOn ? groupedLight.dimming.brightness : 0;
+
+    let colorIndicatorStyle = "background-color: #e5e7eb;"; // Default gray
+    if (isOn) {
+      // Simplified color detection. For a real implementation, you'd convert xy to RGB.
+      colorIndicatorStyle = "background-color: #fef08a;"; // Yellowish for 'on'
+    }
+
+    const card = `
+            <div class="room-card bg-white rounded-lg shadow-md p-4 flex flex-col justify-between cursor-pointer" data-room-id="${
+              group.id
+            }" data-action="open-room-control">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-xl font-bold text-gray-800">${
+                          group.name
+                        }</h3>
+                        <div class="w-6 h-6 rounded-full border border-gray-300" style="${colorIndicatorStyle}"></div>
+                    </div>
+                    <p class="text-sm text-gray-500">${
+                      isOn ? `An - ${brightness.toFixed(0)}%` : "Aus"
+                    }</p>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button data-action="toggle-group-power" data-group-id="${
+                      group.id
+                    }" data-action-type="${
+      isOn ? "off" : "on"
+    }" class="text-gray-500 hover:text-blue-600 focus:outline-none">
+                        <i class="fas fa-power-off fa-2x"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    homeContainer.innerHTML += card;
+  });
+}
+
+export function openRoomControlModal(room, allLights, allScenes) {
+  const roomLights = allLights.filter((light) =>
+    room.lights.includes(light.id)
+  );
+  const roomScenes = allScenes.filter((scene) => scene.group.rid === room.id);
+
+  let lightsHtml = roomLights
+    .map(
+      (light) => `
+        <div class="flex items-center justify-between p-2 bg-gray-100 rounded-md">
+            <span>${light.metadata.name}</span>
+            </div>
+    `
+    )
+    .join("");
+
+  let scenesHtml = roomScenes
+    .map(
+      (scene) => `
+        <button class="bg-blue-100 text-blue-800 py-2 px-4 rounded-lg">${scene.metadata.name}</button>
+    `
+    )
+    .join("");
+
+  const modalHtml = `
+    <div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50" data-action="cancel-modal">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4">
+            <div class="p-6">
+                <h3 class="text-2xl font-bold mb-4">${room.name}</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold mb-2">Lichter</h4>
+                        <div class="space-y-2">${lightsHtml}</div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Szenen</h4>
+                        <div class="flex flex-wrap gap-2">${scenesHtml}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-3 flex justify-end">
+                <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Schließen</button>
+            </div>
+        </div>
+    </div>
+    `;
+
+  modalSceneContainer.innerHTML = modalHtml;
+  modalSceneContainer.classList.remove("hidden");
 }
 
 export function renderStatus(statuses, sunTimes, openStates = []) {
@@ -209,7 +310,7 @@ export function renderRoutines(config, bridgeData) {
     const roomConf = config.rooms.find((r) => r.name === routine.room_name);
     const sensorId = roomConf ? roomConf.sensor_id : null;
     const sensor = sensorId
-      ? bridgeData.sensors.find((s) => s.id == sensorId) // Dieser Teil funktioniert jetzt wieder
+      ? bridgeData.sensors.find((s) => s.id == sensorId)
       : null;
     const sensorHtml = sensor
       ? `<span class="mx-2 text-gray-400">|</span> <span class="flex items-center"><i class="fas fa-satellite-dish mr-2 text-teal-500"></i> ${sensor.name}</span>`

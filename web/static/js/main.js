@@ -39,7 +39,7 @@ async function runMainApp() {
       ui.renderSunTimes(config.sun_times);
       renderAll();
       setupEventListeners();
-      document.getElementById("tab-status")?.click();
+      document.getElementById("tab-zuhause")?.click();
     } catch (error) {
       ui.showToast(`Initialisierungsfehler: ${error.message}`, true);
       console.error(error);
@@ -168,6 +168,7 @@ async function runMainApp() {
     if (contentElement) contentElement.classList.remove("hidden");
     clearInterval(statusInterval);
     if (contentId === "content-status") startStatusUpdates();
+    if (contentId === "content-zuhause") startHomeUpdates();
     if (contentId === "content-analyse") setupAnalyseTab();
     if (contentId === "content-hilfe") loadHelpContent();
     if (contentId === "content-bridge-devices") setupBridgeDevicesTab();
@@ -241,7 +242,7 @@ async function runMainApp() {
       "create-routine": handleCreateRoutine,
       "edit-routine": () => {
         const index = routineCard.dataset.index;
-        document.getElementById("tab-routines").click();
+        document.getElementById("tab-automations").click();
         setTimeout(() => {
           const header = document.querySelector(
             `.routine-header[data-index='${index}']`
@@ -270,6 +271,24 @@ async function runMainApp() {
             e.target.checked ? "aktiviert" : "deaktiviert"
           }. Speichern nicht vergessen.`
         );
+      },
+      "toggle-group-power": async (e) => {
+        const groupId = button.dataset.groupId;
+        const action = button.dataset.actionType;
+        if (groupId && action) {
+          button.disabled = true;
+          await api.toggleGroupPower(groupId, action);
+          await updateHomeStatus();
+          button.disabled = false;
+        }
+      },
+      "open-room-control": () => {
+        const roomCard = e.target.closest(".room-card");
+        const roomId = roomCard.dataset.roomId;
+        const room = bridgeData.rooms.find((r) => r.id === roomId);
+        if (room) {
+          ui.openRoomControlModal(room, bridgeData.lights, bridgeData.scenes);
+        }
       },
       "stop-propagation": (e) => e.stopPropagation(),
     };
@@ -410,7 +429,7 @@ async function runMainApp() {
     } finally {
       const saveButton = document.getElementById("save-button");
       saveButton.disabled = false;
-      saveButton.textContent = "Speichern und Alle Routinen neu starten";
+      saveButton.textContent = "Speichern und Alle Automationen neu starten";
     }
   };
 
@@ -423,6 +442,18 @@ async function runMainApp() {
     } catch (error) {
       ui.showToast(error.message, true);
     }
+  };
+
+  const updateHomeStatus = async () => {
+    const groupedLights = await api.loadGroupedLights();
+    ui.renderHome(bridgeData, groupedLights);
+  };
+
+  const startHomeUpdates = () => {
+    updateHomeStatus();
+    const homeIntervalTime =
+      (config?.global_settings?.status_interval_s || 5) * 1000;
+    statusInterval = setInterval(updateHomeStatus, homeIntervalTime);
   };
 
   const updateStatus = async (showToast = false) => {

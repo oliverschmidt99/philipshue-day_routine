@@ -11,6 +11,16 @@ def get_bridge_instance() -> HueBridge | None:
     bridge = HueBridge(ip=config.get("bridge_ip"), app_key=config.get("app_key"), logger=current_app.logger_instance)
     return bridge if bridge.is_connected() else None
 
+@bridge_api.route("/all_grouped_lights")
+def get_all_grouped_lights():
+    bridge = get_bridge_instance()
+    if not bridge:
+        return jsonify({"error": "Bridge nicht erreichbar oder konfiguriert"}), 503
+    
+    grouped_lights = bridge.get_grouped_lights()
+    return jsonify(grouped_lights)
+
+
 @bridge_api.route("/all_items")
 def get_all_bridge_items():
     bridge = get_bridge_instance()
@@ -45,5 +55,18 @@ def get_all_bridge_items():
         "zones": zones,
         "groups": all_groups_for_routines,
         "sensors_categorized": categorized_sensors,
-        "sensors": all_sensors_flat
+        "sensors": all_sensors_flat,
+        "lights": bridge.get_lights(),
+        "scenes": bridge.get_scenes()
     })
+
+@bridge_api.route("/grouped_light/<group_id>/<action>", methods=["POST"])
+def set_group_light_state(group_id, action):
+    bridge = get_bridge_instance()
+    if not bridge:
+        return jsonify({"error": "Bridge nicht erreichbar oder konfiguriert"}), 503
+        
+    # KORREKTUR: Die API erwartet ein Objekt für den 'on'-Status
+    state = {"on": {"on": action == "on"}}
+    bridge.set_group_state(group_id, state)
+    return jsonify({"message": "Befehl gesendet"})

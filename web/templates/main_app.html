@@ -15,8 +15,8 @@
         <div class="container mx-auto p-4 md:p-8">
             <header class="mb-6 flex justify-between items-center">
                 <div>
-                    <h1 class="text-4xl font-bold text-gray-900">Hue Editor</h1>
-                    <p class="text-lg text-gray-600">Verwalte deine Routinen und Lichtszenen.</p>
+                    <h1 class="text-4xl font-bold text-gray-900">Hue Steuerung</h1>
+                    <p class="text-lg text-gray-600">Verwalte dein smartes Zuhause.</p>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div id="sun-times" class="text-right text-gray-600 text-sm p-2 bg-yellow-200 rounded-lg"></div>
@@ -27,8 +27,10 @@
 
             <div class="border-b border-gray-200 mb-6">
                 <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button type="button" id="tab-routines"
-                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Routinen</button>
+                    <button type="button" id="tab-zuhause"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Zuhause</button>
+                    <button type="button" id="tab-automations"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Automationen</button>
                     <button type="button" id="tab-scenes"
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Szenen</button>
                     <button type="button" id="tab-status"
@@ -45,7 +47,14 @@
             </div>
 
             <main>
-                <div id="content-routines" class="content-section">
+                <div id="content-zuhause" class="content-section">
+                    <div id="home-container"
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    </div>
+                </div>
+
+                <div id="content-automations" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold mb-4">Fortgeschrittene Automationen (Routinen)</h2>
                     <div class="flex justify-end mb-4">
                         <button type="button" id="btn-new-routine"
                             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
@@ -54,6 +63,7 @@
                     </div>
                     <div id="routines-container" class="space-y-6"></div>
                 </div>
+
 
                 <div id="content-scenes" class="content-section hidden">
                     <div class="flex justify-end mb-4">
@@ -68,7 +78,7 @@
                 <div id="content-status" class="content-section hidden space-y-8">
                     <div>
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-2xl font-semibold">Live-Zustand der Routinen</h2>
+                            <h2 class="text-2xl font-semibold">Live-Zustand der Automationen</h2>
                             <button type="button" id="btn-refresh-status"
                                 class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm">Jetzt
                                 aktualisieren</button>
@@ -215,7 +225,7 @@
             <footer class="mt-12 text-center" aria-label="Haupt-Aktionsleiste">
                 <button type="button" id="save-button"
                     class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                    Speichern und Alle Routinen neu starten
+                    Speichern und Alle Automationen neu starten
                 </button>
             </footer>
         </div>
