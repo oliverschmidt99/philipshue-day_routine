@@ -39,3 +39,43 @@ def update_app():
         return jsonify({"message": f"Update erfolgreich!\n{result.stdout}\nAnwendung wird neu gestartet."})
     except (FileNotFoundError, subprocess.CalledProcessError) as e:
         return jsonify({"error": f"Fehler beim Update: {e.stderr if hasattr(e, 'stderr') else e}"}), 500
+
+@system_api.route("/scenes/add_defaults", methods=["POST"])
+def add_default_scenes():
+    """Fügt Standard-Lichtszenen zur Konfiguration hinzu."""
+    try:
+        config_manager = current_app.config_manager
+        full_config = config_manager.get_full_config()
+        
+        # Hole nur den 'automation'-Teil der Konfiguration zum Speichern
+        automation_config = {
+            "routines": full_config.get("routines", []),
+            "scenes": full_config.get("scenes", {})
+        }
+
+        default_scenes = {
+            "entspannen": {"status": True, "bri": 140, "ct": 366},
+            "konzentrieren": {"status": True, "bri": 254, "ct": 233},
+            "nachtlicht": {"status": True, "bri": 1, "ct": 447},
+            "gedimmt": {"status": True, "bri": 77, "ct": 366},
+            "aus": {"status": False, "bri": 0}
+        }
+        
+        # Füge nur die Szenen hinzu, die noch nicht existieren
+        scenes_added_count = 0
+        for name, data in default_scenes.items():
+            if name not in automation_config["scenes"]:
+                automation_config["scenes"][name] = data
+                scenes_added_count += 1
+        
+        if scenes_added_count > 0:
+            if config_manager.safe_write(config_manager.automation_file, automation_config):
+                return jsonify({"message": f"{scenes_added_count} Standard-Szenen wurden hinzugefügt."})
+            else:
+                return jsonify({"error": "Speichern der neuen Szenen fehlgeschlagen."}), 500
+        else:
+            return jsonify({"message": "Alle Standard-Szenen sind bereits vorhanden."})
+            
+    except Exception as e:
+        current_app.logger_instance.error(f"Fehler beim Hinzufügen der Standard-Szenen: {e}", exc_info=True)
+        return jsonify({"error": "Ein interner Fehler ist aufgetreten."}), 500

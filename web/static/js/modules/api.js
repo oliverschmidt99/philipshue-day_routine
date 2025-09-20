@@ -55,9 +55,19 @@ export const saveFullConfig = (config) =>
 export const loadBridgeData = () => fetchAPI("/api/bridge/all_items");
 export const loadGroupedLights = () =>
   fetchAPI("/api/bridge/all_grouped_lights");
-export const toggleGroupPower = (groupId, action) =>
-  fetchAPI(`/api/bridge/grouped_light/${groupId}/${action}`, {
+
+export const setGroupState = (groupId, state) =>
+  fetchAPI(`/api/bridge/grouped_light/${groupId}/state`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(state),
+  });
+
+export const setLightState = (lightId, state) =>
+  fetchAPI(`/api/bridge/light/${lightId}/state`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(state),
   });
 
 // --- Status & Logs ---
@@ -76,3 +86,10 @@ export const loadChartData = (sensorId, date) =>
 // --- System ---
 export const addDefaultScenes = () =>
   fetchAPI("/api/system/scenes/add_defaults", { method: "POST" });
+
+export const recallScene = (groupId, sceneId) =>
+  fetchAPI(`/api/bridge/group/${groupId}/scene`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scene_id: sceneId }),
+  });

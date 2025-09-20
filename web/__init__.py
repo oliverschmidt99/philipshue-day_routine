@@ -4,7 +4,7 @@ Initialisiert das 'web' Flask-Paket und enthält die Application Factory.
 import logging
 import os
 import sys
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, g
 
 # Stellt sicher, dass das Projekt-Root im Python-Pfad ist
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -13,6 +13,7 @@ if project_root not in sys.path:
 
 from src.config_manager import ConfigManager
 from src.logger import Logger
+from src.hue_wrapper import HueBridge
 
 def create_app():
     """
@@ -31,6 +32,14 @@ def create_app():
     # Hänge Logger und Config Manager an die App an, damit sie global verfügbar sind
     app.logger_instance = Logger(LOG_FILE)
     app.config_manager = ConfigManager(SETTINGS_FILE, AUTOMATION_FILE, HOME_FILE, app.logger_instance)
+
+    # Erstelle EINE zentrale Bridge-Instanz für die gesamte Web-Anwendung
+    config = app.config_manager.get_full_config()
+    app.bridge_instance = HueBridge(
+        ip=config.get("bridge_ip"), 
+        app_key=config.get("app_key"), 
+        logger=app.logger_instance
+    )
 
     # Benutze den App-Kontext, um die Blueprints sicher zu registrieren
     with app.app_context():

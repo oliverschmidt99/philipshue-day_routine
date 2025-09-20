@@ -93,15 +93,14 @@ export function renderHome(bridgeData, groupedLights) {
 
     let colorIndicatorStyle = "background-color: #e5e7eb;"; // Default gray
     if (isOn) {
-      // Simplified color detection. For a real implementation, you'd convert xy to RGB.
       colorIndicatorStyle = "background-color: #fef08a;"; // Yellowish for 'on'
     }
 
     const card = `
-            <div class="room-card bg-white rounded-lg shadow-md p-4 flex flex-col justify-between cursor-pointer" data-room-id="${
+            <div class="room-card bg-white rounded-lg shadow-md p-4 flex flex-col justify-between" data-room-id="${
               group.id
-            }" data-action="open-room-control">
-                <div>
+            }">
+                <div class="cursor-pointer" data-action="open-room-control">
                     <div class="flex justify-between items-start">
                         <h3 class="text-xl font-bold text-gray-800">${
                           group.name
@@ -112,14 +111,23 @@ export function renderHome(bridgeData, groupedLights) {
                       isOn ? `An - ${brightness.toFixed(0)}%` : "Aus"
                     }</p>
                 </div>
-                <div class="mt-4 flex justify-end">
-                    <button data-action="toggle-group-power" data-group-id="${
-                      group.id
-                    }" data-action-type="${
+                <div class="mt-4">
+                    <div class="flex items-center space-x-4">
+                        <button data-action="toggle-group-power" data-group-id="${
+                          group.id
+                        }" data-action-type="${
       isOn ? "off" : "on"
     }" class="text-gray-500 hover:text-blue-600 focus:outline-none">
-                        <i class="fas fa-power-off fa-2x"></i>
-                    </button>
+                            <i class="fas fa-power-off fa-2x"></i>
+                        </button>
+                        <input type="range" min="1" max="100" value="${brightness}" ${
+      !isOn ? "disabled" : ""
+    } 
+                               data-action="set-group-brightness" data-group-id="${
+                                 group.id
+                               }" 
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer brightness-slider">
+                    </div>
                 </div>
             </div>
         `;
@@ -134,32 +142,60 @@ export function openRoomControlModal(room, allLights, allScenes) {
   const roomScenes = allScenes.filter((scene) => scene.group.rid === room.id);
 
   let lightsHtml = roomLights
-    .map(
-      (light) => `
+    .map((light) => {
+      const isOn = light.on.on;
+      const brightness = light.dimming?.brightness || 0;
+      return `
         <div class="flex items-center justify-between p-2 bg-gray-100 rounded-md">
-            <span>${light.metadata.name}</span>
+            <span class="font-medium">${light.metadata.name}</span>
+            <div class="flex items-center space-x-4">
+                <input type="range" min="1" max="100" value="${brightness}" ${
+        !isOn ? "disabled" : ""
+      } 
+                       data-action="set-light-brightness" data-light-id="${
+                         light.id
+                       }" 
+                       class="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer brightness-slider">
+                <button data-action="toggle-light-power" data-light-id="${
+                  light.id
+                }" data-action-type="${isOn ? "off" : "on"}" 
+                        class="text-gray-600 hover:text-blue-600 focus:outline-none text-xl">
+                    <i class="fas fa-power-off"></i>
+                </button>
             </div>
-    `
-    )
+        </div>
+    `;
+    })
     .join("");
 
   let scenesHtml = roomScenes
     .map(
       (scene) => `
-        <button class="bg-blue-100 text-blue-800 py-2 px-4 rounded-lg">${scene.metadata.name}</button>
+        <button class="bg-blue-100 text-blue-800 py-2 px-4 rounded-lg hover:bg-blue-200" 
+                data-action="recall-scene" 
+                data-scene-id="${scene.id}"
+                data-group-id="${room.id}">
+            ${scene.metadata.name}
+        </button>
     `
     )
     .join("");
 
   const modalHtml = `
-    <div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50" data-action="cancel-modal">
+    <div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50" data-action="cancel-modal" data-group-id="${
+      room.id
+    }">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4">
             <div class="p-6">
                 <h3 class="text-2xl font-bold mb-4">${room.name}</h3>
                 <div class="space-y-4">
                     <div>
-                        <h4 class="font-semibold mb-2">Lichter</h4>
-                        <div class="space-y-2">${lightsHtml}</div>
+                        <h4 class="font-semibold mb-2">Einzelne Lampen</h4>
+                        <div class="space-y-2">${
+                          lightsHtml.length > 0
+                            ? lightsHtml
+                            : '<p class="text-gray-500">Keine Lampen in dieser Gruppe.</p>'
+                        }</div>
                     </div>
                     <div>
                         <h4 class="font-semibold mb-2">Szenen</h4>
@@ -725,7 +761,7 @@ function createDeviceListHTML(items, nameHeader, detailHeader) {
     if (item.lights) {
       // Für Räume/Zonen
       detail = `${item.lights.length}`;
-    } else if (item.productname) {
+    } else if (item.productname) {c
       // Für Sensoren
       detail = item.productname;
     }

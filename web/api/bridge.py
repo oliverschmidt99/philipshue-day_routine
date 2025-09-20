@@ -1,14 +1,22 @@
 """
 API-Endpunkte für die direkte Kommunikation mit der Philips Hue Bridge (v2 API).
 """
-from flask import Blueprint, jsonify, current_app
+from flask import Blueprint, jsonify, request, current_app
 from src.hue_wrapper import HueBridge
 
 bridge_api = Blueprint("bridge_api", __name__)
 
 def get_bridge_instance() -> HueBridge | None:
-    config = current_app.config_manager.get_full_config()
-    bridge = HueBridge(ip=config.get("bridge_ip"), app_key=config.get("app_key"), logger=current_app.logger_instance)
+    """Holt die globale, geteilte Bridge-Instanz aus dem App-Kontext."""
+    bridge = current_app.bridge_instance
+    # Prüfe bei jeder Anfrage, ob die Verbindung noch steht.
+    # Das ist wichtig, falls die Konfiguration geändert wurde.
+    if not bridge.is_connected():
+        config = current_app.config_manager.get_full_config()
+        bridge.ip = config.get("bridge_ip")
+        bridge.app_key = config.get("app_key")
+        bridge.connect()
+    
     return bridge if bridge.is_connected() else None
 
 @bridge_api.route("/all_grouped_lights")
@@ -60,13 +68,45 @@ def get_all_bridge_items():
         "scenes": bridge.get_scenes()
     })
 
-@bridge_api.route("/grouped_light/<group_id>/<action>", methods=["POST"])
-def set_group_light_state(group_id, action):
+@bridge_api.route("/grouped_light/<group_id>/state", methods=["POST"])
+def set_group_light_state(group_id):
     bridge = get_bridge_instance()
     if not bridge:
         return jsonify({"error": "Bridge nicht erreichbar oder konfiguriert"}), 503
-        
-    # KORREKTUR: Die API erwartet ein Objekt für den 'on'-Status
-    state = {"on": {"on": action == "on"}}
+    
+    state = request.get_json()
+    if not state:
+        return jsonify({"error": "Kein Zustand übergeben"}), 400
+
     bridge.set_group_state(group_id, state)
-    return jsonify({"message": "Befehl gesendet"})
+    return jsonify({"message": "Befehl für Gruppe gesendet"})
+
+@bridge_api.route("/light/<light_id>/state", methods=["POST"])
+def set_light_state(light_id):
+    bridge = get_bridge_instance()
+    if not bridge:
+        return jsonify({"error": "Bridge nicht erreichbar oder konfiguriert"}), 503
+    
+    state = request.get_json()
+    if not state:
+        return jsonify({"error": "Kein Zustand übergeben"}), 400
+
+    bridge.set_light_state(light_id, state)
+    return jsonify({"message": "Befehl für Licht gesendet"})
+
+
+@bridge_api.route("/group/<group_id>/scene", methods=["POST"])
+def recall_scene_for_group(group_id):
+    bridge = get_bridge_instance()
+    if not bridge:
+        return jsonify({"error": "Bridge nicht erreichbar oder konfiguriert"}), 503
+
+    scene_id = request.json.get("scene_id")
+    if not scene_id:
+        return jsonify({"error": "Keine Szene-ID übergeben"}), 400
+
+    # Die Hue v2 API erwartet die scene ID im "scene" Feld des Payloads
+    state = {"scene": scene_id}
+    bridge.set_group_state(group_id, state)
+    
+    return jsonify({"message": f"Szene {scene_id} für Gruppe {group_id} aktiviert."})

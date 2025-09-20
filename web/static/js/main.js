@@ -27,7 +27,72 @@ async function runMainApp() {
   let statusInterval;
   let chartInstance = null;
   let openStatusCards = [];
+  let inactivityTimer;
 
+  // --- Hilfsfunktionen ---
+  const debounce = (func, delay) => {
+    let timeout;
+    return function (...args) {
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), delay);
+    };
+  };
+
+  // --- Event Handler ---
+  const handleSliderInput = async (e) => {
+    const slider = e.target;
+    const action = slider.dataset.action;
+
+    if (action === "set-group-brightness") {
+      const groupId = slider.dataset.groupId;
+      const brightness = parseInt(slider.value, 10);
+      if (groupId) {
+        await api.setGroupState(groupId, { dimming: { brightness } });
+        const card = slider.closest(".room-card");
+        const p = card.querySelector("p");
+        if (p) p.textContent = `An - ${brightness}%`;
+      }
+    } else if (action === "set-light-brightness") {
+      const lightId = slider.dataset.lightId;
+      const brightness = parseInt(slider.value, 10);
+      if (lightId) {
+        await api.setLightState(lightId, { dimming: { brightness } });
+      }
+    }
+  };
+
+  const handleFormInput = (e) => {
+    const input = e.target;
+    const routineDetails = input.closest(".routine-details");
+    if (!routineDetails) return;
+
+    const index = parseInt(routineDetails.dataset.index, 10);
+    const routine = config.routines[index];
+    const period = input.dataset.period;
+    const key = input.dataset.key;
+    const value =
+      input.type === "checkbox"
+        ? input.checked
+        : input.type.startsWith("time") ||
+          input.type.startsWith("range") ||
+          input.type.startsWith("number")
+        ? input.valueAsNumber || 0
+        : input.value;
+
+    if (routine && period && key) {
+      if (period === "daily_time") {
+        routine.daily_time[key] = value;
+      } else if (key.startsWith("wait_time")) {
+        const subkey = key.split(".")[1];
+        routine[period].wait_time[subkey] = value;
+      } else {
+        routine[period][key] = value;
+      }
+    }
+  };
+
+  // --- Initialisierung & Rendering ---
   const init = async () => {
     ui.updateClock();
     setInterval(ui.updateClock, 1000);
@@ -90,12 +155,22 @@ async function runMainApp() {
     });
   };
 
+  // --- Event Listener Setup ---
   const setupEventListeners = () => {
     document.body.addEventListener("click", handleGlobalClick);
     document
       .getElementById("bridge-devices-tabs")
       ?.addEventListener("click", handleBridgeDeviceTabClick);
-    document.body.addEventListener("input", handleGlobalInput);
+
+    document.body.addEventListener("input", (e) => {
+      if (e.target.type === "range") {
+        const debouncedHandler = debounce(handleSliderInput, 200);
+        debouncedHandler(e);
+      } else {
+        handleFormInput(e);
+      }
+    });
+
     document
       .getElementById("save-button")
       ?.addEventListener("click", saveFullConfig);
@@ -120,36 +195,20 @@ async function runMainApp() {
     document.querySelectorAll('nav button[id^="tab-"]').forEach((button) => {
       button.addEventListener("click", handleTabClick);
     });
-  };
 
-  const handleGlobalInput = (e) => {
-    const input = e.target;
-    const routineDetails = input.closest(".routine-details");
-    if (!routineDetails) return;
-
-    const index = parseInt(routineDetails.dataset.index, 10);
-    const routine = config.routines[index];
-    const period = input.dataset.period;
-    const key = input.dataset.key;
-    const value =
-      input.type === "checkbox"
-        ? input.checked
-        : input.type.startsWith("time") ||
-          input.type.startsWith("range") ||
-          input.type.startsWith("number")
-        ? input.valueAsNumber || 0
-        : input.value;
-
-    if (routine && period && key) {
-      if (period === "daily_time") {
-        routine.daily_time[key] = value;
-      } else if (key.startsWith("wait_time")) {
-        const subkey = key.split(".")[1];
-        routine[period].wait_time[subkey] = value;
+    // Intelligente Intervall-Steuerung
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        stopStatusUpdates();
       } else {
-        routine[period][key] = value;
+        handleActivity();
       }
-    }
+    });
+    ["mousemove", "mousedown", "keypress", "scroll", "touchstart"].forEach(
+      (event) => {
+        document.addEventListener(event, handleActivity);
+      }
+    );
   };
 
   const handleTabClick = (e) => {
@@ -166,9 +225,10 @@ async function runMainApp() {
     const contentId = button.id.replace("tab-", "content-");
     const contentElement = document.getElementById(contentId);
     if (contentElement) contentElement.classList.remove("hidden");
-    clearInterval(statusInterval);
-    if (contentId === "content-status") startStatusUpdates();
-    if (contentId === "content-zuhause") startHomeUpdates();
+
+    stopStatusUpdates(); // Immer stoppen beim Tab-Wechsel
+    if (contentId === "content-status") startStatusUpdates(updateStatus);
+    if (contentId === "content-zuhause") startStatusUpdates(updateHomeStatus);
     if (contentId === "content-analyse") setupAnalyseTab();
     if (contentId === "content-hilfe") loadHelpContent();
     if (contentId === "content-bridge-devices") setupBridgeDevicesTab();
@@ -274,20 +334,65 @@ async function runMainApp() {
       },
       "toggle-group-power": async (e) => {
         const groupId = button.dataset.groupId;
-        const action = button.dataset.actionType;
-        if (groupId && action) {
+        const actionType = button.dataset.actionType;
+        if (groupId && actionType) {
           button.disabled = true;
-          await api.toggleGroupPower(groupId, action);
+          await api.setGroupState(groupId, { on: { on: actionType === "on" } });
           await updateHomeStatus();
           button.disabled = false;
         }
       },
       "open-room-control": () => {
         const roomCard = e.target.closest(".room-card");
-        const roomId = roomCard.dataset.roomId;
-        const room = bridgeData.rooms.find((r) => r.id === roomId);
-        if (room) {
-          ui.openRoomControlModal(room, bridgeData.lights, bridgeData.scenes);
+        const groupId = roomCard.dataset.roomId;
+        const group = [...bridgeData.rooms, ...bridgeData.zones].find(
+          (g) => g.id === groupId
+        );
+        if (group) {
+          ui.openRoomControlModal(group, bridgeData.lights, bridgeData.scenes);
+        }
+      },
+      "recall-scene": async () => {
+        const sceneId = button.dataset.sceneId;
+        const groupId = button.dataset.groupId;
+        if (sceneId && groupId) {
+          try {
+            await api.recallScene(groupId, sceneId);
+            ui.showToast("Szene wird aktiviert!");
+            ui.closeModal();
+            setTimeout(updateHomeStatus, 1500);
+          } catch (error) {
+            ui.showToast(
+              `Fehler beim Aktivieren der Szene: ${error.message}`,
+              true
+            );
+          }
+        }
+      },
+      "toggle-light-power": async () => {
+        const lightId = button.dataset.lightId;
+        const actionType = button.dataset.actionType;
+        const modal = button.closest(".modal-backdrop");
+        const groupId = modal.dataset.groupId;
+
+        if (lightId && groupId) {
+          button.disabled = true;
+          await api.setLightState(lightId, { on: { on: actionType === "on" } });
+
+          // Refresh bridge data and re-render the modal
+          bridgeData = await api.loadBridgeData();
+          const group = [...bridgeData.rooms, ...bridgeData.zones].find(
+            (g) => g.id === groupId
+          );
+          if (group) {
+            ui.openRoomControlModal(
+              group,
+              bridgeData.lights,
+              bridgeData.scenes
+            );
+          }
+
+          setTimeout(updateHomeStatus, 500);
         }
       },
       "stop-propagation": (e) => e.stopPropagation(),
@@ -299,6 +404,7 @@ async function runMainApp() {
     }
   };
 
+  // --- Aktionen & Daten-Handling ---
   const handleDeleteScene = (sceneCard) => {
     const sceneName = sceneCard.dataset.name;
     if (confirm(`Szene "${sceneName}" wirklich löschen?`)) {
@@ -437,23 +543,26 @@ async function runMainApp() {
     try {
       const result = await api.addDefaultScenes();
       ui.showToast(result.message);
-      config = await api.loadConfig();
+      config = await api.loadConfig(); // Lade die Konfiguration neu, um die neuen Szenen zu sehen
       renderAll();
     } catch (error) {
       ui.showToast(error.message, true);
     }
   };
 
+  // --- Intelligente Status-Updates ---
   const updateHomeStatus = async () => {
-    const groupedLights = await api.loadGroupedLights();
-    ui.renderHome(bridgeData, groupedLights);
-  };
-
-  const startHomeUpdates = () => {
-    updateHomeStatus();
-    const homeIntervalTime =
-      (config?.global_settings?.status_interval_s || 5) * 1000;
-    statusInterval = setInterval(updateHomeStatus, homeIntervalTime);
+    try {
+      const [newBridgeData, groupedLights] = await Promise.all([
+        api.loadBridgeData(),
+        api.loadGroupedLights(),
+      ]);
+      bridgeData = newBridgeData;
+      ui.renderHome(bridgeData, groupedLights);
+    } catch (e) {
+      console.error("Fehler bei updateHomeStatus:", e);
+      // Optional: Zeige eine Fehlermeldung, aber nur wenn der Fehler persistent ist.
+    }
   };
 
   const updateStatus = async (showToast = false) => {
@@ -473,13 +582,37 @@ async function runMainApp() {
     }
   };
 
-  const startStatusUpdates = () => {
-    updateStatus();
-    const statusIntervalTime =
+  const startStatusUpdates = (updateFunction) => {
+    if (statusInterval) clearInterval(statusInterval);
+    if (document.hidden) return;
+
+    updateFunction();
+    const intervalTime =
       (config?.global_settings?.status_interval_s || 5) * 1000;
-    statusInterval = setInterval(updateStatus, statusIntervalTime);
+    statusInterval = setInterval(updateFunction, intervalTime);
   };
 
+  const stopStatusUpdates = () => {
+    clearInterval(statusInterval);
+    statusInterval = null;
+  };
+
+  const handleActivity = () => {
+    clearTimeout(inactivityTimer);
+    if (!statusInterval && !document.hidden) {
+      const activeTabContentId = document.querySelector(
+        ".content-section:not(.hidden)"
+      )?.id;
+      if (activeTabContentId === "content-zuhause") {
+        startStatusUpdates(updateHomeStatus);
+      } else if (activeTabContentId === "content-status") {
+        startStatusUpdates(updateStatus);
+      }
+    }
+    inactivityTimer = setTimeout(stopStatusUpdates, 300000); // 5 Minuten Inaktivität
+  };
+
+  // --- Tab-spezifische Logik ---
   const setupAnalyseTab = () => {
     ui.populateAnalyseSensors(bridgeData.sensors);
     const today = new Date().toISOString().split("T")[0];

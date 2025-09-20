@@ -43,4 +43,9 @@ routines:
       sec: 0
     x_scene_name: nachtlicht
   room_name: Zone_Olli
-scenes: {}
+scenes:
+  Test:
+    bri: 254
+    ct: 366
+    status: true
+    transitiontime: 10

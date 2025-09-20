@@ -123,3 +123,12 @@ class HueBridge:
 
         except Exception as e:
             self._log_error(f"Fehler beim Setzen des Zustands für Gruppe {group_id}: {e}", exc_info=True)
+
+    def set_light_state(self, light_id: str, state: dict):
+        """Setzt den Zustand für eine einzelne Lampe."""
+        if not self.is_connected(): return
+        try:
+            # Die ID einer 'light'-Ressource ist die Service-ID, die wir zum Steuern benötigen.
+            self._hue.bridge.set_light_service(light_id, state)
+        except Exception as e:
+            self._log_error(f"Fehler beim Setzen des Zustands für Lampe {light_id}: {e}", exc_info=True)
