@@ -7,51 +7,66 @@ export function closeModal() {
   });
 }
 
-export function openSceneModal(scene, sceneName) {
+export function openSceneModal(group, lightsInGroup) {
   const modalSceneContainer = document.getElementById("modal-scene");
-  const isEditing = sceneName !== null;
-  const isColorMode = scene.hue !== undefined;
-  modalSceneContainer.innerHTML = `<div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50"><div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4"><div class="p-6"><h3 class="text-2xl font-bold mb-4">${
-    isEditing ? "Szene bearbeiten" : "Neue Szene"
-  }</h3><form id="form-scene" class="space-y-4"><input type="hidden" id="scene-original-name" value="${
-    sceneName || ""
-  }"><label class="block text-sm font-medium">Name</label><input type="text" id="scene-name" value="${
-    isEditing ? sceneName.replace(/_/g, " ") : ""
-  }" required class="mt-1 w-full rounded-md border-gray-300"><div class="flex space-x-4 border-b pb-2"><label><input type="radio" name="color-mode" value="ct" ${
-    !isColorMode ? "checked" : ""
-  }> Weißtöne</label><label><input type="radio" name="color-mode" value="color" ${
-    isColorMode ? "checked" : ""
-  }> Farbe</label></div><div id="ct-controls" class="${
-    isColorMode ? "hidden" : ""
-  }"><label class="block text-sm font-medium">Farbtemperatur</label><input type="range" id="scene-ct" min="153" max="500" value="${
-    scene.ct || 366
-  }" class="w-full ct-slider"></div><div id="color-controls" class="${
-    !isColorMode ? "hidden" : ""
-  }"><div id="color-picker-container" class="flex justify-center my-2"></div></div><div><label class="block text-sm font-medium">Helligkeit</label><input type="range" id="scene-bri" min="0" max="254" value="${
-    scene.bri || 0
-  }" class="w-full brightness-slider"></div><div class="flex items-center"><input type="checkbox" id="scene-status" ${
-    scene.status ? "checked" : ""
-  } class="h-4 w-4 rounded"><label for="scene-status" class="ml-2 block text-sm">Licht an</label></div></form></div><div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3"><button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button><button type="button" data-action="save-scene" class="bg-blue-600 text-white py-2 px-4 rounded-md">Speichern</button></div></div></div>`;
+
+  const lightsHtml = lightsInGroup
+    .map(
+      (light) => `
+    <div class="p-3 bg-gray-700 rounded-lg scene-light-config" data-light-id="${light.id}">
+        <label class="flex items-center space-x-3 cursor-pointer">
+            <input type="checkbox" class="form-checkbox h-5 w-5 bg-gray-600 border-gray-500 rounded text-blue-500 focus:ring-blue-400" data-light-control="include">
+            <span class="font-medium">${light.metadata.name}</span>
+        </label>
+        <div class="mt-2 pl-8 space-y-2 hidden light-controls">
+            <label class="text-sm text-gray-400">Helligkeit</label>
+            <input type="range" min="1" max="100" value="80" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer brightness-slider" data-light-control="brightness">
+        </div>
+    </div>
+  `
+    )
+    .join("");
+
+  const modalHtml = `
+    <div class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" data-action="cancel-modal">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg m-4 text-white" onclick="event.stopPropagation()">
+            <div class="p-6">
+                <h3 class="text-2xl font-bold mb-4">Neue Szene für ${group.name}</h3>
+                <form id="form-scene" class="space-y-4">
+                    <input type="hidden" id="scene-group-id" value="${group.id}">
+                    <div>
+                        <label for="scene-name" class="block text-sm font-medium mb-1 text-gray-300">Szenenname</label>
+                        <input type="text" id="scene-name" required class="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold mb-2">Lampen für die Szene auswählen</h4>
+                        <div class="space-y-3 max-h-60 overflow-y-auto p-2 border border-gray-700 rounded-lg">
+                           ${lightsHtml}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="bg-gray-900 px-6 py-4 flex justify-end space-x-3">
+                <button type="button" data-action="cancel-modal" class="bg-gray-600 hover:bg-gray-500 py-2 px-4 rounded-md">Abbrechen</button>
+                <button type="button" data-action="save-scene" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md">Speichern</button>
+            </div>
+        </div>
+    </div>`;
+
+  modalSceneContainer.innerHTML = modalHtml;
   modalSceneContainer.classList.remove("hidden");
 
-  const colorPicker = new iro.ColorPicker("#color-picker-container", {
-    width: 250,
-    color: isColorMode
-      ? { h: (scene.hue / 65535) * 360, s: (scene.sat / 254) * 100, v: 100 }
-      : "#ffffff",
-  });
-
-  document.querySelectorAll('input[name="color-mode"]').forEach((r) =>
-    r.addEventListener("change", (e) => {
-      document
-        .getElementById("ct-controls")
-        .classList.toggle("hidden", e.target.value !== "ct");
-      document
-        .getElementById("color-controls")
-        .classList.toggle("hidden", e.target.value !== "color");
-    })
-  );
-  return colorPicker;
+  // Event Listeners für die Checkboxen im Modal hinzufügen
+  document
+    .querySelectorAll('input[data-light-control="include"]')
+    .forEach((checkbox) => {
+      checkbox.addEventListener("change", (e) => {
+        const controls = e.target
+          .closest(".scene-light-config")
+          .querySelector(".light-controls");
+        controls.classList.toggle("hidden", !e.target.checked);
+      });
+    });
 }
 
 export function openCreateRoutineModal(bridgeData) {
@@ -72,7 +87,7 @@ export function openColorControlModal(groupId, groupedLight) {
 
   const modalHtml = `
     <div class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" data-action="cancel-modal">
-        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-sm m-4 p-6 text-white">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-sm m-4 p-6 text-white" onclick="event.stopPropagation()">
             <h3 class="text-xl font-bold mb-4 text-center">Licht anpassen</h3>
             
             <div class="flex justify-center my-4">

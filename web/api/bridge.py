@@ -36,28 +36,31 @@ def get_all_bridge_items():
     bridge_data = bridge.get_full_api_data()
     all_devices = bridge_data.get("devices", [])
     
-    # FINALE KORREKTUR: Wir nutzen jetzt die saubere Logik aus dem neuen Wrapper.
+    def get_light_ids_for_devices(device_ids):
+        """Hilfsfunktion: Sucht alle Lampen-IDs (services), die zu einer Liste von Geräte-IDs gehören."""
+        light_ids = []
+        for device in all_devices:
+            if device['id'] in device_ids:
+                for service in device.get('services', []):
+                    if service.get('rtype') == 'light':
+                        light_ids.append(service['rid'])
+        return light_ids
+
     rooms = []
     for r in bridge_data.get("rooms", []):
-        # Hole die Lampen über die korrekte Wrapper-Funktion
-        light_objects = bridge.get_lights_in_group(r['id'])
-        # Extrahiere nur die IDs für das Frontend
-        light_ids = [light['id'] for light in light_objects if light]
+        device_ids = [child['rid'] for child in r.get('children', [])]
         rooms.append({
             "id": r['id'],
             "name": r['metadata']['name'],
-            "lights": light_ids
+            "lights": get_light_ids_for_devices(device_ids)
         })
     
     zones = []
     for z in bridge_data.get("zones", []):
-        # Nutze dieselbe Logik für Zonen
-        light_objects = bridge.get_lights_in_group(z['id'])
-        light_ids = [light['id'] for light in light_objects if light]
         zones.append({
             "id": z['id'],
             "name": z['metadata']['name'],
-            "lights": light_ids
+            "lights": [s['rid'] for s in z.get('services', []) if s.get('rtype') == 'light']
         })
 
     all_groups_for_routines = rooms + zones
@@ -123,3 +126,36 @@ def recall_scene_for_group(group_id):
     bridge.recall_scene(scene_id)
     
     return jsonify({"message": f"Szene {scene_id} aktiviert."})
+
+# /// NEUE API-ENDPUNKTE FÜR SZENEN-MANAGEMENT ///
+
+@bridge_api.route("/scenes", methods=["POST"])
+def create_scene():
+    """Erstellt eine neue Szene auf der Hue Bridge."""
+    bridge = get_bridge_instance()
+    if not bridge:
+        return jsonify({"error": "Bridge nicht erreichbar"}), 503
+        
+    data = request.get_json()
+    # Logik, um zu bestimmen, ob es ein Raum oder eine Zone ist
+    group_type = 'room' if bridge.get_resource_by_id('room', data.get("group_id")) else 'zone'
+
+    response = bridge.create_scene(
+        name=data.get("name"),
+        group_id=data.get("group_id"),
+        group_type=group_type,
+        actions=data.get("actions")
+    )
+    if response:
+        return jsonify({"message": f"Szene '{data.get('name')}' erstellt.", "data": response}), 201
+    return jsonify({"error": "Szene konnte nicht erstellt werden."}), 500
+
+@bridge_api.route("/scenes/<scene_id>", methods=["DELETE"])
+def delete_scene(scene_id):
+    """Löscht eine Szene von der Hue Bridge."""
+    bridge = get_bridge_instance()
+    if not bridge:
+        return jsonify({"error": "Bridge nicht erreichbar"}), 503
+        
+    bridge.delete_scene(scene_id)
+    return jsonify({"message": f"Szene {scene_id} wurde gelöscht."})

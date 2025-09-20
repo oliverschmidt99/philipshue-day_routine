@@ -3,7 +3,6 @@
 async function fetchAPI(url, options = {}) {
   try {
     const response = await fetch(url, options);
-    // Log ist reiner Text, der Rest JSON
     const data = response.headers
       .get("Content-Type")
       ?.includes("application/json")
@@ -11,7 +10,6 @@ async function fetchAPI(url, options = {}) {
       : await response.text();
 
     if (!response.ok) {
-      // Wenn der Server JSON-Fehler schickt, nutze die Nachricht
       const errorMessage =
         typeof data === "object" && data.error
           ? data.error
@@ -20,7 +18,6 @@ async function fetchAPI(url, options = {}) {
     }
     return data;
   } catch (error) {
-    // Fängt Netzwerkfehler ab
     console.error(`API-Fehler bei ${url}:`, error);
     throw error;
   }
@@ -74,7 +71,7 @@ export const setLightState = (lightId, state) =>
 export async function updateStatus() {
   const [statusData, logText] = await Promise.all([
     fetchAPI("/api/data/status"),
-    fetchAPI("/api/data/log"), // Log ist reiner Text
+    fetchAPI("/api/data/log"),
   ]);
   return { statusData, logText };
 }
@@ -92,4 +89,17 @@ export const recallScene = (groupId, sceneId) =>
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ scene_id: sceneId }),
+  });
+
+// --- NEUE FUNKTIONEN FÜR SZENEN-MANAGEMENT ---
+export const createScene = (sceneData) =>
+  fetchAPI("/api/bridge/scenes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(sceneData),
+  });
+
+export const deleteScene = (sceneId) =>
+  fetchAPI(`/api/bridge/scenes/${sceneId}`, {
+    method: "DELETE",
   });
