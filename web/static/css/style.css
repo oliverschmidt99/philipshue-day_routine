@@ -1,23 +1,26 @@
 /* Globale Stile und Schriftarten */
 body {
     font-family: 'Inter', sans-serif;
+    /* Dies setzt den Standard-Hintergrund für die gesamte Seite */
+    background-color: #1f2937; /* Ein neutrales dunkles Grau (Tailwind gray-800) */
+    color: #d1d5db; /* Standard-Textfarbe (Tailwind gray-300) */
 }
 
 /* Aktiver Tab in der Navigation */
 .tab-active {
     border-bottom-color: #3b82f6; /* blue-500 */
-    color: #3b82f6;
+    color: #60a5fa; /* blue-400 für besseren Kontrast */
     font-weight: 600;
 }
 
 /* Hintergrund für Modals (Pop-ups) */
 .modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 /* Container für die Log-Anzeige */
 .log-container {
-    background-color: #1f2937; /* gray-800 */
+    background-color: #111827; /* gray-900 */
     color: #d1d5db; /* gray-300 */
     font-family: monospace;
     font-size: 0.875rem;
@@ -60,14 +63,14 @@ body {
     width: 20px; height: 20px;
     border-radius: 50%;
     background: #ffffff;
-    border: 2px solid #6b7280;
+    border: 2px solid #9ca3af;
     cursor: pointer;
 }
 .brightness-slider::-moz-range-thumb, .ct-slider::-moz-range-thumb {
     width: 20px; height: 20px;
     border-radius: 50%;
     background: #ffffff;
-    border: 2px solid #6b7280;
+    border: 2px solid #9ca3af;
     cursor: pointer;
 }
 

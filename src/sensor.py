@@ -18,6 +18,7 @@ class Sensor:
         if not self._device_data:
             if not self.bridge.is_connected():
                 return None
+            # Nutzt die neue Funktion aus dem Wrapper
             self._device_data = self.bridge.get_device_by_id(self.device_id)
             if not self._device_data:
                 self.log.warning(f"Kein Gerät mit ID {self.device_id} gefunden.")
@@ -33,8 +34,8 @@ class Sensor:
         if not service_ref:
             return None
         
-        # Korrigierte Methode, um auf die Ressourcen zuzugreifen
-        return self.bridge.get_resource(service_type, service_ref['rid'])
+        # KORREKTUR HIER:
+        return self.bridge.get_resource_by_id(service_type, service_ref['rid'])
 
     def get_motion(self) -> bool:
         """Gibt True zurück, wenn eine Bewegung erkannt wird, sonst False."""

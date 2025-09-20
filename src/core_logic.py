@@ -79,12 +79,14 @@ class CoreLogic:
         sun_times = self._get_sun_times(config.get("location"))
         scenes = {name: Scene(**params) for name, params in config.get("scenes", {}).items()}
         
-        bridge_data = bridge.get_api_data()
+        # HIER IST DIE KORREKTUR:
+        bridge_data = bridge.get_full_api_data()
+        
         all_rooms_and_zones = bridge_data.get("rooms", []) + bridge_data.get("zones", [])
 
         rooms = {}
         for room_conf in config.get("rooms", []):
-            bridge_group = next((g for g in all_rooms_and_zones if g['metadata']['name'] == room_conf["name"]), None)
+            bridge_group = next((g for g in all_rooms_and_zones if g.get('metadata', {}).get('name') == room_conf["name"]), None)
             if bridge_group:
                 rooms[room_conf["name"]] = Room(bridge, self.log, name=room_conf["name"], group_id=bridge_group["id"])
 
