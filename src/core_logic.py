@@ -14,6 +14,8 @@ from src.scene import Scene
 from src.room import Room
 from src.sensor import Sensor
 from src.routine import Routine
+from src.timer import Timer
+from src.state_machine import StateMachine
 from src.logger import Logger
 from src.config_manager import ConfigManager
 
@@ -58,7 +60,7 @@ class CoreLogic:
                 time.sleep(30)
                 continue
 
-            self._execute_routine_session(bridge)
+            self._execute_automation_session(bridge)
 
     def _connect_to_bridge(self, config: dict) -> HueBridge | None:
         bridge_ip = config.get("bridge_ip")
@@ -73,37 +75,57 @@ class CoreLogic:
             self.log.error("Netzwerkfehler zur Bridge: Verbindung konnte nicht hergestellt werden.")
             return None
 
-    def _execute_routine_session(self, bridge: HueBridge):
+    def _execute_automation_session(self, bridge: HueBridge):
         config = self.config_manager.get_full_config()
         global_settings = config.get("global_settings", {})
         sun_times = self._get_sun_times(config.get("location"))
         scenes = {name: Scene(**params) for name, params in config.get("scenes", {}).items()}
         
-        # HIER IST DIE KORREKTUR:
         bridge_data = bridge.get_full_api_data()
         
         all_rooms_and_zones = bridge_data.get("rooms", []) + bridge_data.get("zones", [])
 
         rooms = {}
-        for room_conf in config.get("rooms", []):
-            bridge_group = next((g for g in all_rooms_and_zones if g.get('metadata', {}).get('name') == room_conf["name"]), None)
-            if bridge_group:
-                rooms[room_conf["name"]] = Room(bridge, self.log, name=room_conf["name"], group_id=bridge_group["id"])
+        for group in all_rooms_and_zones:
+            rooms[group['metadata']['name']] = Room(bridge, self.log, name=group['metadata']['name'], group_id=group["id"])
 
-        sensors = {}
-        for room_conf in config.get("rooms", []):
-            if room_conf.get("sensor_id"):
-                sensors[room_conf["sensor_id"]] = Sensor(bridge, room_conf["sensor_id"], self.log)
+        sensors = {s['id']: Sensor(bridge, s['id'], self.log) for s in bridge_data.get("sensors", [])}
+        
+        automations = []
+        automation_configs = config.get("automations", [])
 
-        routines = [
-            Routine(r_conf["name"], rooms.get(r_conf["room_name"]), sensors.get(next((r.get("sensor_id") for r in config.get("rooms", []) if r.get("name") == r_conf["room_name"]), None)), r_conf, scenes, sun_times, self.log, global_settings) 
-            for r_conf in config.get("routines", []) if rooms.get(r_conf["room_name"])
-        ]
+        for aut_conf in automation_configs:
+            aut_type = aut_conf.get("type", "routine")
+            name = aut_conf.get("name")
+            room_name = aut_conf.get("room_name")
+            room = rooms.get(room_name)
+            
+            # Finde den zugehörigen Sensor, falls konfiguriert
+            sensor = None
+            for room_conf in config.get("rooms", []):
+                if room_conf.get("name") == room_name and room_conf.get("sensor_id"):
+                    sensor = sensors.get(room_conf.get("sensor_id"))
+                    break
+            
+            common_args = {
+                "name": name, "config": aut_conf, "log": self.log,
+                "bridge": bridge, "scenes": scenes, "rooms": rooms,
+                "sensors": sensors, "sun_times": sun_times,
+                "global_settings": global_settings
+            }
+
+            if aut_type == "routine":
+                if room:
+                    automations.append(Routine(room=room, sensor=sensor, **common_args))
+            elif aut_type == "timer":
+                 automations.append(Timer(**common_args))
+            elif aut_type == "state_machine":
+                 automations.append(StateMachine(**common_args))
 
         last_mod_time = self.config_manager.get_last_modified_time()
         last_status_write = 0
 
-        self.log.info(f"{len(routines)} Routinen werden jetzt ausgeführt...")
+        self.log.info(f"{len(automations)} Automationen werden jetzt ausgeführt...")
         while True:
             try:
                 if self.config_manager.get_last_modified_time() > last_mod_time:
@@ -111,11 +133,11 @@ class CoreLogic:
                     return
 
                 now = datetime.now().astimezone()
-                for routine in routines:
-                    routine.run(now)
+                for automation in automations:
+                    automation.run(now)
 
                 if time.time() - last_status_write > global_settings.get("status_interval_s", 5):
-                    self._write_status(routines, sun_times)
+                    self._write_status(automations, sun_times)
                     last_status_write = time.time()
 
                 time.sleep(global_settings.get("loop_interval_s", 1))
@@ -136,8 +158,8 @@ class CoreLogic:
             self.log.error(f"Fehler bei der Berechnung der Sonnenzeiten: {e}")
             return None
 
-    def _write_status(self, routines, sun_times):
-        status_data = {"routines": [r.get_status() for r in routines], "sun_times": sun_times}
+    def _write_status(self, automations, sun_times):
+        status_data = {"automations": [aut.get_status() for aut in automations], "sun_times": sun_times}
         try:
             if status_data.get("sun_times"):
                 status_data["sun_times"] = {"sunrise": status_data["sun_times"]["sunrise"].isoformat(), "sunset": status_data["sun_times"]["sunset"].isoformat()}

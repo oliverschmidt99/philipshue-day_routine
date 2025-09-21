@@ -1,5 +1,9 @@
-routines:
-- daily_time:
+automations:
+- name: Olli
+  type: routine
+  room_name: Zone_Olli
+  enabled: true
+  daily_time:
     H1: 7
     H2: 23
     M1: 0
@@ -13,7 +17,6 @@ routines:
       min: 1
       sec: 0
     x_scene_name: konzentrieren
-  enabled: true
   evening:
     bri_check: false
     do_not_disturb: false
@@ -32,7 +35,6 @@ routines:
       min: 1
       sec: 0
     x_scene_name: entspannen
-  name: Olli
   night:
     bri_check: false
     do_not_disturb: false
@@ -42,7 +44,6 @@ routines:
       min: 1
       sec: 0
     x_scene_name: nachtlicht
-  room_name: Zone_Olli
 scenes:
   Test:
     bri: 254

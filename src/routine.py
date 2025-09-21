@@ -11,13 +11,14 @@ class Routine:
     """Verwaltet die Logik für eine einzelne Tageslicht-Routine."""
 
     def __init__(
-        self, name, room, sensor, config, scenes, sun_times, log, global_settings
+        self, name, room, sensor, config, scenes, sun_times, log, global_settings, **kwargs
     ):
         self.name = name
         self.room = room
         self.sensor = sensor
         self.config = config
         self.scenes = scenes
+        self.sun_times = sun_times
         self.log = log
         self.global_settings = global_settings
         self.enabled = config.get("enabled", True)
@@ -36,6 +37,7 @@ class Routine:
         self.last_motion_time = None
         self.do_not_disturb_active = False
         self.last_scene_name = "N/A"
+        self.last_trigger_check = None
 
     def run(self, now: datetime):
         """Führt einen Logik-Durchlauf der Routine aus."""
@@ -58,27 +60,77 @@ class Routine:
             return
 
         if self.sensor and period_config.get("motion_check"):
-            has_motion = self.sensor.get_motion()
-            wait_time_conf = period_config.get("wait_time", {"min": 0, "sec": 5})
-            wait_seconds = wait_time_conf.get("min", 0) * 60 + wait_time_conf.get(
-                "sec", 5
-            )
+            self._handle_motion(now, period_config)
 
-            if has_motion:
-                self.last_motion_time = now
-                if not self.is_in_motion_state:
-                    self.log.info(f"Routine '{self.name}': Bewegung erkannt.")
-                    self.is_in_motion_state = True
-                    self._apply_scene(period_config.get("x_scene_name"))
+        # Führe die Trigger-Prüfung nur einmal pro Minute aus
+        if self.last_trigger_check is None or (now - self.last_trigger_check).total_seconds() > 60:
+            self._check_triggers(now)
+            self.last_trigger_check = now
 
-            elif self.is_in_motion_state and self.last_motion_time:
-                if now - self.last_motion_time > timedelta(seconds=wait_seconds):
-                    self.log.info(
-                        f"Routine '{self.name}': Wartezeit nach Bewegung abgelaufen."
-                    )
-                    self.is_in_motion_state = False
-                    self.last_motion_time = None
-                    self._apply_scene(period_config.get("scene_name"))
+    def _handle_motion(self, now: datetime, period_config: dict):
+        """Verarbeitet die Bewegungslogik."""
+        has_motion = self.sensor.get_motion()
+        wait_time_conf = period_config.get("wait_time", {"min": 0, "sec": 5})
+        wait_seconds = wait_time_conf.get("min", 0) * 60 + wait_time_conf.get(
+            "sec", 5
+        )
+
+        if has_motion:
+            self.last_motion_time = now
+            if not self.is_in_motion_state:
+                self.log.info(f"Routine '{self.name}': Bewegung erkannt.")
+                self.is_in_motion_state = True
+                self._apply_scene(period_config.get("x_scene_name"))
+
+        elif self.is_in_motion_state and self.last_motion_time:
+            if now - self.last_motion_time > timedelta(seconds=wait_seconds):
+                self.log.info(
+                    f"Routine '{self.name}': Wartezeit nach Bewegung abgelaufen."
+                )
+                self.is_in_motion_state = False
+                self.last_motion_time = None
+                self._apply_scene(period_config.get("scene_name"))
+
+    def _check_triggers(self, now: datetime):
+        """Überprüft und führt zeit- und bedingungsbasierte Trigger aus."""
+        triggers = self.config.get("triggers", [])
+        for trigger in triggers:
+            if trigger.get("type") == "time":
+                self._handle_time_trigger(trigger, now)
+            elif trigger.get("type") == "condition":
+                self._handle_conditional_trigger(trigger, now)
+
+    def _handle_time_trigger(self, trigger: dict, now: datetime):
+        """Verarbeitet einen Zeit-Trigger."""
+        trigger_time = None
+        t_time = trigger.get("time")
+        
+        if isinstance(t_time, str) and ":" in t_time:
+            try:
+                h, m = map(int, t_time.split(":"))
+                trigger_time = now.replace(hour=h, minute=m, second=0, microsecond=0)
+            except ValueError:
+                self.log.warning(f"Ungültiges Zeitformat für Trigger: {t_time}")
+                return
+        
+        elif self.sun_times:
+            event = trigger.get("event") # "sunrise" or "sunset"
+            offset_minutes = trigger.get("offset_minutes", 0)
+            if event in self.sun_times:
+                trigger_time = self.sun_times[event] + timedelta(minutes=offset_minutes)
+
+        if trigger_time and trigger_time.hour == now.hour and trigger_time.minute == now.minute:
+            self.log.info(f"Routine '{self.name}': Zeit-Trigger '{trigger.get('name')}' wird ausgeführt.")
+            self._apply_scene(trigger.get("scene_name"))
+            
+    def _handle_conditional_trigger(self, trigger: dict, now: datetime):
+        """Verarbeitet einen bedingungsbasierten Trigger."""
+        # Diese Funktion ist ein Platzhalter und müsste die Logik enthalten,
+        # um den Zustand anderer Geräte abzufragen.
+        # Dies erfordert eine Erweiterung des HueWrappers, um z.B. den Zustand
+        # einer bestimmten Lampe abzufragen.
+        self.log.debug(f"Bedingungs-Trigger '{trigger.get('name')}' wird geprüft (Logik noch nicht implementiert).")
+
 
     def _apply_scene(self, scene_name: str | None):
         """Wendet eine Szene auf den Raum an, falls sie existiert."""
@@ -88,7 +140,6 @@ class Routine:
         scene_to_apply = self.scenes.get(scene_name)
         if scene_to_apply:
             self.log.info(f"Routine '{self.name}': Wende Szene '{scene_name}' an.")
-            # Lese den Drosselungswert aus den globalen Einstellungen
             throttle_s = self.global_settings.get("command_throttle_s", 1.0)
             self.room.apply_state(
                 scene_to_apply.get_state(), command_throttle_s=throttle_s

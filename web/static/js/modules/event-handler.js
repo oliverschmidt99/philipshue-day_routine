@@ -2,6 +2,13 @@ import * as api from "./api.js";
 import * as uiShared from "./ui/shared.js";
 import * as uiHome from "./ui/home.js";
 import * as uiModals from "./ui/modals.js";
+import * as uiAutomations from "./ui/automations.js";
+// KORREKTUR: Der Pfad wurde angepasst.
+import {
+  initFsmEditor,
+  setFsmAppState,
+  handleFsmEditorEvent,
+} from "./ui/fsm-editor.js";
 
 let appState = {}; // Wird von main.js initialisiert
 
@@ -39,7 +46,6 @@ const handleLiveColorChange = debounce(async (color) => {
 
 // Zentrale Funktion zum Neu-Rendern der Raum-Detailansicht
 const refreshRoomDetail = async (groupId) => {
-  // Holen Sie sich die neuesten Daten von der Bridge
   const [newBridgeData, newGroupedLights] = await Promise.all([
     api.loadBridgeData(),
     api.loadGroupedLights(),
@@ -47,7 +53,6 @@ const refreshRoomDetail = async (groupId) => {
   appState.bridgeData = newBridgeData;
   appState.groupedLights = newGroupedLights;
 
-  // Finden Sie die spezifische Gruppe und deren Lichtstatus
   const group = [
     ...appState.bridgeData.rooms,
     ...appState.bridgeData.zones,
@@ -56,7 +61,6 @@ const refreshRoomDetail = async (groupId) => {
     (gl) => gl.owner.rid === groupId
   );
 
-  // Rendern Sie die Ansicht neu
   if (group) {
     document.getElementById("room-detail-container").innerHTML =
       uiHome.renderRoomDetail(
@@ -78,11 +82,21 @@ async function handleGlobalClick(e) {
       appState.liveColorPicker.off("color:change", handleLiveColorChange);
     return;
   }
-  if (!button) return;
+
+  if (!button) {
+    // Klick-Events für den FSM-Editor abfangen
+    if (e.target.closest(".fsm-canvas") || e.target.closest(".fsm-sidebar")) {
+      handleFsmEditorEvent(e);
+    }
+    return;
+  }
 
   const action = button.dataset.action;
+  const automationCard = target.closest("[data-index]");
+  const index = automationCard?.dataset.index;
 
   const actions = {
+    // ##### ZUHAUSE & SZENEN #####
     "toggle-group-power": async () => {
       e.stopPropagation();
       const groupId = button.dataset.groupId;
@@ -176,65 +190,162 @@ async function handleGlobalClick(e) {
         setTimeout(() => refreshRoomDetail(groupId), 800);
       }
     },
+
+    // ##### AUTOMATIONEN #####
+    "toggle-automation-details": () => {
+      const header = button.closest(".automation-header");
+      const detailsContainer = header.nextElementSibling;
+      const icon = header.querySelector("i.fa-chevron-down");
+      const type = header.closest("[data-type]").dataset.type;
+
+      if (detailsContainer.classList.contains("hidden")) {
+        const automation = appState.config.automations[index];
+        const renderer =
+          uiAutomations.automationTypeDetails[type].detailsRenderer;
+        detailsContainer.innerHTML = renderer(
+          automation,
+          appState.bridgeData,
+          index
+        );
+
+        if (type === "state_machine") {
+          const canvas = detailsContainer.querySelector(
+            `#fsm-editor-canvas-${index}`
+          );
+          const sidebar = detailsContainer.querySelector(
+            `#fsm-editor-sidebar-${index}`
+          );
+          setFsmAppState(appState);
+          initFsmEditor(
+            canvas,
+            sidebar,
+            automation,
+            appState.bridgeData,
+            index
+          );
+        }
+
+        detailsContainer.classList.remove("hidden");
+        setTimeout(() => {
+          detailsContainer.style.maxHeight =
+            detailsContainer.scrollHeight + "px";
+          icon.style.transform = "rotate(180deg)";
+        }, 10);
+      } else {
+        detailsContainer.style.maxHeight = "0px";
+        icon.style.transform = "rotate(0deg)";
+        detailsContainer.addEventListener(
+          "transitionend",
+          () => {
+            detailsContainer.classList.add("hidden");
+            detailsContainer.innerHTML = "";
+          },
+          { once: true }
+        );
+      }
+    },
+    "create-automation": () => {
+      const type = button.dataset.type;
+      uiModals.closeModal();
+      if (type === "routine")
+        uiModals.openCreateRoutineModal(appState.bridgeData);
+      if (type === "timer") uiModals.openCreateTimerModal(appState.bridgeData);
+      if (type === "state_machine")
+        uiModals.openCreateStateMachineModal(appState.bridgeData);
+    },
+    "save-new-automation": () => {
+      const type = button.dataset.type;
+      const name = document.getElementById("new-automation-name").value;
+      if (!name) {
+        uiShared.showToast(
+          "Bitte gib einen Namen für die Automation ein.",
+          true
+        );
+        return;
+      }
+      let newAutomation = { name, enabled: true, type };
+
+      if (type === "routine") {
+        const [groupId, groupName] = document
+          .getElementById("new-routine-group")
+          .value.split("|");
+        Object.assign(newAutomation, {
+          room_name: groupName,
+          daily_time: { H1: 7, M1: 0, H2: 23, M2: 0 },
+          morning: {
+            scene_name: "aus",
+            x_scene_name: "entspannen",
+            motion_check: true,
+            wait_time: { min: 1, sec: 0 },
+            do_not_disturb: false,
+            bri_check: false,
+          },
+          day: {
+            scene_name: "aus",
+            x_scene_name: "konzentrieren",
+            motion_check: true,
+            wait_time: { min: 1, sec: 0 },
+            do_not_disturb: false,
+            bri_check: false,
+          },
+          evening: {
+            scene_name: "aus",
+            x_scene_name: "entspannen",
+            motion_check: true,
+            wait_time: { min: 1, sec: 0 },
+            do_not_disturb: false,
+            bri_check: false,
+          },
+          night: {
+            scene_name: "aus",
+            x_scene_name: "nachtlicht",
+            motion_check: true,
+            wait_time: { min: 1, sec: 0 },
+            do_not_disturb: false,
+            bri_check: false,
+          },
+        });
+      }
+      if (type === "timer") {
+        Object.assign(newAutomation, {
+          duration_minutes: parseInt(
+            document.getElementById("timer-duration").value,
+            10
+          ),
+          action: {
+            target_room: document.getElementById("timer-target-room").value,
+            scene_name: document.getElementById("timer-scene-name").value,
+          },
+          triggers: [],
+        });
+      }
+      if (type === "state_machine") {
+        Object.assign(newAutomation, {
+          target_room: document.getElementById("fsm-target-room").value,
+          initial_state: "Start",
+          states: [{ name: "Start", action: {}, position: { x: 50, y: 50 } }],
+          transitions: [],
+        });
+      }
+
+      if (!appState.config.automations) appState.config.automations = [];
+      appState.config.automations.push(newAutomation);
+      uiModals.closeModal();
+      uiAutomations.renderAutomations(
+        appState.config,
+        appState.bridgeData,
+        appState
+      );
+      uiShared.showToast(
+        "Neue Automation erstellt. Speichern nicht vergessen!"
+      );
+    },
+
+    // ##### ALLGEMEIN #####
     "cancel-modal": () => {
       uiModals.closeModal();
       if (appState.liveColorPicker)
         appState.liveColorPicker.off("color:change", handleLiveColorChange);
-    },
-    "open-scene-modal": () => {
-      const groupId = button.dataset.groupId;
-      const group = [
-        ...appState.bridgeData.rooms,
-        ...appState.bridgeData.zones,
-      ].find((g) => g.id === groupId);
-      const lightsInGroup = appState.bridgeData.lights.filter((light) =>
-        group.lights.includes(light.id)
-      );
-      uiModals.openSceneModal(group, lightsInGroup);
-    },
-    "save-scene": async () => {
-      const name = document.getElementById("scene-name").value.trim();
-      const groupId = document.getElementById("scene-group-id").value;
-      if (!name) {
-        uiShared.showToast("Bitte einen Namen für die Szene eingeben.", true);
-        return;
-      }
-      const actions = [];
-      document.querySelectorAll(".scene-light-config").forEach((configEl) => {
-        const isIncluded = configEl.querySelector(
-          'input[data-light-control="include"]'
-        ).checked;
-        if (isIncluded) {
-          const lightId = configEl.dataset.lightId;
-          const brightness = parseInt(
-            configEl.querySelector('input[data-light-control="brightness"]')
-              .value,
-            10
-          );
-          actions.push({
-            target: { rid: lightId, rtype: "light" },
-            action: { on: { on: true }, dimming: { brightness: brightness } },
-          });
-        }
-      });
-      if (actions.length === 0) {
-        uiShared.showToast(
-          "Bitte mindestens eine Lampe für die Szene auswählen.",
-          true
-        );
-        return;
-      }
-      try {
-        await api.createScene({ name, group_id: groupId, actions });
-        uiShared.showToast("Szene erfolgreich erstellt!");
-        uiModals.closeModal();
-        await refreshRoomDetail(groupId);
-      } catch (error) {
-        uiShared.showToast(
-          `Fehler beim Erstellen der Szene: ${error.message}`,
-          true
-        );
-      }
     },
   };
 
@@ -304,4 +415,10 @@ export function initializeEventHandlers(initialState) {
   document.querySelectorAll('nav button[id^="tab-"]').forEach((button) => {
     button.addEventListener("click", handleTabClick);
   });
+
+  document
+    .getElementById("btn-new-automation")
+    ?.addEventListener("click", () => {
+      uiModals.openSelectAutomationTypeModal();
+    });
 }

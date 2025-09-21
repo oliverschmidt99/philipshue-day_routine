@@ -65,20 +65,8 @@ async function runMainApp() {
   };
 
   const renderAllTabs = () => {
-    uiAutomations.renderRoutines(appState.config, appState.bridgeData);
+    uiAutomations.renderAutomations(appState.config, appState.bridgeData);
     uiScenes.renderScenes(appState.config.scenes);
-
-    // Details für die Routinen rendern
-    document.querySelectorAll(".routine-details[data-index]").forEach((el) => {
-      const index = parseInt(el.dataset.index, 10);
-      const routine = appState.config.routines[index];
-      if (routine) {
-        el.innerHTML = uiAutomations.renderRoutineDetails(
-          routine,
-          appState.config.scenes
-        );
-      }
-    });
   };
 
   await init();
