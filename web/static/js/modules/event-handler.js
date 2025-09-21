@@ -3,7 +3,6 @@ import * as uiShared from "./ui/shared.js";
 import * as uiHome from "./ui/home.js";
 import * as uiModals from "./ui/modals.js";
 import * as uiAutomations from "./ui/automations.js";
-// KORREKTUR: Der Pfad wurde angepasst.
 import {
   initFsmEditor,
   setFsmAppState,
@@ -11,6 +10,8 @@ import {
 } from "./ui/fsm-editor.js";
 
 let appState = {}; // Wird von main.js initialisiert
+
+// ##### HILFSFUNKTIONEN #####
 
 const debounce = (func, delay) => {
   let timeout;
@@ -72,8 +73,98 @@ const refreshRoomDetail = async (groupId) => {
   }
 };
 
+// ##### AUTOSAVE-LOGIK #####
+
+const autosave = async () => {
+  const statusEl = document.getElementById("save-status");
+  if (!statusEl) return;
+
+  statusEl.innerHTML =
+    '<i class="fas fa-spinner fa-spin mr-2"></i>Speichern...';
+  statusEl.classList.remove("hidden", "bg-red-600", "bg-green-600");
+  statusEl.classList.add("bg-gray-900");
+
+  try {
+    await api.saveFullConfig(appState.config);
+    statusEl.innerHTML = '<i class="fas fa-check mr-2"></i>Gespeichert';
+    statusEl.classList.add("bg-green-600");
+
+    // Status nach 3 Sekunden ausblenden
+    setTimeout(() => {
+      statusEl.classList.add("hidden");
+    }, 3000);
+  } catch (error) {
+    statusEl.innerHTML =
+      '<i class="fas fa-exclamation-triangle mr-2"></i>Fehler';
+    statusEl.classList.add("bg-red-600");
+    uiShared.showToast(
+      `Fehler beim automatischen Speichern: ${error.message}`,
+      true
+    );
+  }
+};
+
+const debouncedAutosave = debounce(autosave, 2000);
+
+// ##### EVENT HANDLER #####
+
+function handleGlobalInput(e) {
+  const input = e.target;
+
+  // Prüfen, ob eine Eingabe in einer Automation stattfindet
+  const automationDetails = input.closest(".automation-details");
+  if (automationDetails) {
+    const index = parseInt(automationDetails.dataset.index, 10);
+    const automation = appState.config.automations[index];
+    if (!automation) return;
+
+    // Nach jeder relevanten Eingabe automatisches Speichern auslösen
+    debouncedAutosave();
+
+    // Spezifische Logik nur für Routinen
+    if (automation.type === "routine") {
+      const period = input.dataset.period;
+      const key = input.dataset.key;
+      if (!period || !key) return;
+
+      const value =
+        input.type === "checkbox"
+          ? input.checked
+          : input.type === "time"
+          ? input.value
+          : input.type === "number"
+          ? parseInt(input.value, 10) || 0
+          : input.value;
+
+      if (key.startsWith("wait_time.")) {
+        const subkey = key.split(".")[1];
+        automation[period].wait_time[subkey] = value;
+      } else if (period === "daily_time") {
+        const [h, m] = value.split(":").map(Number);
+        if (key === "H1") {
+          automation.daily_time.H1 = h;
+          automation.daily_time.M1 = m;
+        } else {
+          automation.daily_time.H2 = h;
+          automation.daily_time.M2 = m;
+        }
+      } else {
+        automation[period][key] = value;
+      }
+    }
+  }
+}
+
 async function handleGlobalClick(e) {
   const target = e.target;
+
+  // Zuerst prüfen, ob der Klick im FSM-Editor war
+  const fsmEditor = target.closest(".fsm-editor-container");
+  if (fsmEditor) {
+    handleFsmEditorEvent(e);
+    return; // Verarbeitung hier beenden, um Konflikte zu vermeiden
+  }
+
   const button = target.closest("[data-action]");
 
   if (target.classList.contains("modal-backdrop")) {
@@ -84,10 +175,6 @@ async function handleGlobalClick(e) {
   }
 
   if (!button) {
-    // Klick-Events für den FSM-Editor abfangen
-    if (e.target.closest(".fsm-canvas") || e.target.closest(".fsm-sidebar")) {
-      handleFsmEditorEvent(e);
-    }
     return;
   }
 
@@ -331,21 +418,11 @@ async function handleGlobalClick(e) {
       if (!appState.config.automations) appState.config.automations = [];
       appState.config.automations.push(newAutomation);
       uiModals.closeModal();
-      uiAutomations.renderAutomations(
-        appState.config,
-        appState.bridgeData,
-        appState
-      );
-      uiShared.showToast(
-        "Neue Automation erstellt. Speichern nicht vergessen!"
-      );
+      uiAutomations.renderAutomations(appState.config, appState.bridgeData);
+      debouncedAutosave(); // Neue Automation direkt speichern
     },
-
-    // ##### ALLGEMEIN #####
     "cancel-modal": () => {
       uiModals.closeModal();
-      if (appState.liveColorPicker)
-        appState.liveColorPicker.off("color:change", handleLiveColorChange);
     },
   };
 
@@ -405,13 +482,8 @@ function handleTabClick(e) {
 export function initializeEventHandlers(initialState) {
   appState = initialState;
   document.body.addEventListener("click", handleGlobalClick);
-  document.body.addEventListener("input", (e) => {
-    const target = e.target;
-    const action = target.dataset.action;
-    if (action === "set-group-brightness-detail") {
-      handleGlobalClick(e);
-    }
-  });
+  document.body.addEventListener("input", handleGlobalInput);
+
   document.querySelectorAll('nav button[id^="tab-"]').forEach((button) => {
     button.addEventListener("click", handleTabClick);
   });

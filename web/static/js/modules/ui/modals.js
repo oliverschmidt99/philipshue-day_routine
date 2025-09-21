@@ -52,7 +52,25 @@ export function openCreateRoutineModal(bridgeData) {
   const sensorOptions = bridgeData.sensors
     .map((s) => `<option value="${s.id}">${s.name}</option>`)
     .join("");
-  modalRoutineContainer.innerHTML = `<div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50"><div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4"><div class="p-6"><h3 class="text-2xl font-bold mb-4">Neue Routine</h3><form class="space-y-4"><label for="new-automation-name" class="block text-sm font-medium">Name</label><input type="text" id="new-automation-name" required class="mt-1 block w-full rounded-md border-gray-300"><label for="new-routine-group" class="block text-sm font-medium">Raum / Zone</label><select id="new-routine-group" class="mt-1 block w-full rounded-md border-gray-300">${groupOptions}</select><label for="new-routine-sensor" class="block text-sm font-medium">Sensor (Optional)</label><select id="new-routine-sensor" class="mt-1 block w-full rounded-md border-gray-300"><option value="">Kein Sensor</option>${sensorOptions}</select></form></div><div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3"><button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button><button type="button" data-action="save-new-automation" data-type="routine" class="bg-blue-600 text-white py-2 px-4 rounded-md">Erstellen</button></div></div></div>`;
+  modalRoutineContainer.innerHTML = `<div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg m-4 text-gray-200">
+  <div class="p-6">
+  <h3 class="text-2xl font-bold mb-4">Neue Routine</h3>
+  <form class="space-y-4">
+  <label class="block text-sm font-medium text-gray-300">Name</label>
+  <input type="text" id="new-automation-name" required class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200">
+  <label class="block text-sm font-medium text-gray-300">Raum / Zone</label>
+  <select id="new-routine-group" class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200">${groupOptions}</select>
+  <label class="block text-sm font-medium text-gray-300">Sensor (Optional)</label>
+  <select id="new-routine-sensor" class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200"><option value="">Kein Sensor</option>${sensorOptions}</select>
+  </form>
+  </div>
+  <div class="bg-gray-900 px-6 py-3 flex justify-end space-x-3">
+  <button type="button" data-action="cancel-modal" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border border-gray-600 rounded-md">Abbrechen</button>
+  <button type="button" data-action="save-new-automation" data-type="routine" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md">Erstellen</button>
+  </div>
+  </div>
+  </div>`;
   modalRoutineContainer.classList.remove("hidden");
 }
 
@@ -68,30 +86,30 @@ export function openCreateTimerModal(bridgeData) {
     .join("");
 
   modalContainer.innerHTML = `<div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4">
+    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg m-4 text-gray-200">
     <div class="p-6">
         <h3 class="text-2xl font-bold mb-4">Neuer Timer</h3>
         <form class="space-y-4">
             <div>
-                <label for="new-automation-name" class="block text-sm font-medium">Name</label>
-                <input type="text" id="new-automation-name" required class="mt-1 block w-full rounded-md border-gray-300">
+                <label for="new-automation-name" class="block text-sm font-medium text-gray-300">Name</label>
+                <input type="text" id="new-automation-name" required class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200">
             </div>
             <div>
-                <label for="timer-duration" class="block text-sm font-medium">Dauer (Minuten)</label>
-                <input type="number" id="timer-duration" value="10" min="1" class="mt-1 block w-full rounded-md border-gray-300">
+                <label for="timer-duration" class="block text-sm font-medium text-gray-300">Dauer (Minuten)</label>
+                <input type="number" id="timer-duration" value="10" min="1" class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200">
             </div>
              <div>
-                <label class="block text-sm font-medium">Aktion nach Ablauf</label>
+                <label class="block text-sm font-medium text-gray-300">Aktion nach Ablauf</label>
                 <div class="grid grid-cols-2 gap-2 mt-1">
-                    <select id="timer-target-room">${roomOptions}</select>
-                    <select id="timer-scene-name">${sceneOptions}</select>
+                    <select id="timer-target-room" class="block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200">${roomOptions}</select>
+                    <select id="timer-scene-name" class="block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200">${sceneOptions}</select>
                 </div>
             </div>
         </form>
     </div>
-    <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
-        <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button>
-        <button type="button" data-action="save-new-automation" data-type="timer" class="bg-green-600 text-white py-2 px-4 rounded-md">Erstellen</button>
+    <div class="bg-gray-900 px-6 py-3 flex justify-end space-x-3">
+        <button type="button" data-action="cancel-modal" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border border-gray-600 rounded-md">Abbrechen</button>
+        <button type="button" data-action="save-new-automation" data-type="timer" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md">Erstellen</button>
     </div>
     </div></div>`;
   modalContainer.classList.remove("hidden");
@@ -104,23 +122,23 @@ export function openCreateStateMachineModal(bridgeData) {
     .join("");
 
   modalContainer.innerHTML = `<div class="modal-backdrop fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4">
+    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg m-4 text-gray-200">
     <div class="p-6">
         <h3 class="text-2xl font-bold mb-4">Neuer Zustands-Automat</h3>
         <form class="space-y-4">
             <div>
-                <label for="new-automation-name" class="block text-sm font-medium">Name</label>
-                <input type="text" id="new-automation-name" required class="mt-1 block w-full rounded-md border-gray-300">
+                <label for="new-automation-name" class="block text-sm font-medium text-gray-300">Name</label>
+                <input type="text" id="new-automation-name" required class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200">
             </div>
              <div>
-                <label for="fsm-target-room" class="block text-sm font-medium">Ziel-Raum/Zone</label>
-                <select id="fsm-target-room" class="mt-1 block w-full rounded-md border-gray-300">${roomOptions}</select>
+                <label for="fsm-target-room" class="block text-sm font-medium text-gray-300">Ziel-Raum/Zone</label>
+                <select id="fsm-target-room" class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-gray-200">${roomOptions}</select>
             </div>
         </form>
     </div>
-    <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
-        <button type="button" data-action="cancel-modal" class="bg-white py-2 px-4 border rounded-md">Abbrechen</button>
-        <button type="button" data-action="save-new-automation" data-type="state_machine" class="bg-purple-600 text-white py-2 px-4 rounded-md">Erstellen & Bearbeiten</button>
+    <div class="bg-gray-900 px-6 py-3 flex justify-end space-x-3">
+        <button type="button" data-action="cancel-modal" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border border-gray-600 rounded-md">Abbrechen</button>
+        <button type="button" data-action="save-new-automation" data-type="state_machine" class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md">Erstellen & Bearbeiten</button>
     </div>
     </div></div>`;
   modalContainer.classList.remove("hidden");

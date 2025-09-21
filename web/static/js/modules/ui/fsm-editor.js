@@ -119,7 +119,7 @@ class FsmEditor {
             <div class="space-y-4">
                  <div>
                     <label class="block text-sm font-medium">Aktion bei Eintritt</label>
-                    <select data-sidebar-prop="action.scene_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <select data-sidebar-prop="action.scene_name" class="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm">
                         <option value="">Keine Szene</option>
                         ${sceneOptions}
                     </select>
@@ -129,10 +129,10 @@ class FsmEditor {
                       this.automation.initial_state === stateName
                         ? "checked"
                         : ""
-                    } class="h-4 w-4 rounded">
+                    } class="h-4 w-4 rounded bg-gray-600 border-gray-500">
                     <label for="is_initial_state" class="ml-2">Ist Initialzustand</label>
                 </div>
-                <button data-action="delete-state" class="text-red-600 hover:text-red-800 text-sm">Zustand löschen</button>
+                <button data-action="delete-state" class="text-red-500 hover:text-red-400 text-sm">Zustand löschen</button>
             </div>
         `;
   }
@@ -142,15 +142,15 @@ class FsmEditor {
     const transition = this.automation.transitions[transIndex];
     this.sidebar.innerHTML = `
             <h4 class="font-bold text-lg mb-2">Übergang</h4>
-            <p class="text-sm text-gray-500 mb-2">${transition.from} → ${transition.to}</p>
+            <p class="text-sm text-gray-400 mb-2">${transition.from} → ${transition.to}</p>
             <div class="space-y-2">
                 <h5 class="font-semibold">Bedingungen</h5>
                 <div id="fsm-conditions-container" class="space-y-2">
                     </div>
-                <button data-action="add-condition" class="text-blue-600 text-sm">+ Bedingung hinzufügen</button>
+                <button data-action="add-condition" class="text-blue-400 hover:text-blue-300 text-sm">+ Bedingung hinzufügen</button>
             </div>
-            <hr class="my-4">
-            <button data-action="delete-transition" class="text-red-600 hover:text-red-800 text-sm">Übergang löschen</button>
+            <hr class="my-4 border-gray-600">
+            <button data-action="delete-transition" class="text-red-500 hover:text-red-400 text-sm">Übergang löschen</button>
         `;
   }
 }
@@ -165,7 +165,9 @@ export function setFsmAppState(state) {
 
 // Event handler für den Editor selbst
 export function handleFsmEditorEvent(e) {
-  const action = e.target.dataset.action;
+  const target = e.target;
+  const button = target.closest("[data-action]");
+  const action = button?.dataset.action;
 
   if (action === "add-state") {
     const newStateName = `Neuer Zustand ${
@@ -181,13 +183,13 @@ export function handleFsmEditorEvent(e) {
 
   if (action === "toggle-connect-mode") {
     isConnecting = !isConnecting;
-    e.target.classList.toggle("bg-blue-600", isConnecting);
-    e.target.classList.toggle("text-white", isConnecting);
+    button.classList.toggle("bg-blue-600", isConnecting);
+    button.classList.toggle("text-white", isConnecting);
     connectionStartNode = null;
     fsmInstance.canvas.style.cursor = isConnecting ? "crosshair" : "default";
   }
 
-  const stateEl = e.target.closest(".fsm-state");
+  const stateEl = target.closest(".fsm-state");
   if (stateEl) {
     const stateName = stateEl.dataset.stateName;
     if (isConnecting) {
@@ -214,7 +216,7 @@ export function handleFsmEditorEvent(e) {
     }
   }
 
-  const lineEl = e.target.closest("line");
+  const lineEl = target.closest("line");
   if (lineEl) {
     fsmInstance.select({
       type: "transition",
