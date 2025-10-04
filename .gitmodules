@@ -1,0 +1,3 @@
+[submodule "blueprint3d"]
+	path = blueprint3d
+	url = https://github.com/furnishup/blueprint3d.git
