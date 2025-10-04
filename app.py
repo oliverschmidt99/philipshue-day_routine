@@ -4,43 +4,53 @@ Initialisiert und startet den Webserver und die Kernlogik.
 """
 import os
 import sys
-import subprocess
-import atexit
 import logging
+from multiprocessing import Process
 from src.logger import Logger
 from src.config_manager import ConfigManager
 from src.core_logic import CoreLogic
+from web import create_app
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
-LOG_FILE = os.path.join(DATA_DIR, "app.log")
-SETTINGS_FILE = os.path.join(DATA_DIR, "settings.yaml")
-AUTOMATION_FILE = os.path.join(DATA_DIR, "automation.yaml")
-HOME_FILE = os.path.join(DATA_DIR, "home.yaml")
-SERVER_SCRIPT = os.path.join(BASE_DIR, "web", "server.py")
+# Fügt das Projekt-Root-Verzeichnis zum Python-Pfad hinzu
+project_root = os.path.abspath(os.path.dirname(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
-def cleanup(log, server_process):
-    if server_process:
-        server_process.terminate()
-        try:
-            server_process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            server_process.kill()
-    log.info("Programm beendet.")
+def run_flask_app():
+    """Startet die Flask-Webanwendung."""
+    flask_app = create_app()
+    flask_app.logger_instance.info("Starte Flask-Server auf http://0.0.0.0:9090...")
+    # use_reloader=False, da die Hauptschleife den Neustart steuert
+    flask_app.run(host="0.0.0.0", port=9090, debug=True, use_reloader=False)
 
-def main():
+if __name__ == "__main__":
+    # Pfaddefinitionen
+    DATA_DIR = os.path.join(project_root, "data")
+    LOG_FILE = os.path.join(DATA_DIR, "app.log")
+    SETTINGS_FILE = os.path.join(DATA_DIR, "settings.yaml")
+    AUTOMATION_FILE = os.path.join(DATA_DIR, "automation.yaml")
+    HOME_FILE = os.path.join(DATA_DIR, "home.yaml")
+    
     os.makedirs(DATA_DIR, exist_ok=True)
     log = Logger(LOG_FILE, level=logging.INFO)
 
-    log.info(f"Starte Webserver: {sys.executable} {SERVER_SCRIPT}")
-    server_process = subprocess.Popen([sys.executable, SERVER_SCRIPT])
-    log.info(f"Webserver-Prozess gestartet mit PID: {server_process.pid}")
+    # Starte den Flask-Server in einem separaten Prozess
+    log.info("Initialisiere Webserver-Prozess...")
+    flask_process = Process(target=run_flask_app, daemon=True)
+    flask_process.start()
+    log.info(f"Webserver-Prozess gestartet mit PID: {flask_process.pid}")
 
-    atexit.register(cleanup, log, server_process)
-    
-    config_manager = ConfigManager(SETTINGS_FILE, AUTOMATION_FILE, HOME_FILE, log)
-    core_logic = CoreLogic(log, config_manager)
-    core_logic.run_main_loop()
-
-if __name__ == "__main__":
-    main()
+    # Starte die Kernlogik im Hauptprozess
+    try:
+        log.info("Starte Kernlogik...")
+        config_manager = ConfigManager(SETTINGS_FILE, AUTOMATION_FILE, HOME_FILE, log)
+        core_logic = CoreLogic(log, config_manager)
+        core_logic.run_main_loop()
+    except KeyboardInterrupt:
+        log.info("Programm wird durch Benutzer beendet.")
+    finally:
+        log.info("Beende Webserver-Prozess...")
+        if flask_process.is_alive():
+            flask_process.terminate()
+            flask_process.join()
+        log.info("Programm sauber beendet.")

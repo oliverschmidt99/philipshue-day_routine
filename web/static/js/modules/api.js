@@ -2,6 +2,12 @@
 
 async function fetchAPI(url, options = {}) {
   try {
+    // Für FormData müssen wir den Content-Type nicht manuell setzen
+    const isFormData = options.body instanceof FormData;
+    if (isFormData) {
+      delete options.headers;
+    }
+
     const response = await fetch(url, options);
     const data = response.headers
       .get("Content-Type")
@@ -102,4 +108,18 @@ export const createScene = (sceneData) =>
 export const deleteScene = (sceneId) =>
   fetchAPI(`/api/bridge/scenes/${sceneId}`, {
     method: "DELETE",
+  });
+
+// --- NEUE FUNKTIONEN FÜR GRUNDRISS ---
+export const loadFloorplanConfig = () => fetchAPI("/api/floorplan/");
+export const saveFloorplanConfig = (config) =>
+  fetchAPI("/api/floorplan/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  });
+export const uploadFloorplanImage = (formData) =>
+  fetchAPI("/api/floorplan/upload_image", {
+    method: "POST",
+    body: formData,
   });

@@ -5,9 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hue Routine und Scene Editor</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,10 +16,13 @@
 </head>
 
 <body>
-
     {% include 'setup_wizard.html' %}
     {% include 'main_app.html' %}
     {% include 'modals.html' %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{{ url_for('static', filename='js/libs/blueprint3d.js') }}"></script>
 
     <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
 </body>

@@ -1,18 +1,7 @@
 """
-Flask-Webserver für die Philips Hue Routine-Steuerung.
-Verwendet das Application Factory-Muster.
+Dieses Skript ist veraltet. Der Start des Servers erfolgt nun direkt über app.py.
+Du kannst diese Datei löschen oder ignorieren.
 """
-import os
-import sys
-
-# Fügt das Projekt-Root-Verzeichnis zum Python-Pfad hinzu
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
-from web import create_app
-
 if __name__ == "__main__":
-    flask_app = create_app()
-    flask_app.logger_instance.info("Starte Flask-Server...")
-    flask_app.run(host="0.0.0.0", port=9090, debug=True)
+    print("FEHLER: Dieses Skript ist veraltet.")
+    print("Bitte starte die Anwendung, indem du 'python app.py' im Hauptverzeichnis ausführst.")

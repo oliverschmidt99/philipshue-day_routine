@@ -5,6 +5,7 @@ import * as uiAutomations from "./modules/ui/automations.js";
 import * as uiScenes from "./modules/ui/scenes.js";
 import * as uiShared from "./modules/ui/shared.js";
 import * as uiHome from "./modules/ui/home.js";
+import { initBlueprintEditor } from "./modules/blueprint-editor.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -25,18 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function runMainApp() {
-  // Globaler Anwendungsstatus, der an andere Module übergeben wird
-  const appState = {
-    config: {},
-    bridgeData: {},
-    groupedLights: [],
-    colorPicker: null,
-    liveColorPicker: null,
-    statusInterval: null,
-    chartInstance: null,
-    openStatusCards: [],
-    inactivityTimer: null,
-  };
+  const appState = { config: {}, bridgeData: {}, groupedLights: [] };
 
   const init = async () => {
     uiShared.updateClock();
@@ -49,24 +39,20 @@ async function runMainApp() {
           api.loadGroupedLights(),
         ]);
 
-      // Rendere die initiale Ansicht
-      uiHome.renderHome(appState.bridgeData, appState.groupedLights);
       renderAllTabs();
-
-      // Übergebe den State an den Event-Handler, um die Events zu initialisieren
       initializeEventHandlers(appState);
 
-      // Starte auf dem "Zuhause"-Tab
       document.getElementById("tab-zuhause")?.click();
     } catch (error) {
       uiShared.showToast(`Initialisierungsfehler: ${error.message}`, true);
-      console.error(error);
     }
   };
 
   const renderAllTabs = () => {
+    uiHome.renderHome(appState.bridgeData, appState.groupedLights);
     uiAutomations.renderAutomations(appState.config, appState.bridgeData);
     uiScenes.renderScenes(appState.config.scenes);
+    initBlueprintEditor();
   };
 
   await init();

@@ -30,6 +30,8 @@
                 <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                     <button type="button" id="tab-zuhause"
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Zuhause</button>
+                    <button type="button" id="tab-grundriss"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-300 hover:border-gray-500">Grundriss</button>
                     <button type="button" id="tab-automations"
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-300 hover:border-gray-500">Automationen</button>
                     <button type="button" id="tab-scenes"
@@ -53,6 +55,38 @@
                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     </div>
                     <div id="room-detail-container" class="hidden bg-gray-800 rounded-lg">
+                    </div>
+                </div>
+
+                <div id="content-grundriss" class="content-section hidden">
+                    <div class="flex flex-col h-[calc(100vh-200px)]">
+                        <div id="floorplan-toolbar"
+                            class="flex items-center justify-between p-2 bg-gray-800 rounded-t-lg">
+                            <div class="flex items-center space-x-2" id="bp-toolbar-modes">
+                                <button type="button" data-mode="0"
+                                    class="bp-mode-button p-2 rounded bg-blue-600 text-white"
+                                    title="Verschieben & Auswählen" aria-label="Verschieben und Auswählen">
+                                    <i class="fas fa-arrows-alt" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" data-mode="1"
+                                    class="bp-mode-button p-2 rounded bg-gray-700 hover:bg-gray-600"
+                                    title="Wände zeichnen" aria-label="Wände zeichnen">
+                                    <i class="fas fa-pencil-ruler" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" data-mode="2"
+                                    class="bp-mode-button p-2 rounded bg-gray-700 hover:bg-gray-600"
+                                    title="Türen & Fenster setzen" aria-label="Türen und Fenster setzen">
+                                    <i class="fas fa-door-open" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div>
+                                <button type="button" id="floorplan-save"
+                                    class="p-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold">Grundriss
+                                    Speichern</button>
+                            </div>
+                        </div>
+                        <div id="bp-viewer" class="flex-grow bg-gray-600 rounded-b-lg relative overflow-hidden">
+                        </div>
                     </div>
                 </div>
 
@@ -200,7 +234,6 @@
 
                 <div id="content-bridge-devices" class="content-section hidden">
                     <h2 class="text-2xl font-semibold mb-4">Gefundene Bridge-Geräte</h2>
-
                     <div class="border-b border-gray-700 mb-4">
                         <nav class="-mb-px flex space-x-6" id="bridge-devices-tabs" aria-label="Gerätetypen">
                             <button type="button" data-tab="rooms"
@@ -212,7 +245,6 @@
                                 &amp; Schalter</button>
                         </nav>
                     </div>
-
                     <div id="bridge-devices-content">
                         <div id="bridge-content-rooms" class="bridge-device-content-pane"></div>
                         <div id="bridge-content-zones" class="bridge-device-content-pane hidden"></div>
@@ -229,7 +261,6 @@
                 class="hidden fixed bottom-4 right-4 bg-gray-900 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300">
                 Gespeichert
             </div>
-
         </div>
     </div>
 </body>
