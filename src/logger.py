@@ -4,13 +4,14 @@ import sys
 import os
 
 
-class Logger:
+# *** KORREKTUR: Logger -> AppLogger ***
+class AppLogger:
     """
     Initialisiert und konfiguriert einen Logger, der sowohl in die Konsole
     als auch in eine Datei schreibt.
     """
 
-    def __init__(self, log_file, level=logging.INFO):
+    def __init__(self, log_file="data/app.log", level=logging.INFO):
         self.logger = logging.getLogger("HueRoutineAppLogger")
 
         if not self.logger.handlers:
@@ -32,6 +33,10 @@ class Logger:
             fh = logging.FileHandler(log_file, mode="a", encoding="utf-8")
             fh.setFormatter(formatter)
             self.logger.addHandler(fh)
+
+    def get_logger(self):
+        """Gibt die konfigurierte Logger-Instanz zurück."""
+        return self.logger
 
     def info(self, message):
         self.logger.info(message)

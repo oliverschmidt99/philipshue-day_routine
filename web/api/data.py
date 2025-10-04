@@ -8,14 +8,15 @@ from datetime import datetime, timedelta
 import pandas as pd
 from flask import Blueprint, jsonify, request, Response, current_app
 
-data_api = Blueprint("data_api", __name__)
+# *** HIER IST DIE KORREKTUR: data_api -> DataAPI ***
+DataAPI = Blueprint("data_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
 LOG_FILE = os.path.join(BASE_DIR, "data", "app.log")
 STATUS_FILE = os.path.join(BASE_DIR, "data", "status.json")
 
-@data_api.route("/history")
+@DataAPI.route("/history")
 def get_data_history():
     """Gibt historische Sensordaten aus der Datenbank zurück."""
     try:
@@ -53,7 +54,7 @@ def get_data_history():
         current_app.logger_instance.error(f"Fehler bei der Abfrage der Datenhistorie: {e}")
         return jsonify({"error": f"Datenbank- oder Datenfehler: {e}"}), 500
 
-@data_api.route("/log")
+@DataAPI.route("/log")
 def get_log():
     """Gibt die letzten 500 Zeilen der Log-Datei zurück."""
     try:
@@ -63,7 +64,7 @@ def get_log():
     except IOError:
         return "Log-Datei nicht gefunden.", 404
 
-@data_api.route("/status")
+@DataAPI.route("/status")
 def get_status():
     """Gibt den aktuellen Status der Routinen zurück."""
     try:

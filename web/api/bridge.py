@@ -4,7 +4,8 @@ API-Endpunkte für die direkte Kommunikation mit der Philips Hue Bridge (v2 API)
 from flask import Blueprint, jsonify, request, current_app
 from src.hue_wrapper import HueBridge
 
-bridge_api = Blueprint("bridge_api", __name__)
+# *** KORREKTUR: bridge_api -> BridgeAPI ***
+BridgeAPI = Blueprint("bridge_api", __name__)
 
 def get_bridge_instance() -> HueBridge | None:
     """Holt die globale, geteilte Bridge-Instanz aus dem App-Kontext."""
@@ -17,7 +18,7 @@ def get_bridge_instance() -> HueBridge | None:
     
     return bridge if bridge.is_connected() else None
 
-@bridge_api.route("/all_grouped_lights")
+@BridgeAPI.route("/all_grouped_lights")
 def get_all_grouped_lights():
     bridge = get_bridge_instance()
     if not bridge:
@@ -27,7 +28,7 @@ def get_all_grouped_lights():
     return jsonify(grouped_lights)
 
 
-@bridge_api.route("/all_items")
+@BridgeAPI.route("/all_items")
 def get_all_bridge_items():
     bridge = get_bridge_instance()
     if not bridge:
@@ -86,7 +87,7 @@ def get_all_bridge_items():
         "scenes": bridge_data.get("scenes", [])
     })
 
-@bridge_api.route("/grouped_light/<group_id>/state", methods=["POST"])
+@BridgeAPI.route("/grouped_light/<group_id>/state", methods=["POST"])
 def set_group_light_state(group_id):
     bridge = get_bridge_instance()
     if not bridge:
@@ -99,7 +100,7 @@ def set_group_light_state(group_id):
     bridge.set_group_state(group_id, state)
     return jsonify({"message": "Befehl für Gruppe gesendet"})
 
-@bridge_api.route("/light/<light_id>/state", methods=["POST"])
+@BridgeAPI.route("/light/<light_id>/state", methods=["POST"])
 def set_light_state(light_id):
     bridge = get_bridge_instance()
     if not bridge:
@@ -113,7 +114,7 @@ def set_light_state(light_id):
     return jsonify({"message": "Befehl für Licht gesendet"})
 
 
-@bridge_api.route("/group/<group_id>/scene", methods=["POST"])
+@BridgeAPI.route("/group/<group_id>/scene", methods=["POST"])
 def recall_scene_for_group(group_id):
     bridge = get_bridge_instance()
     if not bridge:
@@ -129,7 +130,7 @@ def recall_scene_for_group(group_id):
 
 # /// NEUE API-ENDPUNKTE FÜR SZENEN-MANAGEMENT ///
 
-@bridge_api.route("/scenes", methods=["POST"])
+@BridgeAPI.route("/scenes", methods=["POST"])
 def create_scene():
     """Erstellt eine neue Szene auf der Hue Bridge."""
     bridge = get_bridge_instance()
@@ -150,7 +151,7 @@ def create_scene():
         return jsonify({"message": f"Szene '{data.get('name')}' erstellt.", "data": response}), 201
     return jsonify({"error": "Szene konnte nicht erstellt werden."}), 500
 
-@bridge_api.route("/scenes/<scene_id>", methods=["DELETE"])
+@BridgeAPI.route("/scenes/<scene_id>", methods=["DELETE"])
 def delete_scene(scene_id):
     """Löscht eine Szene von der Hue Bridge."""
     bridge = get_bridge_instance()

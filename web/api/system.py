@@ -5,12 +5,13 @@ import os
 import subprocess
 from flask import Blueprint, jsonify, current_app
 
-system_api = Blueprint("system_api", __name__)
+# *** KORREKTUR: system_api -> SystemAPI ***
+SystemAPI = Blueprint("system_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 RESTART_FLAG_FILE = os.path.join(BASE_DIR, "data", "restart.flag")
 
-@system_api.route("/restart", methods=["POST"])
+@SystemAPI.route("/restart", methods=["POST"])
 def restart_app():
     """Löst einen Neustart der Anwendung aus."""
     try:
@@ -20,7 +21,7 @@ def restart_app():
     except IOError as e:
         return jsonify({"error": f"Neustart konnte nicht ausgelöst werden: {e}"}), 500
 
-@system_api.route("/update_app", methods=["POST"])
+@SystemAPI.route("/update_app", methods=["POST"])
 def update_app():
     """Führt 'git pull' aus, um die Anwendung zu aktualisieren."""
     if not os.path.isdir(os.path.join(BASE_DIR, ".git")):
@@ -40,7 +41,7 @@ def update_app():
     except (FileNotFoundError, subprocess.CalledProcessError) as e:
         return jsonify({"error": f"Fehler beim Update: {e.stderr if hasattr(e, 'stderr') else e}"}), 500
 
-@system_api.route("/scenes/add_defaults", methods=["POST"])
+@SystemAPI.route("/scenes/add_defaults", methods=["POST"])
 def add_default_scenes():
     """Fügt Standard-Lichtszenen zur Konfiguration hinzu."""
     try:

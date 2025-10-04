@@ -5,7 +5,8 @@ import os
 import shutil
 from flask import Blueprint, jsonify, request, current_app
 
-config_api = Blueprint("config_api", __name__)
+# *** HIER IST DIE KORREKTUR: config_api -> ConfigAPI ***
+ConfigAPI = Blueprint("config_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -17,13 +18,13 @@ AUTOMATION_BACKUP_FILE = os.path.join(DATA_DIR, "automation.backup.yaml")
 HOME_BACKUP_FILE = os.path.join(DATA_DIR, "home.backup.yaml")
 
 
-@config_api.route("/", methods=["GET"])
+@ConfigAPI.route("/", methods=["GET"])
 def get_config():
     """Gibt die gesamte Konfiguration zurück."""
     config = current_app.config_manager.get_full_config()
     return jsonify(config)
 
-@config_api.route("/", methods=["POST"])
+@ConfigAPI.route("/", methods=["POST"])
 def save_config():
     """Speichert die gesamte Konfiguration."""
     data = request.get_json()
@@ -52,7 +53,7 @@ def save_config():
     
     return jsonify({"error": "Speichern der Konfiguration fehlgeschlagen."}), 500
 
-@config_api.route("/backup", methods=["POST"])
+@ConfigAPI.route("/backup", methods=["POST"])
 def backup_config():
     """Erstellt ein Backup der aktuellen Konfigurationsdateien."""
     try:
@@ -63,7 +64,7 @@ def backup_config():
     except (IOError, OSError) as e:
         return jsonify({"error": f"Dateifehler beim Sichern: {e}"}), 500
 
-@config_api.route("/restore", methods=["POST"])
+@ConfigAPI.route("/restore", methods=["POST"])
 def restore_config():
     """Stellt die Konfiguration aus einem Backup wieder her."""
     if not os.path.exists(SETTINGS_BACKUP_FILE) or not os.path.exists(AUTOMATION_BACKUP_FILE) or not os.path.exists(HOME_BACKUP_FILE):

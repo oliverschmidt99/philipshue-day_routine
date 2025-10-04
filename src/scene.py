@@ -2,7 +2,7 @@
 Definiert eine Datenklasse für eine Lichteinstellung (Szene),
 die direkt in einen Hue-API-Aufruf umgewandelt werden kann.
 """
-
+from .logger import AppLogger
 
 class Scene:
     """Repräsentiert eine Lichteinstellung (Szene)."""

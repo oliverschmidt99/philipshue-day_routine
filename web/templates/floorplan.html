@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Grundriss-Editor</title>
+
+    <link href="{{ url_for('blueprint3d_static', filename='example/css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('blueprint3d_static', filename='example/css/example.css') }}" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-xs-3" id="sidebar">
+                <div class="panel-group" id="items">
+                </div>
+            </div>
+
+            <div class="col-xs-9" id="main-controls">
+                <div id="camera-controls">
+                    <a href="#" class="btn btn-default camera-control" id="pan-camera">
+                        <span class="glyphicon glyphicon-move"></span> Pan
+                    </a>
+                    <a href="#" class="btn btn-default camera-control" id="rotate-camera">
+                        <span class="glyphicon glyphicon-repeat"></span> Rotate
+                    </a>
+                    <a href="#" class="btn btn-default camera-control" id="zoom-camera">
+                        <span class="glyphicon glyphicon-zoom-in"></span> Zoom
+                    </a>
+                    <span class="dropdown">
+                        <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            View<span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" id="view-mod-select">
+                            <li><a href="#" id="view-mod-3d">3D</a></li>
+                            <li><a href="#" id="view-mod-2d">Top-Down</a></li>
+                        </ul>
+                    </span>
+                </div>
+
+                <div id="viewer"></div>
+
+                <div id="floorplanner">
+                    <canvas id="floorplanner-canvas"></canvas>
+                    <div id="floorplanner-controls">
+                        <button id="move" class="btn btn-sm btn-default">
+                            <span class="glyphicon glyphicon-move"></span>
+                        </button>
+                        <button id="draw" class="btn btn-sm btn-default">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                        </button>
+                        <button id="delete" class="btn btn-sm btn-default">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                        <span class="pull-right">
+                            <button class="btn btn-primary btn-sm" id="update-walls-btn">Update Walls</button>
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('blueprint3d_static', filename='example/js/jquery.js') }}"></script>
+    <script src="{{ url_for('blueprint3d_static', filename='example/js/bootstrap.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="{{ url_for('blueprint3d_static', filename='build/blueprint3d.js') }}"></script>
+
+    <script src="{{ url_for('blueprint3d_static', filename='example/js/items.js') }}"></script>
+    <script src="{{ url_for('blueprint3d_static', filename='example/js/example.js') }}"></script>
+</body>
+
+</html>

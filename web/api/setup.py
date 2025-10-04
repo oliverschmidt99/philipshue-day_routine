@@ -6,7 +6,8 @@ import requests
 from flask import Blueprint, jsonify, request, current_app
 from src.hue_wrapper import HueBridge
 
-setup_api = Blueprint("setup_api", __name__)
+# *** KORREKTUR: setup_api -> SetupAPI ***
+SetupAPI = Blueprint("setup_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -15,12 +16,12 @@ AUTOMATION_FILE = os.path.join(DATA_DIR, "automation.yaml")
 HOME_FILE = os.path.join(DATA_DIR, "home.yaml")
 
 
-@setup_api.route("/status")
+@SetupAPI.route("/status")
 def get_setup_status():
     config = current_app.config_manager.get_full_config()
     return jsonify({"setup_needed": not (config and config.get("bridge_ip") and config.get("app_key"))})
 
-@setup_api.route("/discover")
+@SetupAPI.route("/discover")
 def discover_bridges():
     try:
         response = requests.get("https://discovery.meethue.com/", timeout=10)
@@ -32,7 +33,7 @@ def discover_bridges():
             return jsonify({"error": "Zu viele Anfragen an den Hue-Server. Bitte warte einen Moment und versuche es erneut."}), 429
         return jsonify({"error": str(e)}), 500
 
-@setup_api.route("/connect", methods=["POST"])
+@SetupAPI.route("/connect", methods=["POST"])
 def connect_to_bridge():
     ip_address = request.json.get("ip")
     if not ip_address:
@@ -44,7 +45,7 @@ def connect_to_bridge():
     else:
         return jsonify({"error": "Der Link-Button auf der Bridge wurde nicht gedrückt oder ein Fehler ist aufgetreten."}), 500
 
-@setup_api.route("/save", methods=["POST"])
+@SetupAPI.route("/save", methods=["POST"])
 def save_setup_config():
     config_manager = current_app.config_manager
     data = request.get_json()

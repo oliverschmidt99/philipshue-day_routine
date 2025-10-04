@@ -2,16 +2,17 @@
 Verwaltet die Zustandslogik und Ausführung einer einzelnen,
 konfigurierbaren Tageslicht-Routine für einen Raum.
 """
-
-from datetime import datetime, time, timedelta
+import time
+from datetime import datetime, timedelta
 from .daily_time_span import DailyTimeSpan
-
+from .state_machine import StateMachine
+from .logger import AppLogger
 
 class Routine:
     """Verwaltet die Logik für eine einzelne Tageslicht-Routine."""
 
     def __init__(
-        self, name, room, sensor, config, scenes, sun_times, log, global_settings, **kwargs
+        self, name, room, sensor, config, scenes, sun_times, log: AppLogger, global_settings, **kwargs
     ):
         self.name = name
         self.room = room
@@ -125,10 +126,6 @@ class Routine:
             
     def _handle_conditional_trigger(self, trigger: dict, now: datetime):
         """Verarbeitet einen bedingungsbasierten Trigger."""
-        # Diese Funktion ist ein Platzhalter und müsste die Logik enthalten,
-        # um den Zustand anderer Geräte abzufragen.
-        # Dies erfordert eine Erweiterung des HueWrappers, um z.B. den Zustand
-        # einer bestimmten Lampe abzufragen.
         self.log.debug(f"Bedingungs-Trigger '{trigger.get('name')}' wird geprüft (Logik noch nicht implementiert).")
 
 

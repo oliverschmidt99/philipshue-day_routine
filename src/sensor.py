@@ -3,11 +3,11 @@ Liest und interpretiert Daten von einem Hue Bewegungssensor,
 inklusive der zugehörigen Unter-Sensoren für Helligkeit und Temperatur.
 """
 from src.hue_wrapper import HueBridge
-from .logger import Logger
+from .logger import AppLogger
 
 class Sensor:
     """Liest Daten von einem Hue-Bewegungssensor und stellt sie bereit."""
-    def __init__(self, bridge: HueBridge, device_id: str, log: Logger):
+    def __init__(self, bridge: HueBridge, device_id: str, log: AppLogger):
         self.bridge = bridge
         self.log = log
         self.device_id = device_id
@@ -34,7 +34,6 @@ class Sensor:
         if not service_ref:
             return None
         
-        # KORREKTUR HIER:
         return self.bridge.get_resource_by_id(service_type, service_ref['rid'])
 
     def get_motion(self) -> bool:

@@ -3,12 +3,17 @@ Repräsentiert einen Raum oder eine Zone der Hue Bridge
 und kapselt die Steuerungsbefehle für die zugehörige Lichtgruppe.
 """
 import time
-from src.hue_wrapper import HueBridge
-from .logger import Logger
+from .scene import Scene
+from .sensor import Sensor
+from .state_machine import StateMachine
+from .routine import Routine
+from .logger import AppLogger
+from .hue_wrapper import HueBridge
+
 
 class Room:
     """Repräsentiert einen Raum oder eine Zone und steuert die zugehörigen Lichter."""
-    def __init__(self, bridge: HueBridge, log: Logger, name: str, group_id: str, **kwargs):
+    def __init__(self, bridge: HueBridge, log: AppLogger, name: str, group_id: str, **kwargs):
         self.bridge = bridge
         self.log = log
         self.name = name

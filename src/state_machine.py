@@ -3,11 +3,13 @@ Repräsentiert eine zustandsbasierte Automation (Endlicher Automat).
 """
 
 from datetime import datetime
+from .logger import AppLogger
+from .timer import Timer
 
 class StateMachine:
     """Verwaltet die Logik für eine State-Machine-Automation."""
 
-    def __init__(self, name, config, log, bridge, sensors, rooms, scenes, **kwargs):
+    def __init__(self, name, config, log: AppLogger, bridge, sensors, rooms, scenes, **kwargs):
         self.name = name
         self.config = config
         self.log = log
@@ -39,10 +41,6 @@ class StateMachine:
 
     def _check_conditions(self, conditions: list, now: datetime) -> bool:
         """Prüft, ob alle Bedingungen für einen Übergang erfüllt sind."""
-        # Hier wird die Logik implementiert, um die verschiedenen
-        # Bedingungstypen (Helligkeit, Zeit, Bewegung etc.) zu prüfen.
-        # Dies ist ein komplexer Teil, der schrittweise aufgebaut wird.
-        # Vorerst geben wir immer False zurück, damit nichts unerwartet schaltet.
         return False
 
     def _apply_state_action(self, state_name: str):

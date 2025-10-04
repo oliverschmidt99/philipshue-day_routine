@@ -16,7 +16,7 @@ from src.sensor import Sensor
 from src.routine import Routine
 from src.timer import Timer
 from src.state_machine import StateMachine
-from src.logger import Logger
+from src.logger import AppLogger
 from src.config_manager import ConfigManager
 
 BASE_DIR = os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
@@ -25,7 +25,7 @@ DB_FILE = os.path.join(BASE_DIR, "sensor_data.db")
 STATUS_FILE = os.path.join(DATA_DIR, "status.json")
 
 class CoreLogic:
-    def __init__(self, log: Logger, config_manager: ConfigManager):
+    def __init__(self, log: AppLogger, config_manager: ConfigManager):
         self.log = log
         self.config_manager = config_manager
         self._init_database()
