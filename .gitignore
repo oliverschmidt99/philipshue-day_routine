@@ -231,3 +231,10 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 status.json
+
+# Build-Artefakte
+build/
+dist/
+
+# Node.js Abhängigkeiten
+node_modules/
