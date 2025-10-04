@@ -3,8 +3,6 @@ import logging
 import sys
 import os
 
-
-# *** KORREKTUR: Logger -> AppLogger ***
 class AppLogger:
     """
     Initialisiert und konfiguriert einen Logger, der sowohl in die Konsole
@@ -23,12 +21,10 @@ class AppLogger:
                 datefmt="%Y-%m-%d %H:%M:%S",
             )
 
-            # Konsolen-Handler
             ch = logging.StreamHandler(sys.stdout)
             ch.setFormatter(formatter)
             self.logger.addHandler(ch)
 
-            # Datei-Handler
             os.makedirs(os.path.dirname(log_file), exist_ok=True)
             fh = logging.FileHandler(log_file, mode="a", encoding="utf-8")
             fh.setFormatter(formatter)

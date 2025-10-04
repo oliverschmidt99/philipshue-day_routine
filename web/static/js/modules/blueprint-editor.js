@@ -1,23 +1,35 @@
 import * as api from "./api.js";
 import { showToast } from "./ui/shared.js";
 
-const Blueprint3d = window.Blueprint3d;
 let blueprint3d;
+let isInitialized = false;
 
-const texture_config = {
-  wallTexture: "wallmap.png",
-  floorTexture: { url: "hardwood.png", scale: 400.0 },
-  ceilingTexture: { url: "light_fine_wood.jpg", scale: 400.0 },
-};
+// Funktion zum Warten auf die Bibliothek
+function waitForBlueprint3d(callback) {
+  const interval = setInterval(() => {
+    if (window.Blueprint3d) {
+      clearInterval(interval);
+      callback();
+    }
+  }, 100); // Überprüft alle 100ms
+}
 
-export async function initBlueprintEditor() {
+async function initialize() {
+  const BP3D = window.Blueprint3d;
+
+  const texture_config = {
+    wallTexture: "wallmap.png",
+    floorTexture: { url: "hardwood.png", scale: 400.0 },
+    ceilingTexture: { url: "light_fine_wood.jpg", scale: 400.0 },
+  };
+
   const opts = {
     floorplannerElement: "bp-viewer",
     threeElement: null,
-    texturepath: "/static/textures/",
+    texturepath: "/blueprint3d/example/textures/", // Korrekter Pfad zu den Texturen
   };
 
-  blueprint3d = new Blueprint3d(opts);
+  blueprint3d = new BP3D.Blueprint3d(opts);
 
   try {
     const savedFloorplan = await api.loadFloorplanConfig();
@@ -28,12 +40,24 @@ export async function initBlueprintEditor() {
     console.warn("Kein gespeicherter Grundriss gefunden.", error);
   }
 
-  blueprint3d.floorplanner.setTextures(texture_config);
-  setupEventListeners();
-  blueprint3d.floorplanner.setMode(Blueprint3d.Floorplanner.Mode.MOVE);
+  if (blueprint3d.floorplanner) {
+    blueprint3d.floorplanner.setTextures(texture_config);
+    setupEventListeners();
+    blueprint3d.floorplanner.setMode(BP3D.Floorplanner.Mode.MOVE);
+  } else {
+    console.error("Floorplanner konnte nicht initialisiert werden.");
+  }
+  isInitialized = true;
+}
+
+export function initBlueprintEditor() {
+  if (isInitialized) return; // Nicht erneut initialisieren
+  waitForBlueprint3d(initialize);
 }
 
 function setupEventListeners() {
+  if (!blueprint3d || !blueprint3d.floorplanner) return;
+
   const modeButtons = document.querySelectorAll(".bp-mode-button");
   modeButtons.forEach((button) => {
     button.addEventListener("click", (e) => {
@@ -57,7 +81,9 @@ function setupEventListeners() {
     .addEventListener("click", saveFloorplan);
 
   window.addEventListener("resize", () => {
-    if (blueprint3d) blueprint3d.floorplanner.resizeView();
+    if (blueprint3d && blueprint3d.floorplanner) {
+      blueprint3d.floorplanner.resizeView();
+    }
   });
 }
 

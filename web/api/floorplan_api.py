@@ -4,7 +4,6 @@ API-Endpunkte für das Laden und Speichern von Grundrissdaten.
 import os
 from flask import Blueprint, jsonify, request, current_app
 
-# *** HIER IST DIE KORREKTUR: floorplan_api -> FloorplanAPI ***
 FloorplanAPI = Blueprint("floorplan_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))

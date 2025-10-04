@@ -22,7 +22,7 @@ class HueBridge:
             return
         try:
             self._hue = Hue(self.ip, self.app_key)
-            self._hue.bridge.get_bridge() # Testaufruf zur Verifizierung
+            self._hue.bridge.get_bridge()
             self.logger.info(f"Erfolgreich mit Bridge unter {self.ip} (v2 API) verbunden.")
         except Exception as e:
             self.logger.error(f"Fehler bei der Initialisierung der v2 Bridge: {e}", exc_info=True)
@@ -46,56 +46,25 @@ class HueBridge:
 
     def get_full_api_data(self) -> Dict:
         if not self.is_connected(): return {}
-        return self._hue.bridge.get_all()
-
-    def get_device_by_id(self, device_id: str) -> Optional[Dict]:
-        if not self.is_connected(): return None
         try:
-            return self._hue.bridge._get_by_id('device', device_id)
+            # KORREKTUR: Die Controller-Objekte sind iterierbar. Wir konvertieren sie in Listen von Dictionaries.
+            data = {
+                "lights": [light.data_dict for light in self._hue.lights],
+                "scenes": [scene.data_dict for scene in self._hue.scenes],
+                "devices": [device.data_dict for device in self._hue.devices],
+                "rooms": [room.data_dict for room in self._hue.rooms],
+                "zones": [zone.data_dict for zone in self._hue.zones],
+            }
+            return data
         except Exception as e:
-            self.logger.error(f"Fehler beim Abrufen von Gerät {device_id}: {e}")
-            return None
-            
-    def get_light_level_by_device_id(self, device_id: str) -> Optional[Dict]:
-        device = self.get_device_by_id(device_id)
-        if device:
-            for service in device.get('services', []):
-                if service.get('rtype') == 'light_level':
-                    return self._hue.bridge._get_by_id('light_level', service['rid'])
-        return None
-
-    def get_temperature_by_device_id(self, device_id: str) -> Optional[Dict]:
-        device = self.get_device_by_id(device_id)
-        if device:
-            for service in device.get('services', []):
-                if service.get('rtype') == 'temperature':
-                    return self._hue.bridge._get_by_id('temperature', service['rid'])
-        return None
-
-    def set_group_state(self, group_id: str, state: dict):
-        if not self.is_connected(): return
+            self.logger.error(f"Unerwarteter Fehler beim Abrufen der gesamten Bridge-Daten: {e}", exc_info=True)
+            return {}
         
-        group = self._hue.bridge._get_by_id('room', group_id) or self._hue.bridge._get_by_id('zone', group_id)
-        if not group:
-            self.logger.error(f"Gruppe {group_id} nicht gefunden.")
-            return
-
-        grouped_light_service = next((s for s in group['services'] if s['rtype'] == 'grouped_light'), None)
-        if not grouped_light_service:
-            self.logger.error(f"Kein 'grouped_light' Service für Gruppe {group_id} gefunden.")
-            return
-        
-        grouped_light_id = grouped_light_service['rid']
-
-        v2_state = {}
-        if 'on' in state:
-            v2_state['on'] = {'on': state.get('status', False)}
-        if 'bri' in state:
-            v2_state['dimming'] = {'brightness': (state['bri'] / 254) * 100}
-        if 'ct' in state:
-            v2_state['color_temperature'] = {'mirek': state['ct']}
-        
+    def get_grouped_lights(self) -> List:
+        if not self.is_connected() or not hasattr(self._hue, 'grouped_light'): 
+            return []
         try:
-            self._hue.bridge.set_grouped_light_service(grouped_light_id, v2_state)
+            return [gl.data_dict for gl in self._hue.grouped_light]
         except Exception as e:
-            self.logger.error(f"Fehler beim Setzen des Zustands für Gruppe {group_id}: {e}", exc_info=True)
+            self.logger.error(f"Fehler beim Abrufen der Gruppenlichter: {e}", exc_info=True)
+            return []

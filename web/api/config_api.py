@@ -5,7 +5,6 @@ import os
 import shutil
 from flask import Blueprint, jsonify, request, current_app
 
-# *** HIER IST DIE KORREKTUR: config_api -> ConfigAPI ***
 ConfigAPI = Blueprint("config_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -38,7 +37,7 @@ def save_config():
         "location": data.get("location")
     }
     automation_data = {
-        "routines": data.get("routines"),
+        "automations": data.get("automations"),
         "scenes": data.get("scenes")
     }
     home_data = {

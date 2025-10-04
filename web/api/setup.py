@@ -6,7 +6,6 @@ import requests
 from flask import Blueprint, jsonify, request, current_app
 from src.hue_wrapper import HueBridge
 
-# *** KORREKTUR: setup_api -> SetupAPI ***
 SetupAPI = Blueprint("setup_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -55,7 +54,7 @@ def save_setup_config():
         "location": {"latitude": data.get("latitude"), "longitude": data.get("longitude")},
         "global_settings": {"loop_interval_s": 1, "status_interval_s": 5},
     }
-    automation_data = {"scenes": {}, "routines": []}
+    automation_data = {"scenes": {}, "automations": []}
     home_data = {"rooms": []}
 
     if config_manager.safe_write(SETTINGS_FILE, settings_data) and \

@@ -4,7 +4,6 @@ import shutil
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 
-# *** HIER IST DIE KORREKTUR: Logger -> AppLogger ***
 from .logger import AppLogger
 
 class ConfigManager:
@@ -44,7 +43,6 @@ class ConfigManager:
         automation = self.load_yaml(self.automation_file) or {}
         home = self.load_yaml(self.home_file) or {}
         
-        # Kombiniere die Dictionaries
         full_config = {**settings, **automation, **home}
         return full_config
 
@@ -54,21 +52,17 @@ class ConfigManager:
         backup_path = file_path + ".bak"
         
         try:
-            # Schreibe in eine temporäre Datei
             with open(temp_path, "w", encoding="utf-8") as f:
                 yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
             
-            # Erstelle ein Backup der existierenden Datei, falls vorhanden
             if os.path.exists(file_path):
                 shutil.copy(file_path, backup_path)
             
-            # Benenne die temporäre Datei zur finalen Datei um
             os.rename(temp_path, file_path)
             
             return True
         except (IOError, YAMLError) as e:
             self.logger.error(f"Fehler beim Schreiben von {os.path.basename(file_path)}: {e}", exc_info=True)
-            # Versuche, das Backup wiederherzustellen
             if os.path.exists(backup_path):
                 os.rename(backup_path, file_path)
             return False

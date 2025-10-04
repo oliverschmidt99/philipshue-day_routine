@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 import pandas as pd
 from flask import Blueprint, jsonify, request, Response, current_app
 
-# *** HIER IST DIE KORREKTUR: data_api -> DataAPI ***
 DataAPI = Blueprint("data_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -20,11 +19,10 @@ STATUS_FILE = os.path.join(BASE_DIR, "data", "status.json")
 def get_data_history():
     """Gibt historische Sensordaten aus der Datenbank zurück."""
     try:
-        sensor_id_str = request.args.get("sensor_id")
-        if not sensor_id_str or not sensor_id_str.isdigit():
+        sensor_id = request.args.get("sensor_id")
+        if not sensor_id:
             return jsonify({"labels": [], "brightness": [], "temperature": []})
 
-        sensor_id = int(sensor_id_str)
         date_str = request.args.get("date")
         start_date = datetime.fromisoformat(date_str)
         end_date = start_date + timedelta(days=1)
@@ -39,7 +37,6 @@ def get_data_history():
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         df_pivot = df.pivot(index="timestamp", columns="measurement_type", values="value").resample("5min").mean().interpolate(method="time")
         
-        # Sicherstellen, dass die Spalten existieren, bevor darauf zugegriffen wird
         if "brightness" not in df_pivot.columns:
             df_pivot["brightness"] = None
         if "temperature" not in df_pivot.columns:

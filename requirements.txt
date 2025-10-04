@@ -1,8 +1,10 @@
+# requirements.txt
+
 Flask
 python-hue-v2
 PyYAML
 requests
 astral
 pandas
-
 ruamel.yaml
+Flask-Cors

@@ -5,7 +5,6 @@ import os
 import subprocess
 from flask import Blueprint, jsonify, current_app
 
-# *** KORREKTUR: system_api -> SystemAPI ***
 SystemAPI = Blueprint("system_api", __name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -27,14 +26,10 @@ def update_app():
     if not os.path.isdir(os.path.join(BASE_DIR, ".git")):
         return jsonify({"error": "Kein Git-Repository gefunden."}), 500
     try:
-        # Lokale Änderungen sichern
         subprocess.run(["git", "stash"], cwd=BASE_DIR, check=True, capture_output=True)
-        # Update durchführen
         result = subprocess.run(["git", "pull", "--rebase"], cwd=BASE_DIR, check=True, capture_output=True, text=True)
-        # Gesicherte Änderungen wieder anwenden
         subprocess.run(["git", "stash", "pop"], cwd=BASE_DIR, check=True, capture_output=True)
         
-        # Neustart auslösen
         with open(RESTART_FLAG_FILE, "w", encoding="utf-8") as f:
             pass
         return jsonify({"message": f"Update erfolgreich!\n{result.stdout}\nAnwendung wird neu gestartet."})
@@ -48,9 +43,8 @@ def add_default_scenes():
         config_manager = current_app.config_manager
         full_config = config_manager.get_full_config()
         
-        # Hole nur den 'automation'-Teil der Konfiguration zum Speichern
         automation_config = {
-            "routines": full_config.get("routines", []),
+            "automations": full_config.get("automations", []),
             "scenes": full_config.get("scenes", {})
         }
 
@@ -62,7 +56,6 @@ def add_default_scenes():
             "aus": {"status": False, "bri": 0}
         }
         
-        # Füge nur die Szenen hinzu, die noch nicht existieren
         scenes_added_count = 0
         for name, data in default_scenes.items():
             if name not in automation_config["scenes"]:

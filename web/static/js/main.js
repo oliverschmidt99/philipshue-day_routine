@@ -52,7 +52,8 @@ async function runMainApp() {
     uiHome.renderHome(appState.bridgeData, appState.groupedLights);
     uiAutomations.renderAutomations(appState.config, appState.bridgeData);
     uiScenes.renderScenes(appState.config.scenes);
-    initBlueprintEditor();
+    // KORREKTUR: initBlueprintEditor wird nicht mehr hier aufgerufen,
+    // sondern erst, wenn der Tab geklickt wird.
   };
 
   await init();
