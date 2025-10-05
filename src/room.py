@@ -3,13 +3,8 @@ Repräsentiert einen Raum oder eine Zone der Hue Bridge
 und kapselt die Steuerungsbefehle für die zugehörige Lichtgruppe.
 """
 import time
-from .scene import Scene
-from .sensor import Sensor
-from .state_machine import StateMachine
-from .routine import Routine
-from .logger import AppLogger
-from .hue_wrapper import HueBridge
-
+from src.hue_wrapper import HueBridge
+from src.logger import AppLogger
 
 class Room:
     """Repräsentiert einen Raum oder eine Zone und steuert die zugehörigen Lichter."""
@@ -30,14 +25,9 @@ class Room:
 
     def _get_grouped_light_data(self) -> dict | None:
         """Holt die rohen Daten des zugehörigen GroupedLight-Services."""
-        if not self.group_id:
-            return None
-        group_obj = self.bridge.get_group_object_by_id(self.group_id)
-        if group_obj:
-            grouped_light_service_ref = next((s for s in group_obj.services if s.get('rtype') == 'grouped_light'), None)
-            if grouped_light_service_ref:
-                return self.bridge._hue.bridge.get('grouped_light', grouped_light_service_ref['rid'])
-        return None
+        if not self.group_id: return None
+        all_gl = self.bridge.get_grouped_lights()
+        return next((gl for gl in all_gl if gl.get('owner', {}).get('rid') == self.group_id), None)
 
     def is_any_light_on(self) -> bool | None:
         """Prüft, ob irgendein Licht in der Gruppe des Raumes an ist."""

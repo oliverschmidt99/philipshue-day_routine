@@ -17,18 +17,18 @@ def create_app(config_manager=None, logger_instance=None, app_config=None):
     app = Flask(__name__, template_folder='templates', static_folder='static')
     CORS(app)
 
-    # HIER DIE ÄNDERUNG: Erstelle eine prozess-lokale Bridge-Instanz für den Webserver.
+    # Bridge-Instanz für den Webserver erstellen und im App-Kontext speichern
     if app_config and app_config.get("bridge_ip"):
         bridge = HueBridge(
             ip=app_config.get("bridge_ip"),
             app_key=app_config.get("app_key"),
             logger=logger_instance
         )
-        bridge.connect()
         app.bridge_instance = bridge
     else:
         app.bridge_instance = None
-        logger_instance.warning("Keine Bridge-Konfiguration für den Webserver gefunden.")
+        if logger_instance:
+            logger_instance.warning("Keine Bridge-Konfiguration für den Webserver gefunden.")
 
     app.config_manager = config_manager
     app.logger_instance = logger_instance

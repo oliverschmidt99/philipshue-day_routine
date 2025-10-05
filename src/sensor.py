@@ -18,7 +18,6 @@ class Sensor:
         if not self._device_data:
             if not self.bridge.is_connected():
                 return None
-            # Nutzt die neue Funktion aus dem Wrapper
             self._device_data = self.bridge.get_device_by_id(self.device_id)
             if not self._device_data:
                 self.log.warning(f"Kein Gerät mit ID {self.device_id} gefunden.")

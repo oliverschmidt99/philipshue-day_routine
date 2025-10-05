@@ -2,7 +2,6 @@
 Repräsentiert eine Timer-basierte Automation.
 """
 from datetime import datetime, timedelta
-import time
 from .logger import AppLogger
 
 class Timer:
@@ -24,12 +23,14 @@ class Timer:
         if not self.enabled:
             return
 
+        # 1. Timer starten, falls er nicht aktiv ist und die Trigger-Bedingung erfüllt ist
         if not self.is_active and self._check_triggers():
             duration_minutes = self.config.get("duration_minutes", 10)
             self.end_time = now + timedelta(minutes=duration_minutes)
             self.is_active = True
             self.log.info(f"Timer '{self.name}' gestartet. Läuft ab in {duration_minutes} Minuten.")
 
+        # 2. Timer ausführen, wenn er aktiv ist und die Zeit abgelaufen ist
         if self.is_active and now >= self.end_time:
             self._execute_action()
             self.is_active = False
@@ -37,6 +38,7 @@ class Timer:
 
     def _check_triggers(self) -> bool:
         """Prüft die Startbedingungen des Timers."""
+        # Platzhalter für die Trigger-Logik
         return False
 
     def _execute_action(self):

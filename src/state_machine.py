@@ -4,7 +4,6 @@ Repräsentiert eine zustandsbasierte Automation (Endlicher Automat).
 
 from datetime import datetime
 from .logger import AppLogger
-from .timer import Timer
 
 class StateMachine:
     """Verwaltet die Logik für eine State-Machine-Automation."""
@@ -36,11 +35,12 @@ class StateMachine:
                     self.current_state = transition.get("to")
                     self.last_state_change = now
                     self._apply_state_action(self.current_state)
-                    # Wichtig: Nach einem erfolgreichen Übergang brechen wir ab, um nicht mehrere Übergänge in einem Durchlauf zu haben.
+                    # Wichtig: Nach einem erfolgreichen Übergang brechen wir ab.
                     break
 
     def _check_conditions(self, conditions: list, now: datetime) -> bool:
         """Prüft, ob alle Bedingungen für einen Übergang erfüllt sind."""
+        # Platzhalter für die Bedingungslogik
         return False
 
     def _apply_state_action(self, state_name: str):

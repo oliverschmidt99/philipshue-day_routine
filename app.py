@@ -9,42 +9,52 @@ from web import create_app
 
 def run_flask_app(shared_data):
     """Startet die Flask-Webanwendung in einem eigenen Prozess."""
+    # KORREKTUR: Erstelle eine eigene Instanz für diesen Prozess.
+    logger = shared_data["logger"]
+    config_manager = ConfigManager(logger)
+    
     flask_app = create_app(
-        config_manager=shared_data["config_manager"],
-        logger_instance=shared_data["logger"],
-        app_config=shared_data["app_config"]  # Übergibt die Konfiguration
+        config_manager=config_manager,
+        logger_instance=logger,
+        app_config=shared_data["app_config"]
     )
 
-    flask_app.logger_instance.info(f"Starte Flask-Server auf http://0.0.0.0:9090...")
+    logger.info(f"Starte Flask-Server auf http://0.0.0.0:9090...")
     
     try:
+        # Host und Port anpassen, falls nötig
         flask_app.run(host='0.0.0.0', port=9090, debug=False, use_reloader=False)
     except Exception as e:
-        flask_app.logger_instance.error(f"Flask-Server unerwartet beendet: {e}", exc_info=True)
+        logger.error(f"Flask-Server unerwartet beendet: {e}", exc_info=True)
 
 def run_core_logic(shared_data):
     """Startet die Kernlogik in einem eigenen Prozess."""
     logger = shared_data["logger"]
+    # KORREKTUR: Erstelle eine eigene Instanz für diesen Prozess.
+    config_manager = ConfigManager(logger)
+    
     logger.info("Starte Kernlogik...")
     core_logic = CoreLogic(
         log=logger,
-        config_manager=shared_data["config_manager"]
+        config_manager=config_manager
     )
     core_logic.run_main_loop()
 
 if __name__ == '__main__':
-    logger = AppLogger().get_logger()
+    # Logger wird einmalig erstellt und kann geteilt werden
+    logger = AppLogger(log_file="data/app.log").get_logger()
     logger.info("Initialisiere Anwendung...")
 
+    # Der Manager wird nur noch für einfache Daten verwendet
     manager = Manager()
     shared_data = manager.dict()
 
-    config_manager = ConfigManager(logger)
-    config = config_manager.get_full_config()
+    # Wir lesen die Konfig einmalig im Hauptprozess, um sie an die Subprozesse zu übergeben.
+    # Die Subprozesse erstellen dann ihre eigenen Manager-Instanzen für das Neuladen.
+    temp_config_manager = ConfigManager(logger)
+    config = temp_config_manager.get_full_config()
     
-    # HIER DIE ÄNDERUNG: Keine Bridge-Instanz wird hier mehr erstellt.
-    # Stattdessen teilen wir nur die notwendigen Konfigurationsdaten.
-    shared_data["config_manager"] = config_manager
+    # KORREKTUR: Teile nur "picklable" Objekte.
     shared_data["logger"] = logger
     shared_data["app_config"] = {
         "bridge_ip": config.get("bridge_ip"),
@@ -56,8 +66,7 @@ if __name__ == '__main__':
     p_flask.start()
     logger.info(f"Webserver-Prozess gestartet mit PID: {p_flask.pid}")
     
-    # Die Kernlogik erstellt ihre eigene Bridge-Verbindung in der Schleife,
-    # was bereits eine gute Praxis ist.
+    logger.info("Initialisiere Kernlogik-Prozess...")
     p_core = Process(target=run_core_logic, args=(shared_data,))
     p_core.start()
     logger.info(f"Kernlogik-Prozess gestartet mit PID: {p_core.pid}")

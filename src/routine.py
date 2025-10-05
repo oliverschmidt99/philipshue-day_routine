@@ -2,10 +2,9 @@
 Verwaltet die Zustandslogik und Ausführung einer einzelnen,
 konfigurierbaren Tageslicht-Routine für einen Raum.
 """
-import time
-from datetime import datetime, timedelta
+
+from datetime import datetime, time, timedelta
 from .daily_time_span import DailyTimeSpan
-from .state_machine import StateMachine
 from .logger import AppLogger
 
 class Routine:
@@ -63,7 +62,6 @@ class Routine:
         if self.sensor and period_config.get("motion_check"):
             self._handle_motion(now, period_config)
 
-        # Führe die Trigger-Prüfung nur einmal pro Minute aus
         if self.last_trigger_check is None or (now - self.last_trigger_check).total_seconds() > 60:
             self._check_triggers(now)
             self.last_trigger_check = now

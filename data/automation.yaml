@@ -1,7 +1,2 @@
-routines: null
-scenes:
-  Test:
-    bri: 254
-    ct: 366
-    status: true
-    transitiontime: 10
+automations: []
+scenes: {}

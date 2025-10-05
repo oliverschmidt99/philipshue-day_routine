@@ -1,3 +1,4 @@
+# src/daily_time_span.py
 from datetime import time, datetime
 
 

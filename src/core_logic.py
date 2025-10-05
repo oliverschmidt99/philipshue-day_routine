@@ -87,9 +87,10 @@ class CoreLogic:
 
         rooms = {}
         for group in all_rooms_and_zones:
-            rooms[group['metadata']['name']] = Room(bridge, self.log, name=group['metadata']['name'], group_id=group["id"])
+            if 'metadata' in group and 'name' in group['metadata']:
+                rooms[group['metadata']['name']] = Room(bridge, self.log, name=group['metadata']['name'], group_id=group["id"])
 
-        sensors = {s['id']: Sensor(bridge, s['id'], self.log) for s in bridge_data.get("sensors", [])}
+        sensors = {s['id']: Sensor(bridge, s['id'], self.log) for s in bridge_data.get("devices", []) if s.get('product_data', {}).get('product_name') == 'Hue motion sensor'}
         
         automations = []
         automation_configs = config.get("automations", [])
@@ -97,15 +98,12 @@ class CoreLogic:
         for aut_conf in automation_configs:
             aut_type = aut_conf.get("type", "routine")
             name = aut_conf.get("name")
-            room_name = aut_conf.get("room_name")
+            room_name = aut_conf.get("room_name") if aut_type == "routine" else aut_conf.get("target_room")
             room = rooms.get(room_name)
             
-            # Finde den zugehörigen Sensor, falls konfiguriert
             sensor = None
-            for room_conf in config.get("rooms", []):
-                if room_conf.get("name") == room_name and room_conf.get("sensor_id"):
-                    sensor = sensors.get(room_conf.get("sensor_id"))
-                    break
+            if 'sensor_id' in aut_conf and aut_conf['sensor_id']:
+                sensor = sensors.get(aut_conf['sensor_id'])
             
             common_args = {
                 "name": name, "config": aut_conf, "log": self.log,
@@ -129,7 +127,7 @@ class CoreLogic:
         while True:
             try:
                 if self.config_manager.get_last_modified_time() > last_mod_time:
-                    self.log.info("Änderung in config.yaml erkannt. Lade Logik neu.")
+                    self.log.info("Änderung in der Konfiguration erkannt. Lade Logik neu.")
                     return
 
                 now = datetime.now().astimezone()
@@ -159,10 +157,10 @@ class CoreLogic:
             return None
 
     def _write_status(self, automations, sun_times):
-        status_data = {"automations": [aut.get_status() for aut in automations], "sun_times": sun_times}
+        status_data = {"automations": [aut.get_status() for aut in automations], "sun_times": {}}
+        if sun_times:
+            status_data["sun_times"] = {"sunrise": sun_times["sunrise"].isoformat(), "sunset": sun_times["sunset"].isoformat()}
         try:
-            if status_data.get("sun_times"):
-                status_data["sun_times"] = {"sunrise": status_data["sun_times"]["sunrise"].isoformat(), "sunset": status_data["sun_times"]["sunset"].isoformat()}
             with open(STATUS_FILE + ".tmp", "w", encoding="utf-8") as f:
                 json.dump(status_data, f, indent=2)
             os.replace(STATUS_FILE + ".tmp", STATUS_FILE)

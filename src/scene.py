@@ -48,7 +48,5 @@ class Scene:
                 state["sat"] = int(self.sat)
         elif self.ct is not None:
             state["ct"] = int(self.ct)
-            if self.sat is not None:
-                state["sat"] = int(self.sat)
 
         return state
