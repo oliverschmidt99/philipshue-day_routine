@@ -70,27 +70,201 @@
                 </div>
 
                 <div id="content-grundriss" class="content-section hidden">
+                    <div class="flex flex-col h-[calc(100vh-200px)]">
+                        <div id="floorplan-toolbar"
+                            class="flex items-center justify-between p-2 bg-gray-800 rounded-t-lg">
+                            <div class="flex items-center space-x-2" id="bp-toolbar-modes">
+                                <button type="button" data-mode="0"
+                                    class="bp-mode-button p-2 rounded bg-blue-600 text-white"
+                                    title="Verschieben & Auswählen" aria-label="Verschieben und Auswählen">
+                                    <i class="fas fa-arrows-alt" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" data-mode="1"
+                                    class="bp-mode-button p-2 rounded bg-gray-700 hover:bg-gray-600"
+                                    title="Wände zeichnen" aria-label="Wände zeichnen">
+                                    <i class="fas fa-pencil-ruler" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" data-mode="2"
+                                    class="bp-mode-button p-2 rounded bg-gray-700 hover:bg-gray-600"
+                                    title="Türen & Fenster setzen" aria-label="Türen und Fenster setzen">
+                                    <i class="fas fa-door-open" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div>
+                                <button type="button" id="floorplan-save"
+                                    class="p-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold">Grundriss
+                                    Speichern</button>
+                            </div>
+                        </div>
+                        <div id="bp-viewer" class="flex-grow bg-gray-600 rounded-b-lg relative overflow-hidden">
+                        </div>
+                    </div>
                 </div>
 
                 <div id="content-automations" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold mb-4">Automationen</h2>
+                    <div class="flex justify-end mb-4">
+                        <button type="button" id="btn-new-automation"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                            + Neue Automation
+                        </button>
+                    </div>
+                    <div id="automations-container" class="space-y-6"></div>
                 </div>
 
+
                 <div id="content-scenes" class="content-section hidden">
+                    <div class="flex justify-end mb-4">
+                        <button type="button" id="btn-new-scene"
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                            + Neue Szene
+                        </button>
+                    </div>
+                    <div id="scenes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
 
                 <div id="content-status" class="content-section hidden space-y-8">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-semibold">Live-Zustand der Automationen</h2>
+                            <button type="button" id="btn-refresh-status"
+                                class="bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2 px-4 rounded-lg shadow-sm">Jetzt
+                                aktualisieren</button>
+                        </div>
+                        <div id="status-container" class="space-y-4"></div>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">Log-Datei (info.log)</h2>
+                        <pre id="log-container" class="log-container"></pre>
+                    </div>
                 </div>
 
                 <div id="content-analyse" class="content-section hidden space-y-6">
+                    <h2 class="text-2xl font-semibold">Sensor-Datenanalyse</h2>
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <div class="flex flex-wrap items-center gap-4 mb-4">
+                            <select id="analyse-sensor"
+                                class="p-2 border rounded-lg bg-gray-700 border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            <input type="date" id="analyse-day-picker"
+                                class="p-2 border rounded-lg bg-gray-700 border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="button" id="btn-fetch-data"
+                                class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600">
+                                <i class="fas fa-sync-alt mr-2"></i>Daten laden
+                            </button>
+                        </div>
+                        <div class="chart-container relative h-96 w-full border rounded-lg bg-gray-700 border-gray-600">
+                            <canvas id="sensor-chart"></canvas>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="content-einstellungen" class="content-section hidden space-y-6">
+                    <h2 class="text-2xl font-semibold">Globale Einstellungen</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-medium leading-6 mb-4">Bridge-Verbindung</h3>
+                                <label for="setting-bridge-ip"
+                                    class="block text-sm font-medium text-gray-400">IP-Adresse der Hue Bridge</label>
+                                <input type="text" id="setting-bridge-ip"
+                                    class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm">
+                            </div>
+                            <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-medium leading-6 mb-4">Standort für Sonnenzeiten
+                                </h3>
+                                <div class="grid grid-cols-1 gap-y-4">
+                                    <div>
+                                        <label for="setting-latitude"
+                                            class="block text-sm font-medium text-gray-400">Breitengrad</label>
+                                        <input type="number" step="any" id="setting-latitude"
+                                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="setting-longitude"
+                                            class="block text-sm font-medium text-gray-400">Längengrad</label>
+                                        <input type="number" step="any" id="setting-longitude"
+                                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-medium leading-6 mb-4">Regelung und Logging</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="setting-hysteresis"
+                                            class="block text-sm font-medium text-gray-400">Hysterese (%)</label>
+                                        <input type="number" id="setting-hysteresis" min="0"
+                                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="setting-datalogger-interval"
+                                            class="block text-sm font-medium text-gray-400">Datalogger-Intervall
+                                            (Minuten)</label>
+                                        <input type="number" id="setting-datalogger-interval" min="1"
+                                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="setting-loop-interval"
+                                            class="block text-sm font-medium text-gray-400">Hauptschleifen-Intervall
+                                            (s)</label>
+                                        <input type="number" step="0.1" id="setting-loop-interval" min="0.1"
+                                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="setting-status-interval"
+                                            class="block text-sm font-medium text-gray-400">Statusseiten-Aktualisierung
+                                            (s)</label>
+                                        <input type="number" id="setting-status-interval" min="1"
+                                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="setting-loglevel"
+                                            class="block text-sm font-medium text-gray-400">Log-Level</label>
+                                        <select id="setting-loglevel"
+                                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm">
+                                            <option value="INFO">Info</option>
+                                            <option value="DEBUG">Debug</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-md mt-6">
+                        <h3 class="text-lg font-medium leading-6 mb-4">System-Aktionen</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <button type="button" id="btn-add-default-scenes"
+                                class="w-full bg-teal-500 text-white py-2 px-4 rounded-md hover:bg-teal-600">Standard-Szenen
+                                hinzufügen</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="content-bridge-devices" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold mb-4">Gefundene Bridge-Geräte</h2>
+                    <div class="border-b border-gray-700 mb-4">
+                        <nav class="-mb-px flex space-x-6" id="bridge-devices-tabs" aria-label="Gerätetypen">
+                            <button type="button" data-tab="rooms"
+                                class="bridge-device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-blue-400 border-blue-400">Räume</button>
+                            <button type="button" data-tab="zones"
+                                class="bridge-device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-300 hover:border-gray-500 border-transparent">Zonen</button>
+                            <button type="button" data-tab="sensors"
+                                class="bridge-device-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-300 hover:border-gray-500 border-transparent">Sensoren
+                                &amp; Schalter</button>
+                        </nav>
+                    </div>
+                    <div id="bridge-devices-content">
+                        <div id="bridge-content-rooms" class="bridge-device-content-pane"></div>
+                        <div id="bridge-content-zones" class="bridge-device-content-pane hidden"></div>
+                        <div id="bridge-content-sensors" class="bridge-device-content-pane hidden"></div>
+                    </div>
                 </div>
 
                 <div id="content-hilfe" class="content-section hidden">
+                    <div id="help-content-container"></div>
                 </div>
             </main>
 
